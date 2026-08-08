@@ -97,10 +97,10 @@ export default function Home() {
                 className="font-bold text-base tracking-tight text-foreground"
                 style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' }}
               >
-                TRADE<span style={{ color: 'oklch(0.72 0.18 145)' }}>LOG</span>
+                TRADE<span style={{ color: 'oklch(0.72 0.18 145)' }}>FUSION</span>
               </span>
               <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-mono leading-none mt-0.5">
-                Journal
+                Trade Journal
               </span>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function Home() {
       {/* ── Footer ── */}
       <footer className="border-t border-border py-4">
         <div className="container flex items-center justify-between text-xs text-muted-foreground">
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif" }}>TradeLog</span>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Trade Fusion Journal</span>
           <span>Data stored locally in your browser · {trades.length} total trade{trades.length !== 1 ? 's' : ''}</span>
         </div>
       </footer>
