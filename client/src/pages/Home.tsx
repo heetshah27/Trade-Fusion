@@ -2,6 +2,8 @@
 // Design: Trading Terminal — dark, data-dense, green/red P&L signals
 // Typography: Space Grotesk (headings), Inter (body), JetBrains Mono (numbers)
 import { useState, useMemo } from 'react';
+import { useAuth } from '@/_core/hooks/useAuth';
+import { trpc } from '@/lib/trpc';
 import { Plus, TrendingUp, Download, Trash2, BarChart2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -14,22 +16,57 @@ import { groupByDay, loadTrades, saveTrades } from '@/lib/tradeTypes';
 import { SEED_TRADES } from '@/lib/seedData';
 
 export default function Home() {
+  // The useAuth hook provides authentication state.
+  // To implement login/logout, call logout(), or start login from an event
+  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
+  // startLogin() during render (no href={startLogin()}) — it mints a one-time
+  // nonce cookie and must run only at the moment of navigation.
+  const { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const [trades, setTrades] = useState<Trade[]>(() => loadTrades());
   const [modalOpen, setModalOpen] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
   const [filterSymbol, setFilterSymbol] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
 
+  // Fetch trades from cloud API
+  const { data: cloudTrades = [], isLoading } = trpc.trades.list.useQuery(undefined, {
+    enabled: !!user, // Only fetch if user is logged in
+  });
+
+  const utils = trpc.useUtils();
+  const createTradeMutation = trpc.trades.create.useMutation({
+    onSuccess: () => utils.trades.list.invalidate(),
+  });
+  const updateTradeMutation = trpc.trades.update.useMutation({
+    onSuccess: () => utils.trades.list.invalidate(),
+  });
+  const deleteTradeMutation = trpc.trades.delete.useMutation({
+    onSuccess: () => utils.trades.list.invalidate(),
+  });
+
   const persist = (updated: Trade[]) => {
-    setTrades(updated);
-    saveTrades(updated);
+    setTrades(updated); // Update local state for UI
   };
 
   const handleSave = (trade: Trade) => {
-    const updated = trades.some((t) => t.id === trade.id)
-      ? trades.map((t) => (t.id === trade.id ? trade : t))
-      : [...trades, trade];
-    persist(updated);
+    if (trades.some((t) => t.id === trade.id)) {
+      // Update existing trade
+      updateTradeMutation.mutate(trade);
+    } else {
+      // Create new trade
+      createTradeMutation.mutate({
+        date: trade.date,
+        symbol: trade.symbol,
+        direction: trade.direction,
+        entryPrice: trade.entryPrice,
+        exitPrice: trade.exitPrice,
+        quantity: trade.quantity,
+        pnl: trade.pnl,
+        fees: trade.fees,
+        notes: trade.notes,
+      });
+    }
     toast.success(editTrade ? 'Trade updated.' : 'Trade logged!');
     setEditTrade(null);
   };
@@ -40,13 +77,13 @@ export default function Home() {
   };
 
   const handleDelete = (id: string) => {
-    persist(trades.filter((t) => t.id !== id));
+    deleteTradeMutation.mutate({ id });
     toast.success('Trade removed.');
   };
 
   const handleClearAll = () => {
     if (!confirm('Clear all trades? This cannot be undone.')) return;
-    persist([]);
+    trades.forEach((t) => deleteTradeMutation.mutate({ id: t.id }));
     toast.success('All trades cleared.');
   };
 
@@ -74,8 +111,8 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     const q = filterSymbol.trim().toUpperCase();
-    return q ? trades.filter((t) => t.symbol.includes(q)) : trades;
-  }, [trades, filterSymbol]);
+    return q ? cloudTrades.filter((t) => t.symbol.includes(q)) : cloudTrades;
+  }, [cloudTrades, filterSymbol]);
 
   const dayGroups = useMemo(() => {
     const groups = groupByDay(filtered);
