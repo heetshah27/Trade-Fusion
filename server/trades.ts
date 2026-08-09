@@ -1,76 +1,187 @@
 import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "./_core/trpc";
+import { getDb } from "./db";
+import { trades as tradesTable, Trade as DbTrade } from "../drizzle/schema";
 
-// Schema for trade validation
+// Schema for trade validation (matches database schema)
 const TradeSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   date: z.string(),
   symbol: z.string(),
   direction: z.enum(["LONG", "SHORT"]),
-  entryPrice: z.number(),
-  exitPrice: z.number(),
-  quantity: z.number(),
-  pnl: z.number(),
-  fees: z.number().default(0),
+  entryPrice: z.string().or(z.number()),
+  exitPrice: z.string().or(z.number()),
+  quantity: z.string().or(z.number()),
+  pnl: z.string().or(z.number()),
+  fees: z.string().or(z.number()).default(0),
   notes: z.string().optional().default(""),
 });
 
 export type Trade = z.infer<typeof TradeSchema>;
 
-// In-memory storage per user (will be replaced with database)
-const userTrades = new Map<number, Trade[]>();
-
 export const tradesRouter = router({
   // Get all trades for the current user
-  list: protectedProcedure.query(({ ctx }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Database not available",
+      });
+    }
+
     const userId = ctx.user.id;
-    return userTrades.get(userId) || [];
+    const userTrades = await db
+      .select()
+      .from(tradesTable)
+      .where(eq(tradesTable.userId, userId));
+
+    return userTrades.map((t) => ({
+      id: t.id,
+      date: t.date,
+      symbol: t.symbol,
+      direction: t.direction,
+      entryPrice: Number(t.entryPrice),
+      exitPrice: Number(t.exitPrice),
+      quantity: Number(t.quantity),
+      pnl: Number(t.pnl),
+      fees: Number(t.fees),
+      notes: t.notes || "",
+    }));
   }),
 
   // Create a new trade
   create: protectedProcedure
     .input(TradeSchema.omit({ id: true }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
+
       const userId = ctx.user.id;
-      const trade: Trade = {
-        id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
-        ...input,
+      const result = await db
+        .insert(tradesTable)
+        .values({
+          userId,
+          date: input.date,
+          symbol: input.symbol,
+          direction: input.direction,
+          entryPrice: String(input.entryPrice),
+          exitPrice: String(input.exitPrice),
+          quantity: String(input.quantity),
+          pnl: String(input.pnl),
+          fees: String(input.fees || 0),
+          notes: input.notes,
+        })
+        .returning();
+
+      const trade = result[0];
+      return {
+        id: trade.id,
+        date: trade.date,
+        symbol: trade.symbol,
+        direction: trade.direction,
+        entryPrice: Number(trade.entryPrice),
+        exitPrice: Number(trade.exitPrice),
+        quantity: Number(trade.quantity),
+        pnl: Number(trade.pnl),
+        fees: Number(trade.fees),
+        notes: trade.notes || "",
       };
-
-      const trades = userTrades.get(userId) || [];
-      trades.push(trade);
-      userTrades.set(userId, trades);
-
-      return trade;
     }),
 
   // Update an existing trade
   update: protectedProcedure
     .input(TradeSchema)
-    .mutation(({ ctx, input }) => {
-      const userId = ctx.user.id;
-      const trades = userTrades.get(userId) || [];
-
-      const index = trades.findIndex((t) => t.id === input.id);
-      if (index === -1) {
-        throw new Error("Trade not found");
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
-      trades[index] = input as Trade;
-      userTrades.set(userId, trades);
+      const userId = ctx.user.id;
 
-      return trades[index];
+      // Verify trade belongs to user
+      const existing = await db
+        .select()
+        .from(tradesTable)
+        .where(eq(tradesTable.id, input.id));
+
+      if (existing.length === 0 || existing[0].userId !== userId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Trade not found",
+        });
+      }
+
+      const result = await db
+        .update(tradesTable)
+        .set({
+          date: input.date,
+          symbol: input.symbol,
+          direction: input.direction,
+          entryPrice: String(input.entryPrice),
+          exitPrice: String(input.exitPrice),
+          quantity: String(input.quantity),
+          pnl: String(input.pnl),
+          fees: String(input.fees || 0),
+          notes: input.notes,
+        })
+        .where(eq(tradesTable.id, input.id))
+        .returning();
+
+      const trade = result[0];
+      return {
+        id: trade.id,
+        date: trade.date,
+        symbol: trade.symbol,
+        direction: trade.direction,
+        entryPrice: Number(trade.entryPrice),
+        exitPrice: Number(trade.exitPrice),
+        quantity: Number(trade.quantity),
+        pnl: Number(trade.pnl),
+        fees: Number(trade.fees),
+        notes: trade.notes || "",
+      };
     }),
 
   // Delete a trade
   delete: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(({ ctx, input }) => {
-      const userId = ctx.user.id;
-      const trades = userTrades.get(userId) || [];
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-      const filtered = trades.filter((t) => t.id !== input.id);
-      userTrades.set(userId, filtered);
+      const userId = ctx.user.id;
+
+      // Verify trade belongs to user
+      const existing = await db
+        .select()
+        .from(tradesTable)
+        .where(eq(tradesTable.id, input.id));
+
+      if (existing.length === 0 || existing[0].userId !== userId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Trade not found",
+        });
+      }
+
+      await db.delete(tradesTable).where(eq(tradesTable.id, input.id));
 
       return { success: true };
     }),

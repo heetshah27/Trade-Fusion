@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from '@/lib/tradeTypes';
 interface Props {
   group: DayGroup;
   onEdit: (trade: Trade) => void;
-  onDelete: (tradeId: string) => void;
+  onDelete: (tradeId: number | string) => void;
 }
 
 export default function DayRow({ group, onEdit, onDelete }: Props) {
@@ -142,7 +142,7 @@ function TradeSubRow({
 }: {
   trade: Trade;
   onEdit: (t: Trade) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number | string) => void;
 }) {
   const isWin = trade.pnl > 0;
   const isLoss = trade.pnl < 0;

@@ -5,7 +5,7 @@ export type TradeDirection = 'LONG' | 'SHORT';
 export type TradeStatus = 'WIN' | 'LOSS' | 'BREAKEVEN';
 
 export interface Trade {
-  id: string;
+  id: number | string;
   date: string;          // ISO date string YYYY-MM-DD
   symbol: string;
   direction: TradeDirection;

@@ -52,7 +52,10 @@ export default function Home() {
   const handleSave = (trade: Trade) => {
     if (trades.some((t) => t.id === trade.id)) {
       // Update existing trade
-      updateTradeMutation.mutate(trade);
+      updateTradeMutation.mutate({
+        ...trade,
+        id: typeof trade.id === 'string' ? parseInt(trade.id) : trade.id,
+      });
     } else {
       // Create new trade
       createTradeMutation.mutate({
@@ -76,14 +79,14 @@ export default function Home() {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteTradeMutation.mutate({ id });
+  const handleDelete = (id: number | string) => {
+    deleteTradeMutation.mutate({ id: typeof id === 'string' ? parseInt(id) : id });
     toast.success('Trade removed.');
   };
 
   const handleClearAll = () => {
     if (!confirm('Clear all trades? This cannot be undone.')) return;
-    trades.forEach((t) => deleteTradeMutation.mutate({ id: t.id }));
+    trades.forEach((t) => deleteTradeMutation.mutate({ id: typeof t.id === 'string' ? parseInt(t.id) : t.id }));
     toast.success('All trades cleared.');
   };
 
