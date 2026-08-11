@@ -8,15 +8,29 @@ import LaunchGate from "./components/LaunchGate";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import News from "./pages/News";
+import Landing from "./pages/Landing";
+import { appRoutes } from "./lib/appRoutes";
+
+function WorkspaceRouter() {
+  return (
+    <LaunchGate>
+      <DashboardLayout>
+        <Switch>
+          <Route path={appRoutes.journal} component={Home} />
+          <Route path={appRoutes.calendar} component={News} />
+          <Route component={NotFound} />
+        </Switch>
+      </DashboardLayout>
+    </LaunchGate>
+  );
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/news"} component={News} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path={appRoutes.calendar} component={WorkspaceRouter} />
+      <Route path={appRoutes.journal} component={WorkspaceRouter} />
+      <Route path={appRoutes.landing} component={Landing} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -35,11 +49,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <LaunchGate>
-            <DashboardLayout>
-              <Router />
-            </DashboardLayout>
-          </LaunchGate>
+          <Router />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

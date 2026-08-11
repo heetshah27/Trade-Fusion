@@ -18,10 +18,11 @@ import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, LogOu
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
+import { appRoutes } from "@/lib/appRoutes";
 
 const menuItems = [
-  { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: "/" },
-  { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: "/news" },
+  { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: appRoutes.journal },
+  { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

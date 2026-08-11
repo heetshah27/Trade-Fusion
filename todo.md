@@ -32,6 +32,10 @@
 - [x] Refine dashboard colors, surfaces, typography, and navigation into a premium trading-product system.
 - [x] Polish journal and calendar modules to match the refined visual hierarchy.
 - [x] Verify responsive rendering and publish the refined UI theme.
+- [x] Review the TradeFXBook landing structure and map the current public/private routes.
+- [x] Build an original public Trade Fusion landing page with hero, feature highlights, and dashboard preview.
+- [x] Route the Get Started journey into the protected journal and calendar workspace.
+- [x] Test the public landing and secure workspace flow across devices, then publish it.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.
