@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { trpc } from '@/lib/trpc';
 
 interface EconomicEvent {
   id: string;
@@ -14,70 +15,6 @@ interface EconomicEvent {
   previous?: string;
   actual?: string;
 }
-
-// Mock economic calendar data — will be replaced with real API
-const MOCK_EVENTS: EconomicEvent[] = [
-  {
-    id: '1',
-    date: '2026-08-10',
-    time: '13:30',
-    country: 'US',
-    event: 'Non-Farm Payroll',
-    impact: 'high',
-    forecast: '175K',
-    previous: '206K',
-  },
-  {
-    id: '2',
-    date: '2026-08-10',
-    time: '12:00',
-    country: 'US',
-    event: 'Unemployment Rate',
-    impact: 'high',
-    forecast: '4.0%',
-    previous: '4.0%',
-  },
-  {
-    id: '3',
-    date: '2026-08-11',
-    time: '14:00',
-    country: 'EU',
-    event: 'ECB Interest Rate Decision',
-    impact: 'high',
-    forecast: '3.75%',
-    previous: '3.75%',
-  },
-  {
-    id: '4',
-    date: '2026-08-12',
-    time: '08:30',
-    country: 'UK',
-    event: 'Retail Sales MoM',
-    impact: 'medium',
-    forecast: '0.5%',
-    previous: '-0.3%',
-  },
-  {
-    id: '5',
-    date: '2026-08-13',
-    time: '16:00',
-    country: 'US',
-    event: 'CPI YoY',
-    impact: 'high',
-    forecast: '2.8%',
-    previous: '2.9%',
-  },
-  {
-    id: '6',
-    date: '2026-08-14',
-    time: '10:00',
-    country: 'JP',
-    event: 'Industrial Production MoM',
-    impact: 'medium',
-    forecast: '1.2%',
-    previous: '-0.5%',
-  },
-];
 
 const getImpactColor = (impact: string) => {
   switch (impact) {
@@ -100,20 +37,38 @@ const getImpactIcon = (impact: string) => {
 };
 
 export default function News() {
-  const [events, setEvents] = useState<EconomicEvent[]>(MOCK_EVENTS);
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
-  const [loading, setLoading] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  // Fetch events from backend
+  const { data: events = [], isLoading, refetch } = trpc.calendar.getEvents.useQuery();
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+      setLastRefresh(new Date());
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const filteredEvents = filter === 'all' 
     ? events 
     : events.filter(e => e.impact === filter);
 
   const handleRefresh = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    refetch();
+    setLastRefresh(new Date());
+  };
+
+  const formatLastRefresh = () => {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - lastRefresh.getTime()) / 1000);
+    
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
   };
 
   return (
@@ -126,12 +81,12 @@ export default function News() {
             <h1 className="text-4xl font-bold text-white font-display">Economic Calendar</h1>
           </div>
           <p className="text-slate-400 text-lg">
-            Upcoming economic events and their market impact
+            Live economic events — auto-refreshes every 5 minutes
           </p>
         </div>
 
         {/* Controls */}
-        <div className="mb-6 flex gap-3 flex-wrap">
+        <div className="mb-6 flex gap-3 flex-wrap items-center">
           <Button
             onClick={() => setFilter('all')}
             variant={filter === 'all' ? 'default' : 'outline'}
@@ -160,18 +115,28 @@ export default function News() {
           >
             Low Impact
           </Button>
-          <Button
-            onClick={handleRefresh}
-            disabled={loading}
-            className="ml-auto bg-slate-700 hover:bg-slate-600"
-          >
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </Button>
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-sm text-slate-400">
+              Last refresh: {formatLastRefresh()}
+            </span>
+            <Button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="bg-slate-700 hover:bg-slate-600 gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              {isLoading ? 'Refreshing...' : 'Refresh Now'}
+            </Button>
+          </div>
         </div>
 
         {/* Events List */}
         <div className="space-y-4">
-          {filteredEvents.length === 0 ? (
+          {isLoading && events.length === 0 ? (
+            <Card className="bg-slate-800 border-slate-700 p-8 text-center">
+              <p className="text-slate-400">Loading economic calendar...</p>
+            </Card>
+          ) : filteredEvents.length === 0 ? (
             <Card className="bg-slate-800 border-slate-700 p-8 text-center">
               <p className="text-slate-400">No events found for the selected filter</p>
             </Card>
@@ -251,7 +216,7 @@ export default function News() {
             <div>
               <h3 className="text-white font-semibold mb-2">About Economic Calendar</h3>
               <p className="text-slate-400 text-sm">
-                High-impact events can cause significant market volatility. Use this calendar to plan your trades and manage risk accordingly. Times are displayed in your local timezone.
+                This calendar automatically fetches live economic events from ForexFactory every 5 minutes. High-impact events can cause significant market volatility. Use this to plan your trades and manage risk accordingly. Times are displayed in your local timezone.
               </p>
             </div>
           </div>
