@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { getCalendarCountry } from '@/lib/calendarFlags';
 import { toEasternCalendarDisplay } from '@/lib/calendarTime';
 import { trpc } from '@/lib/trpc';
 
@@ -167,6 +168,7 @@ export default function News() {
           ) : (
             filteredEvents.map(event => {
               const displayTime = toEasternCalendarDisplay(event.date, event.time);
+              const country = getCalendarCountry(event.country);
 
               return <Card
                 key={event.id}
@@ -185,8 +187,10 @@ export default function News() {
 
                   {/* Country & Event */}
                   <div className="md:col-span-4">
-                    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
-                      {event.country}
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 uppercase tracking-wider mb-1">
+                      <span className="text-sm leading-none" aria-hidden="true">{country.flag}</span>
+                      <span>{event.country}</span>
+                      <span className="sr-only">{country.label}</span>
                     </div>
                     <div className="text-base text-white font-medium">
                       {event.event}

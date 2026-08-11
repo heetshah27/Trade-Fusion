@@ -8,3 +8,6 @@
 - [x] Verify the ForexFactory source timezone and document the calendar display convention.
 - [x] Convert and label calendar times in U.S. Eastern Time with 12-hour AM/PM formatting.
 - [x] Test and publish the timezone display update.
+- [x] Map economic-calendar country and currency codes to accessible flags.
+- [x] Render flags beside each calendar event and test the display.
+- [x] Save and publish the calendar flag update.
