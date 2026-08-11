@@ -1,11 +1,10 @@
-import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { trades as tradesTable, Trade as DbTrade } from "../drizzle/schema";
+import { trades as tradesTable } from "../drizzle/schema";
 
-// Schema for trade validation (matches database schema)
 const TradeSchema = z.object({
   id: z.number(),
   date: z.string(),
@@ -21,54 +20,52 @@ const TradeSchema = z.object({
 
 export type Trade = z.infer<typeof TradeSchema>;
 
+export function isTradeOwnedByUser(tradeUserId: number, authenticatedUserId: number): boolean {
+  return tradeUserId === authenticatedUserId;
+}
+
+function toClientTrade(trade: typeof tradesTable.$inferSelect) {
+  return {
+    id: trade.id,
+    date: trade.date,
+    symbol: trade.symbol,
+    direction: trade.direction,
+    entryPrice: Number(trade.entryPrice),
+    exitPrice: Number(trade.exitPrice),
+    quantity: Number(trade.quantity),
+    pnl: Number(trade.pnl),
+    fees: Number(trade.fees),
+    notes: trade.notes || "",
+  };
+}
+
+function databaseUnavailable() {
+  return new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+}
+
 export const tradesRouter = router({
-  // Get all trades for the current user
   list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
-    if (!db) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database not available",
-      });
-    }
+    if (!db) throw databaseUnavailable();
 
-    const userId = ctx.user.id;
     const userTrades = await db
       .select()
       .from(tradesTable)
-      .where(eq(tradesTable.userId, userId));
+      .where(eq(tradesTable.userId, ctx.user.id));
 
-    return userTrades.map((t) => ({
-      id: t.id,
-      date: t.date,
-      symbol: t.symbol,
-      direction: t.direction,
-      entryPrice: Number(t.entryPrice),
-      exitPrice: Number(t.exitPrice),
-      quantity: Number(t.quantity),
-      pnl: Number(t.pnl),
-      fees: Number(t.fees),
-      notes: t.notes || "",
-    }));
+    return userTrades.map(toClientTrade);
   }),
 
-  // Create a new trade
   create: protectedProcedure
     .input(TradeSchema.omit({ id: true }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database not available",
-        });
-      }
+      if (!db) throw databaseUnavailable();
 
-      const userId = ctx.user.id;
       const result = await db
         .insert(tradesTable)
         .values({
-          userId,
+          userId: ctx.user.id,
           date: input.date,
           symbol: input.symbol,
           direction: input.direction,
@@ -81,46 +78,22 @@ export const tradesRouter = router({
         })
         .returning();
 
-      const trade = result[0];
-      return {
-        id: trade.id,
-        date: trade.date,
-        symbol: trade.symbol,
-        direction: trade.direction,
-        entryPrice: Number(trade.entryPrice),
-        exitPrice: Number(trade.exitPrice),
-        quantity: Number(trade.quantity),
-        pnl: Number(trade.pnl),
-        fees: Number(trade.fees),
-        notes: trade.notes || "",
-      };
+      return toClientTrade(result[0]);
     }),
 
-  // Update an existing trade
   update: protectedProcedure
     .input(TradeSchema)
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database not available",
-        });
-      }
+      if (!db) throw databaseUnavailable();
 
-      const userId = ctx.user.id;
-
-      // Verify trade belongs to user
       const existing = await db
         .select()
         .from(tradesTable)
         .where(eq(tradesTable.id, input.id));
 
-      if (existing.length === 0 || existing[0].userId !== userId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Trade not found",
-        });
+      if (existing.length === 0 || !isTradeOwnedByUser(existing[0].userId, ctx.user.id)) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Trade not found" });
       }
 
       const result = await db
@@ -139,50 +112,25 @@ export const tradesRouter = router({
         .where(eq(tradesTable.id, input.id))
         .returning();
 
-      const trade = result[0];
-      return {
-        id: trade.id,
-        date: trade.date,
-        symbol: trade.symbol,
-        direction: trade.direction,
-        entryPrice: Number(trade.entryPrice),
-        exitPrice: Number(trade.exitPrice),
-        quantity: Number(trade.quantity),
-        pnl: Number(trade.pnl),
-        fees: Number(trade.fees),
-        notes: trade.notes || "",
-      };
+      return toClientTrade(result[0]);
     }),
 
-  // Delete a trade
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database not available",
-        });
-      }
+      if (!db) throw databaseUnavailable();
 
-      const userId = ctx.user.id;
-
-      // Verify trade belongs to user
       const existing = await db
         .select()
         .from(tradesTable)
         .where(eq(tradesTable.id, input.id));
 
-      if (existing.length === 0 || existing[0].userId !== userId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Trade not found",
-        });
+      if (existing.length === 0 || !isTradeOwnedByUser(existing[0].userId, ctx.user.id)) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Trade not found" });
       }
 
       await db.delete(tradesTable).where(eq(tradesTable.id, input.id));
-
       return { success: true };
     }),
 });

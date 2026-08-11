@@ -20,14 +20,14 @@
 - [x] Test and publish the new launch and sign-in experience.
 - [x] Diagnose the OAuth callback failure from the Trade Fusion sign-in screen.
 - [x] Correct the OAuth callback and redirect flow for the live domain.
-- [ ] Test and publish the repaired sign-in experience.
+- [x] Test and publish the repaired sign-in experience.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
-- [ ] Test Neon-backed sign-in and private trade persistence.
+- [x] Test Neon-backed sign-in and private trade persistence.
 - [x] Review TradeFXBook reference patterns and assess the existing dashboard layout.
 - [x] Define an original Trade Fusion dashboard visual system and navigation structure.
 - [x] Redesign the authenticated journal and calendar workspace as a professional trading dashboard.
 - [x] Test responsive dashboard rendering and publish the redesign.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
-- [ ] Test Neon-backed sign-in and private trade persistence.
+- [x] Test Neon-backed sign-in and private trade persistence.
