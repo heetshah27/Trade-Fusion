@@ -187,10 +187,16 @@ export default function News() {
 
                   {/* Country & Event */}
                   <div className="md:col-span-4">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 uppercase tracking-wider mb-1">
-                      <span className="text-sm leading-none" aria-hidden="true">{country.flag}</span>
-                      <span>{event.country}</span>
-                      <span className="sr-only">{country.label}</span>
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-wider mb-1">
+                      <span
+                        className="inline-flex h-6 w-7 items-center justify-center rounded bg-slate-700/80 text-base leading-none ring-1 ring-white/10"
+                        role="img"
+                        aria-label={`${country.label} flag`}
+                      >
+                        {country.flag}
+                      </span>
+                      <span className="font-semibold text-slate-300">{event.country}</span>
+                      <span className="normal-case tracking-normal text-slate-500">{country.label}</span>
                     </div>
                     <div className="text-base text-white font-medium">
                       {event.event}

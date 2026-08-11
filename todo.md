@@ -11,3 +11,6 @@
 - [x] Map economic-calendar country and currency codes to accessible flags.
 - [x] Render flags beside each calendar event and test the display.
 - [x] Save and publish the calendar flag update.
+- [x] Diagnose the live News-page country-flag visibility issue.
+- [x] Apply and verify a durable live flag-rendering fix.
+- [x] Save and publish the corrected flag display.
