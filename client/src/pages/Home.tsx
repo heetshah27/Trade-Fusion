@@ -4,7 +4,8 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { trpc } from '@/lib/trpc';
-import { Plus, TrendingUp, Download, Trash2, BarChart2 } from 'lucide-react';
+import { Plus, TrendingUp, Download, Trash2, BarChart2, Calendar } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -144,6 +145,25 @@ export default function Home() {
               </span>
             </div>
           </div>
+
+          <div className="h-5 w-px bg-border mx-1" />
+
+          {/* Navigation */}
+          <nav className="flex items-center gap-1">
+            <a
+              href="/"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded hover:bg-accent"
+            >
+              Journal
+            </a>
+            <a
+              href="/news"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded hover:bg-accent flex items-center gap-1.5"
+            >
+              <Calendar className="w-4 h-4" />
+              News
+            </a>
+          </nav>
 
           <div className="h-5 w-px bg-border mx-1" />
 
