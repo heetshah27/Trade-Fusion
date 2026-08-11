@@ -16,7 +16,7 @@ function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className={`relative grid place-items-center overflow-hidden rounded-xl bg-[oklch(0.72_0.18_145)] shadow-[0_0_40px_oklch(0.72_0.18_145_/_0.25)] ${
+        className={`relative grid place-items-center overflow-hidden rounded-xl bg-[oklch(0.66_0.18_250)] shadow-[0_0_40px_oklch(0.66_0.18_250_/_0.30)] ${
           isLarge ? "h-12 w-12" : "h-9 w-9"
         }`}
       >
@@ -25,7 +25,7 @@ function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
       </div>
       <div className="leading-none">
         <div className={`${isLarge ? "text-2xl" : "text-base"} font-bold tracking-[-0.04em] text-white`}>
-          TRADE<span className="text-[oklch(0.72_0.18_145)]">FUSION</span>
+          TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span>
         </div>
         <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-500">Trade Journal</div>
       </div>
@@ -36,9 +36,9 @@ function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
 function LaunchBackground() {
   return (
     <>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,oklch(0.72_0.18_145_/_0.10),transparent_32%),radial-gradient(circle_at_15%_90%,oklch(0.58_0.13_240_/_0.12),transparent_28%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(oklch(0.7_0.03_145)_1px,transparent_1px),linear-gradient(90deg,oklch(0.7_0.03_145)_1px,transparent_1px)] [background-size:44px_44px]" />
-      <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[oklch(0.72_0.18_145_/_0.45)] to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,oklch(0.66_0.18_250_/_0.16),transparent_32%),radial-gradient(circle_at_15%_90%,oklch(0.58_0.13_240_/_0.16),transparent_28%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(oklch(0.66_0.06_250)_1px,transparent_1px),linear-gradient(90deg,oklch(0.66_0.06_250)_1px,transparent_1px)] [background-size:44px_44px]" />
+      <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[oklch(0.66_0.18_250_/_0.55)] to-transparent" />
     </>
   );
 }
@@ -75,7 +75,7 @@ function IntroScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
               transition={{ duration: 1.15, repeat: Infinity, ease: "easeInOut" }}
-              className="h-full w-1/2 bg-[oklch(0.72_0.18_145)]"
+              className="h-full w-1/2 bg-[oklch(0.66_0.18_250)]"
             />
           </div>
           <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">Calibrating your trade journal</p>
@@ -100,20 +100,20 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
         <section className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-950/60 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
         <BrandMark />
         <div className="mt-10">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[oklch(0.72_0.18_145_/_0.22)] bg-[oklch(0.72_0.18_145_/_0.10)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[oklch(0.8_0.16_145)]">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-300/[0.22] bg-blue-400/[0.10] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-200">
             <Sparkles className="h-3.5 w-3.5" /> Private workspace
           </div>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Review. Refine. Repeat.</h1>
           <p className="mt-3 leading-6 text-slate-400">Sign in to open your private, cross-device trading journal and market calendar.</p>
         </div>
         <div className="mt-8 space-y-3 text-sm text-slate-400">
-          <div className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-[oklch(0.72_0.18_145)]" /> Your trades remain linked to your account.</div>
-          <div className="flex items-center gap-3"><LockKeyhole className="h-4 w-4 text-[oklch(0.72_0.18_145)]" /> Your journal stays separate from other traders.</div>
+          <div className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your trades remain linked to your account.</div>
+          <div className="flex items-center gap-3"><LockKeyhole className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your journal stays separate from other traders.</div>
         </div>
         <Button
           onClick={onSignIn}
           disabled={checkingAuth}
-          className="mt-9 h-11 w-full bg-[oklch(0.72_0.18_145)] font-semibold text-slate-950 hover:bg-[oklch(0.78_0.18_145)]"
+          className="mt-9 h-11 w-full bg-[oklch(0.66_0.18_250)] font-semibold text-white hover:bg-[oklch(0.72_0.18_250)]"
         >
           {checkingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in to Trade Fusion"}
         </Button>

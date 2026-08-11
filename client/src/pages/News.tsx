@@ -89,17 +89,22 @@ export default function News() {
   };
 
   return (
-    <div className="min-h-full bg-[#0b1117]">
+    <div className="min-h-full bg-[#07101f]">
       <div className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="grid h-10 w-10 place-items-center rounded-xl border border-[oklch(0.72_0.18_145_/_0.18)] bg-[oklch(0.72_0.18_145_/_0.09)]"><Calendar className="w-5 h-5 text-[oklch(0.72_0.18_145)]" /></div>
-            <div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.72_0.18_145)]">Macro catalyst watch</p><h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Economic Calendar</h1></div>
+            <div className="grid h-10 w-10 place-items-center rounded-xl border border-blue-300/[0.18] bg-blue-400/[0.11] shadow-[0_8px_22px_oklch(0.45_0.18_250_/_0.18)]"><Calendar className="w-5 h-5 text-[oklch(0.70_0.16_250)]" /></div>
+            <div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.70_0.16_250)]">Macro catalyst watch</p><h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Economic Calendar</h1></div>
           </div>
           <p className="text-slate-500 text-sm">
             Live economic events — U.S. Eastern Time (ET) — auto-refreshes every five minutes
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">
+            <span className="rounded-full border border-blue-300/[0.12] bg-blue-400/[0.06] px-2.5 py-1 text-blue-200">Source · ForexFactory</span>
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Timezone · New York</span>
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Update cycle · 5 min</span>
+          </div>
         </div>
 
         {/* Controls */}
@@ -107,28 +112,28 @@ export default function News() {
           <Button
             onClick={() => setFilter('all')}
             variant={filter === 'all' ? 'default' : 'outline'}
-            className={filter === 'all' ? 'bg-[oklch(0.72_0.18_145)] text-slate-950 hover:bg-[oklch(0.78_0.18_145)]' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
+            className={filter === 'all' ? 'bg-[oklch(0.66_0.18_250)] text-white shadow-[0_8px_22px_oklch(0.45_0.18_250_/_0.24)] hover:bg-[oklch(0.72_0.18_250)]' : 'rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white'}
           >
             All Events
           </Button>
           <Button
             onClick={() => setFilter('high')}
             variant={filter === 'high' ? 'default' : 'outline'}
-            className={filter === 'high' ? 'bg-red-500 text-white hover:bg-red-400' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
+            className={filter === 'high' ? 'bg-red-500 text-white hover:bg-red-400' : 'rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white'}
           >
             High Impact
           </Button>
           <Button
             onClick={() => setFilter('medium')}
             variant={filter === 'medium' ? 'default' : 'outline'}
-            className={filter === 'medium' ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
+            className={filter === 'medium' ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white'}
           >
             Medium Impact
           </Button>
           <Button
             onClick={() => setFilter('low')}
             variant={filter === 'low' ? 'default' : 'outline'}
-            className={filter === 'low' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
+            className={filter === 'low' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white'}
           >
             Low Impact
           </Button>
@@ -139,7 +144,7 @@ export default function News() {
             <Button
               onClick={handleRefresh}
               disabled={isFetching}
-              className="border border-white/[0.09] bg-white/[0.035] text-slate-300 hover:bg-white/[0.07] hover:text-white gap-2"
+              className="rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-300 hover:bg-blue-400/[0.10] hover:text-white gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               {isFetching ? 'Refreshing...' : 'Refresh Now'}
@@ -150,11 +155,21 @@ export default function News() {
         {/* Events List */}
         <div className="space-y-4">
           {isLoading && events.length === 0 ? (
-            <Card className="border-white/[0.08] bg-[#111923] p-8 text-center">
-              <p className="text-slate-400">Loading economic calendar...</p>
+            <Card className="overflow-hidden border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-0">
+              <div className="grid grid-cols-[130px_1fr_120px] gap-4 border-b border-blue-200/[0.08] px-6 py-3 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600">
+                <span>Time · ET</span><span>Event</span><span>Impact</span>
+              </div>
+              {[0, 1, 2, 3].map((row) => (
+                <div key={row} className="grid grid-cols-[130px_1fr_120px] items-center gap-4 border-b border-white/[0.05] px-6 py-4 last:border-0">
+                  <span className="h-3 w-20 rounded-full bg-blue-200/[0.08]" />
+                  <span className="h-3 w-[min(380px,65%)] rounded-full bg-white/[0.07]" />
+                  <span className="h-6 w-20 rounded-full bg-blue-400/[0.08]" />
+                </div>
+              ))}
+              <p className="px-6 py-3 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Pulling live macro events</p>
             </Card>
           ) : response?.sourceStatus === 'unavailable' ? (
-            <Card className="border-amber-500/30 bg-[#111923] p-8 text-center">
+            <Card className="border-amber-500/30 bg-gradient-to-b from-[#152647] to-[#101c33] p-8 text-center">
               <AlertCircle className="w-7 h-7 text-amber-400 mx-auto mb-3" />
               <p className="text-white font-medium">Live calendar temporarily unavailable</p>
               <p className="text-slate-400 mt-2 text-sm">
@@ -162,7 +177,7 @@ export default function News() {
               </p>
             </Card>
           ) : filteredEvents.length === 0 ? (
-            <Card className="border-white/[0.08] bg-[#111923] p-8 text-center">
+            <Card className="border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-8 text-center">
               <p className="text-slate-400">No live events found for the selected filter</p>
             </Card>
           ) : (
@@ -172,7 +187,7 @@ export default function News() {
 
               return <Card
                 key={event.id}
-                className="border-white/[0.08] bg-[#111923] p-6 shadow-[0_10px_22px_rgba(0,0,0,0.10)] transition-colors hover:border-white/[0.15]"
+                className="rounded-2xl border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-6 shadow-[0_14px_30px_rgba(1,8,24,0.22)] transition-colors hover:border-blue-200/[0.20]"
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   {/* Date & Time */}
@@ -243,13 +258,13 @@ export default function News() {
         </div>
 
         {/* Info Box */}
-        <Card className="mt-8 border-white/[0.08] bg-[#111923] p-6">
+        <Card className="mt-8 rounded-2xl border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-6">
           <div className="flex gap-4">
             <AlertCircle className="w-6 h-6 text-cyan-400 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="text-white font-semibold mb-2">About Economic Calendar</h3>
+              <h3 className="text-white font-semibold mb-2">Calendar operating notes</h3>
               <p className="text-slate-400 text-sm">
-                This calendar retrieves the structured ForexFactory weekly feed and checks for fresh data every five minutes. The source provides UTC timestamps; Trade Fusion Journal converts them to U.S. Eastern Time (ET) with daylight-saving adjustments. No mock calendar events are used: if the source is unavailable, the page says so.
+                Live ForexFactory events. UTC source times are converted to U.S. Eastern Time with daylight-saving adjustments. If the source is unavailable, the calendar shows an explicit status instead of substitute data.
               </p>
             </div>
           </div>

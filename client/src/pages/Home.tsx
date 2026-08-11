@@ -124,11 +124,11 @@ export default function Home() {
   }, [filtered, sortAsc]);
 
   return (
-    <div className="min-h-full bg-[#0b1117] text-foreground">
+    <div className="min-h-full bg-[#07101f] text-foreground">
       <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
         <section className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.72_0.18_145)]">Execution review</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.70_0.16_250)]">Execution review</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Trade Journal</h1>
             <p className="mt-2 text-sm text-slate-500">Log every execution. Measure the pattern. Improve the process.</p>
           </div>
@@ -138,15 +138,15 @@ export default function Home() {
               placeholder="Filter by symbol..."
               value={filterSymbol}
               onChange={(e) => setFilterSymbol(e.target.value)}
-              className="h-9 w-44 rounded-lg border border-white/[0.09] bg-white/[0.035] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-[oklch(0.72_0.18_145)]"
+              className="h-9 w-44 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-[oklch(0.66_0.18_250)]"
             />
-            <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-lg border border-white/[0.09] bg-white/[0.035] px-3 text-xs text-slate-400 transition-colors hover:bg-white/[0.07] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
+            <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 text-xs text-slate-400 transition-colors hover:bg-blue-400/[0.10] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
               disabled={trades.length === 0}
-              className="h-9 border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white gap-1.5"
+              className="h-9 rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
@@ -156,7 +156,7 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 onClick={handleClearAll}
-                className="h-9 border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-red-500/10 hover:text-red-300 gap-1.5"
+                className="h-9 rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-red-500/10 hover:text-red-300 gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Clear All
@@ -165,7 +165,7 @@ export default function Home() {
             <Button
               size="sm"
               onClick={() => { setEditTrade(null); setModalOpen(true); }}
-              className="h-9 gap-1.5 bg-[oklch(0.72_0.18_145)] text-slate-950 hover:bg-[oklch(0.78_0.18_145)]"
+              className="h-9 rounded-xl gap-1.5 bg-[oklch(0.66_0.18_250)] text-white shadow-[0_10px_24px_oklch(0.45_0.18_250_/_0.32)] hover:bg-[oklch(0.72_0.18_250)]"
             >
               <Plus className="w-4 h-4" />
               Log Trade

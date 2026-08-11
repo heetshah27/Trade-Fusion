@@ -66,7 +66,7 @@ export default function TradeStats({ trades }: Props) {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#111923] px-4 py-3.5 shadow-[0_10px_22px_rgba(0,0,0,0.12)]"
+          className="relative overflow-hidden rounded-2xl border border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] px-4 py-4 shadow-[0_14px_30px_rgba(1,8,24,0.24)]"
         >
           <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
             {s.label}
@@ -84,7 +84,7 @@ export default function TradeStats({ trades }: Props) {
           >
             {s.value}
           </span>
-          <span className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+          <span className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-blue-300/[0.25] to-transparent" />
         </div>
       ))}
     </div>

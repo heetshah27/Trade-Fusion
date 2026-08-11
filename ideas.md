@@ -73,3 +73,9 @@ Example lines: "Every trade. Every day." / "Log it. Learn from it."
 **Signature Brand Color:** Profit green `oklch(0.72 0.18 145)`
 
 ## Style Decisions
+
+## Premium Product Theme Reference
+
+Reference reviewed: <https://www.tradefxbook.com/>.
+
+The reference uses a deep navy product environment, a blue-led action hierarchy, generous rounded card surfaces, high-contrast performance figures, concise navigation, and a polished app-preview feel. Trade Fusion uses these **general visual principles only**: it retains its own name, workspace architecture, copy, iconography, data model, and profit/loss semantics. In Trade Fusion, blue signals workspace actions and navigation; green and red remain reserved for positive and negative market outcomes.
