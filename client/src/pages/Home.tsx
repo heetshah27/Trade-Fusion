@@ -124,74 +124,29 @@ export default function Home() {
   }, [filtered, sortAsc]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* ── Header ── */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container flex items-center gap-3 h-14">
-          {/* Logo mark */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: 'oklch(0.72 0.18 145)' }}>
-              <BarChart2 className="w-4 h-4 text-[oklch(0.12_0.01_145)]" strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span
-                className="font-bold text-base tracking-tight text-foreground"
-                style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' }}
-              >
-                TRADE<span style={{ color: 'oklch(0.72 0.18 145)' }}>FUSION</span>
-              </span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-mono leading-none mt-0.5">
-                Trade Journal
-              </span>
-            </div>
+    <div className="min-h-full bg-[#0b1117] text-foreground">
+      <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
+        <section className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.72_0.18_145)]">Execution review</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Trade Journal</h1>
+            <p className="mt-2 text-sm text-slate-500">Log every execution. Measure the pattern. Improve the process.</p>
           </div>
-
-          <div className="h-5 w-px bg-border mx-1" />
-
-          {/* Navigation */}
-          <nav className="flex items-center gap-1">
-            <a
-              href="/"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded hover:bg-accent"
-            >
-              Journal
-            </a>
-            <a
-              href="/news"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded hover:bg-accent flex items-center gap-1.5"
-            >
-              <Calendar className="w-4 h-4" />
-              News
-            </a>
-          </nav>
-
-          <div className="h-5 w-px bg-border mx-1" />
-
-          {/* Filter */}
-          <input
-            type="text"
-            placeholder="Filter by symbol..."
-            value={filterSymbol}
-            onChange={(e) => setFilterSymbol(e.target.value)}
-            className="bg-input border border-border rounded-md px-3 py-1.5 text-sm font-mono w-44 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-
-          {/* Sort toggle */}
-          <button
-            type="button"
-            onClick={() => setSortAsc((v) => !v)}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border hover:border-foreground/30"
-          >
-            {sortAsc ? '↑ Oldest first' : '↓ Newest first'}
-          </button>
-
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              placeholder="Filter by symbol..."
+              value={filterSymbol}
+              onChange={(e) => setFilterSymbol(e.target.value)}
+              className="h-9 w-44 rounded-lg border border-white/[0.09] bg-white/[0.035] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-[oklch(0.72_0.18_145)]"
+            />
+            <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-lg border border-white/[0.09] bg-white/[0.035] px-3 text-xs text-slate-400 transition-colors hover:bg-white/[0.07] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
               disabled={trades.length === 0}
-              className="border-border text-muted-foreground hover:text-foreground gap-1.5"
+              className="h-9 border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
@@ -201,7 +156,7 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 onClick={handleClearAll}
-                className="border-border text-muted-foreground hover:text-destructive gap-1.5"
+                className="h-9 border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-red-500/10 hover:text-red-300 gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Clear All
@@ -210,17 +165,13 @@ export default function Home() {
             <Button
               size="sm"
               onClick={() => { setEditTrade(null); setModalOpen(true); }}
-              className="gap-1.5 bg-primary hover:bg-primary/90"
+              className="h-9 gap-1.5 bg-[oklch(0.72_0.18_145)] text-slate-950 hover:bg-[oklch(0.78_0.18_145)]"
             >
               <Plus className="w-4 h-4" />
               Log Trade
             </Button>
           </div>
-        </div>
-      </header>
-
-      {/* ── Main content ── */}
-      <main className="container py-6 flex-1">
+        </section>
         {/* Stats bar */}
         <TradeStats trades={filtered} />
 

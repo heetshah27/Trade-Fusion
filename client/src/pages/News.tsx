@@ -29,15 +29,15 @@ interface CalendarResponse {
 const getImpactColor = (impact: string) => {
   switch (impact) {
     case 'high':
-      return 'bg-red-100 text-red-800 border-red-300';
+      return 'border-red-400/20 bg-red-500/10 text-red-300';
     case 'medium':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      return 'border-amber-400/20 bg-amber-400/10 text-amber-200';
     case 'low':
-      return 'bg-green-100 text-green-800 border-green-300';
+      return 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200';
     case 'holiday':
-      return 'bg-blue-100 text-blue-800 border-blue-300';
+      return 'border-sky-400/20 bg-sky-400/10 text-sky-200';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-300';
+      return 'border-slate-500/20 bg-slate-500/10 text-slate-300';
   }
 };
 
@@ -89,16 +89,16 @@ export default function News() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-full bg-[#0b1117]">
+      <div className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Calendar className="w-8 h-8 text-cyan-400" />
-            <h1 className="text-4xl font-bold text-white font-display">Economic Calendar</h1>
+            <div className="grid h-10 w-10 place-items-center rounded-xl border border-[oklch(0.72_0.18_145_/_0.18)] bg-[oklch(0.72_0.18_145_/_0.09)]"><Calendar className="w-5 h-5 text-[oklch(0.72_0.18_145)]" /></div>
+            <div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.72_0.18_145)]">Macro catalyst watch</p><h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Economic Calendar</h1></div>
           </div>
-          <p className="text-slate-400 text-lg">
-            Live economic events — U.S. Eastern Time (ET) — auto-refreshes every 5 minutes
+          <p className="text-slate-500 text-sm">
+            Live economic events — U.S. Eastern Time (ET) — auto-refreshes every five minutes
           </p>
         </div>
 
@@ -107,28 +107,28 @@ export default function News() {
           <Button
             onClick={() => setFilter('all')}
             variant={filter === 'all' ? 'default' : 'outline'}
-            className={filter === 'all' ? 'bg-cyan-500 hover:bg-cyan-600' : ''}
+            className={filter === 'all' ? 'bg-[oklch(0.72_0.18_145)] text-slate-950 hover:bg-[oklch(0.78_0.18_145)]' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
           >
             All Events
           </Button>
           <Button
             onClick={() => setFilter('high')}
             variant={filter === 'high' ? 'default' : 'outline'}
-            className={filter === 'high' ? 'bg-red-500 hover:bg-red-600' : ''}
+            className={filter === 'high' ? 'bg-red-500 text-white hover:bg-red-400' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
           >
             High Impact
           </Button>
           <Button
             onClick={() => setFilter('medium')}
             variant={filter === 'medium' ? 'default' : 'outline'}
-            className={filter === 'medium' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+            className={filter === 'medium' ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
           >
             Medium Impact
           </Button>
           <Button
             onClick={() => setFilter('low')}
             variant={filter === 'low' ? 'default' : 'outline'}
-            className={filter === 'low' ? 'bg-green-500 hover:bg-green-600' : ''}
+            className={filter === 'low' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'border-white/[0.09] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'}
           >
             Low Impact
           </Button>
@@ -139,7 +139,7 @@ export default function News() {
             <Button
               onClick={handleRefresh}
               disabled={isFetching}
-              className="bg-slate-700 hover:bg-slate-600 gap-2"
+              className="border border-white/[0.09] bg-white/[0.035] text-slate-300 hover:bg-white/[0.07] hover:text-white gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               {isFetching ? 'Refreshing...' : 'Refresh Now'}
@@ -150,11 +150,11 @@ export default function News() {
         {/* Events List */}
         <div className="space-y-4">
           {isLoading && events.length === 0 ? (
-            <Card className="bg-slate-800 border-slate-700 p-8 text-center">
+            <Card className="border-white/[0.08] bg-[#111923] p-8 text-center">
               <p className="text-slate-400">Loading economic calendar...</p>
             </Card>
           ) : response?.sourceStatus === 'unavailable' ? (
-            <Card className="bg-slate-800 border-amber-500/40 p-8 text-center">
+            <Card className="border-amber-500/30 bg-[#111923] p-8 text-center">
               <AlertCircle className="w-7 h-7 text-amber-400 mx-auto mb-3" />
               <p className="text-white font-medium">Live calendar temporarily unavailable</p>
               <p className="text-slate-400 mt-2 text-sm">
@@ -162,7 +162,7 @@ export default function News() {
               </p>
             </Card>
           ) : filteredEvents.length === 0 ? (
-            <Card className="bg-slate-800 border-slate-700 p-8 text-center">
+            <Card className="border-white/[0.08] bg-[#111923] p-8 text-center">
               <p className="text-slate-400">No live events found for the selected filter</p>
             </Card>
           ) : (
@@ -172,7 +172,7 @@ export default function News() {
 
               return <Card
                 key={event.id}
-                className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-all p-6"
+                className="border-white/[0.08] bg-[#111923] p-6 shadow-[0_10px_22px_rgba(0,0,0,0.10)] transition-colors hover:border-white/[0.15]"
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   {/* Date & Time */}
@@ -243,7 +243,7 @@ export default function News() {
         </div>
 
         {/* Info Box */}
-        <Card className="bg-slate-800 border-slate-700 p-6 mt-8">
+        <Card className="mt-8 border-white/[0.08] bg-[#111923] p-6">
           <div className="flex gap-4">
             <AlertCircle className="w-6 h-6 text-cyan-400 flex-shrink-0 mt-1" />
             <div>

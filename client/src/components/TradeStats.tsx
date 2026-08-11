@@ -62,17 +62,17 @@ export default function TradeStats({ trades }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7 mb-7">
       {stats.map((s) => (
         <div
           key={s.label}
-          className="rounded-lg border border-border bg-card px-4 py-3 flex flex-col gap-1"
+          className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#111923] px-4 py-3.5 shadow-[0_10px_22px_rgba(0,0,0,0.12)]"
         >
-          <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+          <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
             {s.label}
           </span>
           <span
-            className="text-lg font-semibold font-mono leading-tight"
+            className="mt-2 block text-lg font-semibold font-mono leading-tight"
             style={{
               color:
                 s.color === 'profit'
@@ -84,6 +84,7 @@ export default function TradeStats({ trades }: Props) {
           >
             {s.value}
           </span>
+          <span className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
         </div>
       ))}
     </div>

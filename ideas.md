@@ -34,16 +34,18 @@ Pure white, thin borders, no decoration — mimics Excel/Google Sheets as closel
 - Accent blue: `oklch(0.62 0.18 240)` — primary actions
 - Text: near-white `oklch(0.92 0.005 240)`
 
-**Layout Paradigm:**
-- Full-width header with summary KPI cards
-- Below: full-width journal table with sticky header
-- Floating "Add Trade" button opens an inline form row or modal
-- No sidebar — the table IS the app
+**Layout Paradigm — Dashboard Refresh:**
+- A persistent left navigation rail establishes a proper workspace: **Journal** and **Market Calendar** are distinct views, not just header links.
+- A compact utility bar holds workspace context, search/filter controls, export, and the primary **Log Trade** action.
+- The main pane uses layered metric modules, a performance snapshot, and a dense journal ledger rather than treating the table as the entire product.
+- The visual reference is modern trader-workspace density: dark surfaces, clear KPI hierarchy, rounded but restrained panels, and direct task-focused navigation. Trade Fusion branding remains original.
 
 **Signature Elements:**
 - Row-level color wash: profit rows glow faintly green, loss rows glow faintly red
 - Monospaced font (JetBrains Mono) for all numbers
 - Thin horizontal rules between rows, no vertical borders
+- Left-rail active state: a narrow profit-green indicator and softly illuminated nav surface
+- Dashboard metric panels: clear value, compact comparison label, and only signal-based color
 
 **Interaction Philosophy:**
 - Click any row to expand/edit inline
