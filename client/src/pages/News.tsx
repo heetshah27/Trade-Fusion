@@ -10,10 +10,18 @@ interface EconomicEvent {
   time: string;
   country: string;
   event: string;
-  impact: 'high' | 'medium' | 'low';
+  impact: 'high' | 'medium' | 'low' | 'holiday' | 'unknown';
   forecast?: string;
   previous?: string;
   actual?: string;
+  sourceUrl?: string;
+}
+
+interface CalendarResponse {
+  events: EconomicEvent[];
+  sourceStatus: 'live' | 'unavailable';
+  refreshedAt: string;
+  message?: string;
 }
 
 const getImpactColor = (impact: string) => {
@@ -24,6 +32,8 @@ const getImpactColor = (impact: string) => {
       return 'bg-yellow-100 text-yellow-800 border-yellow-300';
     case 'low':
       return 'bg-green-100 text-green-800 border-green-300';
+    case 'holiday':
+      return 'bg-blue-100 text-blue-800 border-blue-300';
     default:
       return 'bg-gray-100 text-gray-800 border-gray-300';
   }
@@ -36,33 +46,61 @@ const getImpactIcon = (impact: string) => {
   return <TrendingUp className="w-4 h-4" />;
 };
 
+function formatCalendarDate(date: string) {
+  const [year, month, day] = date.split('-').map(Number);
+  const localDate = new Date(year, month - 1, day);
+  return localDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatTwelveHourTime(time: string) {
+  const parsed = time.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
+  if (!parsed) return time;
+
+  const hour = Number(parsed[1]);
+  const minute = parsed[2] ?? '00';
+  const sourceMeridiem = parsed[3]?.toUpperCase();
+  const normalizedHour = sourceMeridiem ? hour : hour % 12 || 12;
+  const meridiem = sourceMeridiem ?? (hour >= 12 ? 'PM' : 'AM');
+
+  return `${normalizedHour}:${minute} ${meridiem}`;
+}
+
 export default function News() {
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-
-  // Fetch events from backend
-  const { data: events = [], isLoading, refetch } = trpc.calendar.getEvents.useQuery();
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const { data: calendar, isLoading, isFetching, refetch } = trpc.calendar.getEvents.useQuery();
+  const response = calendar as CalendarResponse | undefined;
+  const events = response?.events ?? [];
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
-      refetch();
-      setLastRefresh(new Date());
+      void refetch();
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
   }, [refetch]);
+
+  useEffect(() => {
+    if (response?.refreshedAt) {
+      setLastRefresh(new Date(response.refreshedAt));
+    }
+  }, [response?.refreshedAt]);
 
   const filteredEvents = filter === 'all' 
     ? events 
     : events.filter(e => e.impact === filter);
 
   const handleRefresh = () => {
-    refetch();
-    setLastRefresh(new Date());
+    void refetch();
   };
 
   const formatLastRefresh = () => {
+    if (!lastRefresh) return 'not yet';
     const now = new Date();
     const diff = Math.floor((now.getTime() - lastRefresh.getTime()) / 1000);
     
@@ -121,11 +159,11 @@ export default function News() {
             </span>
             <Button
               onClick={handleRefresh}
-              disabled={isLoading}
+              disabled={isFetching}
               className="bg-slate-700 hover:bg-slate-600 gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              {isLoading ? 'Refreshing...' : 'Refresh Now'}
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+              {isFetching ? 'Refreshing...' : 'Refresh Now'}
             </Button>
           </div>
         </div>
@@ -136,9 +174,17 @@ export default function News() {
             <Card className="bg-slate-800 border-slate-700 p-8 text-center">
               <p className="text-slate-400">Loading economic calendar...</p>
             </Card>
+          ) : response?.sourceStatus === 'unavailable' ? (
+            <Card className="bg-slate-800 border-amber-500/40 p-8 text-center">
+              <AlertCircle className="w-7 h-7 text-amber-400 mx-auto mb-3" />
+              <p className="text-white font-medium">Live calendar temporarily unavailable</p>
+              <p className="text-slate-400 mt-2 text-sm">
+                {response.message ?? 'The ForexFactory source could not be reached. No substitute events are shown.'}
+              </p>
+            </Card>
           ) : filteredEvents.length === 0 ? (
             <Card className="bg-slate-800 border-slate-700 p-8 text-center">
-              <p className="text-slate-400">No events found for the selected filter</p>
+              <p className="text-slate-400">No live events found for the selected filter</p>
             </Card>
           ) : (
             filteredEvents.map(event => (
@@ -150,13 +196,10 @@ export default function News() {
                   {/* Date & Time */}
                   <div className="md:col-span-2">
                     <div className="text-sm text-slate-400">
-                      {new Date(event.date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatCalendarDate(event.date)}
                     </div>
                     <div className="text-lg font-mono text-cyan-400 font-semibold">
-                      {event.time}
+                      {formatTwelveHourTime(event.time)}
                     </div>
                   </div>
 
@@ -216,7 +259,7 @@ export default function News() {
             <div>
               <h3 className="text-white font-semibold mb-2">About Economic Calendar</h3>
               <p className="text-slate-400 text-sm">
-                This calendar automatically fetches live economic events from ForexFactory every 5 minutes. High-impact events can cause significant market volatility. Use this to plan your trades and manage risk accordingly. Times are displayed in your local timezone.
+                This calendar retrieves the structured ForexFactory weekly feed and checks for fresh data every five minutes. No mock calendar events are used: if the source is unavailable, the page says so. Times are displayed in a 12-hour AM/PM format using the source-provided event time.
               </p>
             </div>
           </div>
