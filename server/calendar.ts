@@ -4,6 +4,9 @@ const FOREX_FACTORY_FEED_URL =
   "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
+// The ForexFactory XML feed publishes its schedule in UTC. The client converts
+// date/time pairs to America/New_York before presenting them to journal users.
+
 export type CalendarImpact = "high" | "medium" | "low" | "holiday" | "unknown";
 
 export interface EconomicEvent {

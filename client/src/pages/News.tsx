@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { toEasternCalendarDisplay } from '@/lib/calendarTime';
 import { trpc } from '@/lib/trpc';
 
 interface EconomicEvent {
@@ -45,29 +46,6 @@ const getImpactIcon = (impact: string) => {
   }
   return <TrendingUp className="w-4 h-4" />;
 };
-
-function formatCalendarDate(date: string) {
-  const [year, month, day] = date.split('-').map(Number);
-  const localDate = new Date(year, month - 1, day);
-  return localDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function formatTwelveHourTime(time: string) {
-  const parsed = time.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
-  if (!parsed) return time;
-
-  const hour = Number(parsed[1]);
-  const minute = parsed[2] ?? '00';
-  const sourceMeridiem = parsed[3]?.toUpperCase();
-  const normalizedHour = sourceMeridiem ? hour : hour % 12 || 12;
-  const meridiem = sourceMeridiem ?? (hour >= 12 ? 'PM' : 'AM');
-
-  return `${normalizedHour}:${minute} ${meridiem}`;
-}
 
 export default function News() {
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
@@ -119,7 +97,7 @@ export default function News() {
             <h1 className="text-4xl font-bold text-white font-display">Economic Calendar</h1>
           </div>
           <p className="text-slate-400 text-lg">
-            Live economic events — auto-refreshes every 5 minutes
+            Live economic events — U.S. Eastern Time (ET) — auto-refreshes every 5 minutes
           </p>
         </div>
 
@@ -187,8 +165,10 @@ export default function News() {
               <p className="text-slate-400">No live events found for the selected filter</p>
             </Card>
           ) : (
-            filteredEvents.map(event => (
-              <Card
+            filteredEvents.map(event => {
+              const displayTime = toEasternCalendarDisplay(event.date, event.time);
+
+              return <Card
                 key={event.id}
                 className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-all p-6"
               >
@@ -196,10 +176,10 @@ export default function News() {
                   {/* Date & Time */}
                   <div className="md:col-span-2">
                     <div className="text-sm text-slate-400">
-                      {formatCalendarDate(event.date)}
+                      {displayTime.dateLabel}
                     </div>
                     <div className="text-lg font-mono text-cyan-400 font-semibold">
-                      {formatTwelveHourTime(event.time)}
+                      {displayTime.timeLabel}
                     </div>
                   </div>
 
@@ -248,7 +228,7 @@ export default function News() {
                   </div>
                 </div>
               </Card>
-            ))
+            })
           )}
         </div>
 
@@ -259,7 +239,7 @@ export default function News() {
             <div>
               <h3 className="text-white font-semibold mb-2">About Economic Calendar</h3>
               <p className="text-slate-400 text-sm">
-                This calendar retrieves the structured ForexFactory weekly feed and checks for fresh data every five minutes. No mock calendar events are used: if the source is unavailable, the page says so. Times are displayed in a 12-hour AM/PM format using the source-provided event time.
+                This calendar retrieves the structured ForexFactory weekly feed and checks for fresh data every five minutes. The source provides UTC timestamps; Trade Fusion Journal converts them to U.S. Eastern Time (ET) with daylight-saving adjustments. No mock calendar events are used: if the source is unavailable, the page says so.
               </p>
             </div>
           </div>
