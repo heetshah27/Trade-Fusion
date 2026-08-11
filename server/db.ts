@@ -8,15 +8,27 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  const neonDatabaseUrl = process.env.NEON_DATABASE_URL;
+
+  if (!_db && neonDatabaseUrl) {
     try {
-      const client = postgres(process.env.DATABASE_URL);
+      const client = postgres(neonDatabaseUrl, {
+        max: 10,
+        idle_timeout: 20,
+        connect_timeout: 10,
+        prepare: false,
+      });
       _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
     }
   }
+
+  if (!_db && !neonDatabaseUrl) {
+    console.warn("[Database] NEON_DATABASE_URL is not configured");
+  }
+
   return _db;
 }
 

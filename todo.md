@@ -18,3 +18,12 @@
 - [x] Add an accessible Trade Fusion branded launch animation on page load.
 - [x] Add a sign-in screen and protect the journal until authentication completes.
 - [x] Test and publish the new launch and sign-in experience.
+- [x] Diagnose the OAuth callback failure from the Trade Fusion sign-in screen.
+- [x] Correct the OAuth callback and redirect flow for the live domain.
+- [ ] Test and publish the repaired sign-in experience.
+- [x] Configure the dedicated Neon connection for OAuth and trade storage.
+- [x] Create and verify the Neon users and trades tables.
+- [ ] Test Neon-backed sign-in and private trade persistence.
+- [x] Configure the dedicated Neon connection for OAuth and trade storage.
+- [x] Create and verify the Neon users and trades tables.
+- [ ] Test Neon-backed sign-in and private trade persistence.
