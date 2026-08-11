@@ -14,3 +14,7 @@
 - [x] Diagnose the live News-page country-flag visibility issue.
 - [x] Apply and verify a durable live flag-rendering fix.
 - [x] Save and publish the corrected flag display.
+- [x] Review the reference launch experience and existing authentication flow.
+- [x] Add an accessible Trade Fusion branded launch animation on page load.
+- [x] Add a sign-in screen and protect the journal until authentication completes.
+- [x] Test and publish the new launch and sign-in experience.
