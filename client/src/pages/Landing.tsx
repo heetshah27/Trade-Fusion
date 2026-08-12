@@ -1,6 +1,8 @@
 import { appRoutes } from "@/lib/appRoutes";
+import { dashboardReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
 import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, ChevronRight, Cloud, LockKeyhole, Menu, ScanLine, Sparkles, X } from "lucide-react";
-import { useState } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useRef, useState } from "react";
 import { Link } from "wouter";
 
 const features = [
@@ -24,15 +26,21 @@ const features = [
   },
 ];
 
+function TFMonogram({ size = "regular" }: { size?: "regular" | "small" }) {
+  return (
+    <div className={`tf-monogram ${size === "small" ? "tf-monogram-small" : ""}`} aria-label="Trade Fusion TF monogram" role="img">
+      <span className="tf-monogram-t">T</span>
+      <span className="tf-monogram-f">F</span>
+      <span className="tf-monogram-up" />
+      <span className="tf-monogram-down" />
+    </div>
+  );
+}
+
 function Brand() {
   return (
     <div className="group flex items-center gap-2.5" aria-label="Trade Fusion">
-      <div className="tf-monogram" aria-hidden="true">
-        <span className="tf-monogram-t">T</span>
-        <span className="tf-monogram-f">F</span>
-        <span className="tf-monogram-up" />
-        <span className="tf-monogram-down" />
-      </div>
+      <TFMonogram />
       <div className="leading-none">
         <p className="text-sm font-bold tracking-[-0.045em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></p>
         <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.27em] text-slate-500">Trade journal</p>
@@ -42,8 +50,19 @@ function Brand() {
 }
 
 function WorkspacePreview() {
+  const previewRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(previewRef, { once: true, amount: 0.22 });
+  const reducedMotion = useReducedMotion();
+  const shouldAnimate = shouldRunLandingMotion(reducedMotion, inView);
+
   return (
-    <div className="relative mx-auto mt-14 max-w-6xl px-1 sm:px-4">
+    <motion.div
+      ref={previewRef}
+      className="relative mx-auto mt-14 max-w-6xl px-1 sm:px-4"
+      initial={reducedMotion ? false : dashboardReveal.hidden}
+      animate={shouldAnimate ? dashboardReveal.visible : undefined}
+      transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
+    >
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/20 blur-[100px]" />
       <div className="tf-preview-shell relative overflow-hidden rounded-[1.6rem] border border-blue-200/[0.15] bg-[#08152b] p-2 shadow-[0_36px_95px_rgba(0,0,0,0.48)] sm:p-3">
         <div className="overflow-hidden rounded-[1.15rem] border border-white/[0.07] bg-[#0c1a31]">
@@ -53,7 +72,7 @@ function WorkspacePreview() {
           </div>
           <div className="grid min-h-[340px] grid-cols-[145px_1fr] sm:min-h-[430px] sm:grid-cols-[190px_1fr]">
             <aside className="border-r border-white/[0.07] bg-[#09162a] p-3 sm:p-4">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white"><div className="relative grid h-6 w-6 place-items-center overflow-hidden rounded-lg bg-[#152746] ring-1 ring-blue-200/[0.14]"><span className="absolute h-4 w-px bg-red-400" /><span className="absolute top-1 h-3 w-[3px] rounded-[1px] bg-emerald-400" /><span className="absolute bottom-1 h-[3px] w-[3px] rounded-[1px] bg-red-400" /></div><span className="hidden sm:inline">TRADEFUSION</span></div>
+              <div className="flex items-center gap-2 text-xs font-semibold text-white"><TFMonogram size="small" /><span className="hidden sm:inline">TRADEFUSION</span></div>
               <div className="mt-7 space-y-2">
                 <div className="rounded-lg border border-blue-300/[0.12] bg-blue-400/[0.13] px-2.5 py-2 text-[10px] font-medium text-white">Journal</div>
                 <div className="px-2.5 py-2 text-[10px] text-slate-500">Market Calendar</div>
@@ -64,28 +83,38 @@ function WorkspacePreview() {
             <div className="p-4 sm:p-6">
               <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-blue-300">Execution review</p>
               <div className="mt-2 flex items-end justify-between gap-3"><div><p className="text-lg font-semibold tracking-[-0.04em] text-white sm:text-2xl">Your trading, in context.</p><p className="mt-1 text-[10px] text-slate-500 sm:text-xs">One private workspace for the decisions you made.</p></div><div className="hidden rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 font-mono text-[8px] uppercase tracking-[0.14em] text-slate-400 sm:block">Today</div></div>
-              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+              <motion.div
+                className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3"
+                initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+                animate={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+                transition={{ delay: 0.18, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+              >
                 {[
                   ["Net P&L", "+$1,842.50", "text-emerald-400"],
                   ["Win Rate", "67.8%", "text-blue-300"],
                   ["Total Trades", "36", "text-slate-200"],
                   ["Profit Factor", "1.84", "text-emerald-300"],
                 ].map(([label, value, color]) => <div key={label} className="rounded-xl border border-blue-200/[0.09] bg-gradient-to-b from-[#14284b] to-[#10203b] p-2.5 sm:p-3"><p className="font-mono text-[7px] uppercase tracking-[0.14em] text-slate-500">{label}</p><p className={`mt-2 font-mono text-sm font-semibold sm:text-base ${color}`}>{value}</p></div>)}
-              </div>
-              <div className="mt-5 overflow-hidden rounded-xl border border-white/[0.07]">
+              </motion.div>
+              <motion.div
+                className="mt-5 overflow-hidden rounded-xl border border-white/[0.07]"
+                initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+                animate={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+                transition={{ delay: 0.3, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+              >
                 <div className="grid grid-cols-[1.2fr_1fr_0.8fr] border-b border-white/[0.07] bg-white/[0.025] px-3 py-2 font-mono text-[7px] uppercase tracking-[0.16em] text-slate-600 sm:px-4 sm:text-[8px]"><span>Session</span><span>Instrument</span><span>Result</span></div>
                 {[
                   ["Aug 11 · NY", "EUR/USD", "+$420.00", "text-emerald-400"],
                   ["Aug 11 · London", "XAU/USD", "-$175.00", "text-red-400"],
                   ["Aug 10 · NY", "NAS100", "+$1,597.50", "text-emerald-400"],
                 ].map(([session, instrument, result, color]) => <div key={`${session}-${instrument}`} className="grid grid-cols-[1.2fr_1fr_0.8fr] border-b border-white/[0.05] px-3 py-3 font-mono text-[9px] text-slate-400 last:border-0 sm:px-4 sm:text-[10px]"><span>{session}</span><span className="text-slate-300">{instrument}</span><span className={color}>{result}</span></div>)}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
       <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600">Illustrative workspace preview · not live performance data</p>
-    </div>
+    </motion.div>
   );
 }
 

@@ -153,6 +153,12 @@
   .tf-monogram-f { transform: translate(4px, 2px); color: oklch(0.75 0.17 250); }
   .tf-monogram-up { position: absolute; top: 6px; right: 6px; height: 6px; width: 2px; border-radius: 999px; background: oklch(0.74 0.18 145); box-shadow: 0 0 10px oklch(0.74 0.18 145 / 0.75); }
   .tf-monogram-down { position: absolute; bottom: 6px; left: 6px; height: 5px; width: 2px; border-radius: 999px; background: oklch(0.67 0.21 25); }
+  .tf-monogram-small { height: 1.5rem; width: 1.5rem; border-radius: 0.55rem; }
+  .tf-monogram-small .tf-monogram-t, .tf-monogram-small .tf-monogram-f { font-size: 0.69rem; }
+  .tf-monogram-small .tf-monogram-t { transform: translate(-2px, -1px); }
+  .tf-monogram-small .tf-monogram-f { transform: translate(3px, 1px); }
+  .tf-monogram-small .tf-monogram-up { top: 4px; right: 4px; height: 4px; width: 1px; }
+  .tf-monogram-small .tf-monogram-down { bottom: 4px; left: 4px; height: 3px; width: 1px; }
 
   .tf-nav-link {
     position: relative;

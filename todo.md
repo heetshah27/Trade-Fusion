@@ -39,6 +39,9 @@
 - [x] Define a distinctive TF trading monogram for the public brand.
 - [x] Add accessible hover states and purposeful motion to landing-page controls and cards.
 - [x] Test the monogram and interactions across devices, then publish the motion update.
+- [x] Define the scroll-driven dashboard reveal sequence and audit TF monogram placement.
+- [x] Implement an accessible scroll-driven dashboard preview reveal on the landing page.
+- [x] Test and publish the scroll-reveal animation and TF branding update.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.
