@@ -280,7 +280,7 @@ function WorkspacePreview() {
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: liveTickers } = trpc.ticker.quotes.useQuery(undefined, {
-    refetchInterval: 30_000,
+    refetchInterval: 2_000,
   });
   const tickers = liveTickers && liveTickers.length > 0 ? liveTickers : fallbackTickers;
 
