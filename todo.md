@@ -87,6 +87,6 @@
 - [x] Test and publish the calendar resilience update.
 - [x] Retain ForexFactory as the selected no-cost calendar source instead of a paid multi-week API.
 - [x] Show every source-published remaining current-week event through Friday and add biweekly coverage only when ForexFactory publishes it.
-- [ ] Design backtest session and simulated-trade records that link to private journals without mixing simulated and live performance.
+- [x] Design backtest session and simulated-trade records that link to private journals without mixing simulated and live performance.
 - [x] Cancel the Trading Economics API configuration after the user selected the no-cost ForexFactory model.
 - [x] Test and publish the improved ForexFactory current-week coverage.
