@@ -279,12 +279,12 @@ export default function Landing() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#061023] text-white">
       {/* Live Market Ticker Tape */}
-      <div className="relative z-30 border-b border-white/[0.08] bg-[#050d1a] py-2 overflow-hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-8 px-5 overflow-x-auto whitespace-nowrap scrollbar-none lg:px-8">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-blue-400 shrink-0">
-            <Zap className="h-3.5 w-3.5 text-amber-400 animate-pulse" /> Live Ticker Feed:
+      <div className="relative z-30 border-b border-white/[0.08] bg-[#050d1a] py-2.5 overflow-hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 overflow-x-auto whitespace-nowrap scrollbar-none sm:gap-8 lg:px-8">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-blue-400 shrink-0 bg-[#050d1a] pr-3 sticky left-0 z-10 shadow-[8px_0_12px_-4px_rgba(5,13,26,0.9)]">
+            <Zap className="h-3.5 w-3.5 text-amber-400 animate-pulse shrink-0" /> <span className="hidden sm:inline">Live Ticker Feed:</span><span className="sm:hidden">Feed:</span>
           </div>
-          <div className="flex items-center gap-8 text-xs font-mono">
+          <div className="flex items-center gap-6 sm:gap-8 text-xs font-mono shrink-0">
             {tickers.map(t => (
               <div key={t.symbol} className="flex items-center gap-2">
                 <span className="text-slate-400">{t.symbol}</span>
