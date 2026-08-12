@@ -28,6 +28,7 @@ export const tradingStyleEnum = pgEnum("trading_style", [
   "crypto_trader",
   "forex_trader",
 ]);
+export const backtestSessionStatusEnum = pgEnum("backtest_session_status", ["active", "archived"]);
 
 export const users = pgTable("users", {
   /**
@@ -73,6 +74,63 @@ export const trades = pgTable("trades", {
 
 export type Trade = typeof trades.$inferSelect;
 export type InsertTrade = typeof trades.$inferInsert;
+
+/**
+ * Private strategy-testing sessions. These simulated records never feed live
+ * journal statistics or are shared with the Trader’s Room automatically.
+ */
+export const backtestSessions = pgTable(
+  "backtest_sessions",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    strategyName: varchar("strategyName", { length: 120 }).notNull(),
+    symbol: varchar("symbol", { length: 20 }).notNull(),
+    timeframe: varchar("timeframe", { length: 16 }).notNull(),
+    startDate: varchar("startDate", { length: 10 }).notNull(),
+    endDate: varchar("endDate", { length: 10 }).notNull(),
+    initialBalance: decimal("initialBalance", { precision: 14, scale: 2 }).default("10000").notNull(),
+    notes: text("notes"),
+    status: backtestSessionStatusEnum("status").default("active").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("backtest_sessions_user_created_idx").on(table.userId, table.createdAt),
+    index("backtest_sessions_user_status_idx").on(table.userId, table.status),
+  ]
+);
+
+/** Simulated entries belonging exclusively to a private backtest session. */
+export const backtestTrades = pgTable(
+  "backtest_trades",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    sessionId: integer("sessionId").notNull().references(() => backtestSessions.id, { onDelete: "cascade" }),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    date: varchar("date", { length: 10 }).notNull(),
+    direction: directionEnum("direction").notNull(),
+    entryPrice: decimal("entryPrice", { precision: 14, scale: 5 }).notNull(),
+    exitPrice: decimal("exitPrice", { precision: 14, scale: 5 }).notNull(),
+    quantity: decimal("quantity", { precision: 14, scale: 4 }).notNull(),
+    stopLoss: decimal("stopLoss", { precision: 14, scale: 5 }),
+    takeProfit: decimal("takeProfit", { precision: 14, scale: 5 }),
+    pnl: decimal("pnl", { precision: 14, scale: 2 }).notNull(),
+    fees: decimal("fees", { precision: 14, scale: 2 }).default("0").notNull(),
+    rMultiple: decimal("rMultiple", { precision: 10, scale: 2 }),
+    setupTag: varchar("setupTag", { length: 80 }),
+    notes: text("notes"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("backtest_trades_session_date_idx").on(table.sessionId, table.date),
+    index("backtest_trades_user_idx").on(table.userId),
+  ]
+);
+
+export type BacktestSession = typeof backtestSessions.$inferSelect;
+export type BacktestTrade = typeof backtestTrades.$inferSelect;
 
 /**
  * Trader’s Room posts. Trade journal data is never copied here automatically;

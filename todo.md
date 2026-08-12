@@ -90,3 +90,7 @@
 - [x] Design backtest session and simulated-trade records that link to private journals without mixing simulated and live performance.
 - [x] Cancel the Trading Economics API configuration after the user selected the no-cost ForexFactory model.
 - [x] Test and publish the improved ForexFactory current-week coverage.
+- [x] Add private backtest-session and simulated-trade schema with owner-only access.
+- [x] Add protected backtest APIs and performance metrics isolated from live trades.
+- [x] Build the Backtest workspace with session creation and simulated-trade entry.
+- [x] Test and publish the private Backtest workspace.

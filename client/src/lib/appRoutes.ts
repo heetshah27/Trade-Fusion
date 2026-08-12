@@ -4,4 +4,5 @@ export const appRoutes = {
   calendar: "/app/news",
   community: "/app/room",
   account: "/app/account",
+  backtest: "/app/backtest",
 } as const;
