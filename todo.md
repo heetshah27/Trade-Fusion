@@ -36,6 +36,9 @@
 - [x] Build an original public Trade Fusion landing page with hero, feature highlights, and dashboard preview.
 - [x] Route the Get Started journey into the protected journal and calendar workspace.
 - [x] Test the public landing and secure workspace flow across devices, then publish it.
+- [x] Define a distinctive TF trading monogram for the public brand.
+- [x] Add accessible hover states and purposeful motion to landing-page controls and cards.
+- [x] Test the monogram and interactions across devices, then publish the motion update.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.
