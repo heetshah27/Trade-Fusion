@@ -2,7 +2,8 @@ import { publicProcedure, router } from "./_core/trpc";
 
 const FOREX_FACTORY_FEED_URL =
   "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
-const CACHE_TTL_MS = 5 * 60 * 1000;
+// ForexFactory updates this weekly export at most hourly and throttles frequent reads.
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
 // The ForexFactory XML feed publishes its schedule in UTC. The client converts
 // date/time pairs to America/New_York before presenting them to journal users.
@@ -24,7 +25,7 @@ export interface EconomicEvent {
 
 export interface CalendarResponse {
   events: EconomicEvent[];
-  sourceStatus: "live" | "unavailable";
+  sourceStatus: "live" | "stale" | "unavailable";
   refreshedAt: string;
   message?: string;
 }
@@ -110,6 +111,22 @@ export function parseForexFactoryFeed(xml: string): EconomicEvent[] {
   return events;
 }
 
+export function calendarFallback(cached: CalendarResponse | null, message: string): CalendarResponse {
+  if (cached?.events.length) {
+    return {
+      ...cached,
+      sourceStatus: "stale",
+      message: "Showing the last verified weekly calendar while ForexFactory updates or rate-limits its export.",
+    };
+  }
+  return {
+    events: [],
+    sourceStatus: "unavailable",
+    refreshedAt: new Date().toISOString(),
+    message,
+  };
+}
+
 export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
   const now = Date.now();
   if (cachedCalendar && now - cachedAt < CACHE_TTL_MS) {
@@ -152,12 +169,10 @@ export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
         : "Unable to retrieve the ForexFactory calendar.";
 
     console.error("[Calendar] ForexFactory retrieval failed:", message);
-    return {
-      events: [],
-      sourceStatus: "unavailable",
-      refreshedAt: new Date().toISOString(),
-      message: "Live ForexFactory data is temporarily unavailable. Please try Refresh Now.",
-    };
+    return calendarFallback(
+      cachedCalendar,
+      "Live ForexFactory data is temporarily unavailable. Please try again after the source updates."
+    );
   } finally {
     clearTimeout(timeout);
   }

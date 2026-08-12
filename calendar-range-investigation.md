@@ -1,0 +1,7 @@
+# Market Calendar Range Investigation
+
+The application does not apply a client-side end-date filter: it renders every event returned by `calendar.getEvents`. The upstream URL in `server/calendar.ts` is `ff_calendar_thisweek.xml`, which is explicitly the ForexFactory **weekly export**, not a rolling multi-week or monthly feed.
+
+On 2026-08-12, the public ForexFactory calendar identified its current week as **9–15 August 2026** and showed future events for 14 August on the web calendar. Its export endpoint reported that calendar exports are updated no more than once per hour and that excessive requests are rate-limited for five minutes. Therefore, an apparent 13 August endpoint in Trade Fusion reflects a source-export timing/window limitation rather than a UI date filter; additional future-week coverage requires a different licensed/calendar data source or a careful, rate-limited multi-week source strategy.
+
+The application calendar API was then observed returning a truthful unavailable state after the source issued HTTP 429. The updated interface now states **Coverage · This week** and explains the export’s hourly update cadence on both desktop and mobile. The server now caches successful exports for one hour and preserves a last verified weekly calendar as a clearly labeled stale result if a later source request is throttled or unavailable.

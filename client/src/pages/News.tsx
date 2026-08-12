@@ -21,7 +21,7 @@ interface EconomicEvent {
 
 interface CalendarResponse {
   events: EconomicEvent[];
-  sourceStatus: 'live' | 'unavailable';
+  sourceStatus: 'live' | 'stale' | 'unavailable';
   refreshedAt: string;
   message?: string;
 }
@@ -102,6 +102,7 @@ export default function News() {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">
             <span className="rounded-full border border-blue-300/[0.12] bg-blue-400/[0.06] px-2.5 py-1 text-blue-200">Source · ForexFactory</span>
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Coverage · This week</span>
             <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Timezone · New York</span>
             <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Update cycle · 5 min</span>
           </div>
@@ -181,7 +182,7 @@ export default function News() {
               <p className="text-slate-400">No live events found for the selected filter</p>
             </Card>
           ) : (
-            filteredEvents.map(event => {
+            <>{response?.sourceStatus === 'stale' && <Card className="border-amber-300/[0.18] bg-amber-300/[0.06] p-4 text-sm text-amber-100"><div className="flex items-start gap-2"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" /><div><p className="font-medium">Showing the last verified weekly calendar</p><p className="mt-1 text-xs leading-5 text-amber-100/70">{response.message}</p></div></div></Card>}{filteredEvents.map(event => {
               const displayTime = toEasternCalendarDisplay(event.date, event.time);
               const country = getCalendarCountry(event.country);
 
@@ -253,7 +254,7 @@ export default function News() {
                   </div>
                 </div>
               </Card>
-            })
+            })}</>
           )}
         </div>
 
@@ -264,7 +265,7 @@ export default function News() {
             <div>
               <h3 className="text-white font-semibold mb-2">Calendar operating notes</h3>
               <p className="text-slate-400 text-sm">
-                Live ForexFactory events. UTC source times are converted to U.S. Eastern Time with daylight-saving adjustments. If the source is unavailable, the calendar shows an explicit status instead of substitute data.
+                ForexFactory publishes a current-week export and updates it at most hourly. UTC source times are converted to U.S. Eastern Time with daylight-saving adjustments. If the source is temporarily unavailable, Trade Fusion preserves the last verified weekly calendar and labels it clearly.
               </p>
             </div>
           </div>

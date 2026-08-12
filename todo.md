@@ -81,3 +81,7 @@
 - [x] Return safe display names and custom profile-avatar or initials fallbacks in Trader’s Room author data.
 - [x] Render member profile photos beside Trader’s Room posts and replies.
 - [x] Test and publish the member personalization update.
+- [x] Investigate the Market Calendar’s apparent 13 August cutoff and verify its upstream source range.
+- [x] Prevent ForexFactory export throttling with source-safe hourly caching and last-valid-calendar fallback.
+- [x] Clearly show the weekly source coverage and stale-data status in the Market Calendar interface.
+- [x] Test and publish the calendar resilience update.

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  calendarFallback,
   getLiveCalendarEvents,
   parseForexFactoryFeed,
   toIsoDate,
@@ -81,5 +82,17 @@ describe("ForexFactory calendar parser", () => {
     expect(response.sourceStatus).toBe("unavailable");
     expect(response.events).toEqual([]);
     expect(response.message).toContain("temporarily unavailable");
+  });
+
+  it("retains the last verified weekly events when the source is rate-limited", () => {
+    const cached = {
+      events: parseForexFactoryFeed(SAMPLE_FOREX_FACTORY_FEED),
+      sourceStatus: "live" as const,
+      refreshedAt: "2026-08-12T12:00:00.000Z",
+    };
+    const response = calendarFallback(cached, "Source unavailable");
+    expect(response.sourceStatus).toBe("stale");
+    expect(response.events).toHaveLength(2);
+    expect(response.message).toContain("last verified weekly calendar");
   });
 });
