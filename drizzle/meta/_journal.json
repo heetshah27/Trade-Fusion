@@ -15,6 +15,20 @@
       "when": 1786496508747,
       "tag": "0001_complete_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786497311798,
+      "tag": "0002_supreme_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786497386430,
+      "tag": "0003_chubby_sheva_callister",
+      "breakpoints": true
     }
   ]
 }

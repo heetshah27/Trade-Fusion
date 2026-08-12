@@ -1,14 +1,24 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
+  communityCommentReactions,
   communityComments,
+  communityPostAttachments,
+  communityPostReactions,
   communityPostReports,
   communityPosts,
   users,
 } from "../drizzle/schema";
+import {
+  COMMUNITY_ATTACHMENT_RULES,
+  COMMUNITY_REACTIONS,
+  TRADING_STYLES,
+  type CommunityReaction,
+} from "../shared/communityConfig";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
+import { storagePut } from "./storage";
 
 const communityCategories = [
   "trade_ideas",
@@ -33,6 +43,14 @@ const reportSchema = z.object({
   reason: z.string().trim().min(4).max(500),
 });
 
+const reactionSchema = z.enum(COMMUNITY_REACTIONS);
+const attachmentSchema = z.object({
+  postId: z.number().int().positive(),
+  fileName: z.string().trim().min(1).max(255),
+  mimeType: z.enum(COMMUNITY_ATTACHMENT_RULES.acceptedMimeTypes),
+  dataUrl: z.string().min(32).max(Math.ceil(COMMUNITY_ATTACHMENT_RULES.maxBytesPerFile * 1.4) + 256),
+});
+
 function databaseUnavailable() {
   return new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Community database unavailable" });
 }
@@ -47,6 +65,39 @@ export function canModerateCommunity(role: "user" | "admin") {
 
 export function canDeleteCommunityPost(authorId: number, currentUserId: number, role: "user" | "admin") {
   return authorId === currentUserId || canModerateCommunity(role);
+}
+
+export function canAttachToCommunityPost(postAuthorId: number, currentUserId: number) {
+  return postAuthorId === currentUserId;
+}
+
+export function reactionMutationAction(currentReaction: CommunityReaction | null | undefined, nextReaction: CommunityReaction) {
+  return currentReaction === nextReaction ? "remove" : "upsert";
+}
+
+function summarizeReactions(
+  reactions: Array<{ reaction: CommunityReaction; userId: number }>,
+  currentUserId: number
+) {
+  const counts = Object.fromEntries(COMMUNITY_REACTIONS.map(reaction => [reaction, 0])) as Record<CommunityReaction, number>;
+  let viewerReaction: CommunityReaction | null = null;
+  for (const item of reactions) {
+    counts[item.reaction] += 1;
+    if (item.userId === currentUserId) viewerReaction = item.reaction;
+  }
+  return { counts, viewerReaction };
+}
+
+export function decodeImageDataUrl(dataUrl: string, expectedMimeType: string) {
+  const match = dataUrl.match(/^data:([^;]+);base64,([A-Za-z0-9+/=]+)$/);
+  if (!match || match[1] !== expectedMimeType) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Attachment must be a valid image data URL" });
+  }
+  const bytes = Buffer.from(match[2], "base64");
+  if (bytes.length === 0 || bytes.length > COMMUNITY_ATTACHMENT_RULES.maxBytesPerFile) {
+    throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "Image exceeds the 3 MB attachment limit" });
+  }
+  return bytes;
 }
 
 export const communityRouter = router({
@@ -64,6 +115,7 @@ export const communityRouter = router({
         createdAt: communityPosts.createdAt,
         updatedAt: communityPosts.updatedAt,
         authorName: users.name,
+        authorTradingStyle: users.tradingStyle,
       })
       .from(communityPosts)
       .innerJoin(users, eq(communityPosts.authorId, users.id))
@@ -80,6 +132,7 @@ export const communityRouter = router({
             body: communityComments.body,
             createdAt: communityComments.createdAt,
             authorName: users.name,
+            authorTradingStyle: users.tradingStyle,
           })
           .from(communityComments)
           .innerJoin(users, eq(communityComments.authorId, users.id))
@@ -92,16 +145,42 @@ export const communityRouter = router({
           .orderBy(communityComments.createdAt)
       : [];
 
+    const commentIds = comments.map(comment => comment.id);
+    const [attachments, postReactions, commentReactions] = await Promise.all([
+      postIds.length
+        ? db
+            .select()
+            .from(communityPostAttachments)
+            .where(inArray(communityPostAttachments.postId, postIds))
+            .orderBy(communityPostAttachments.createdAt)
+        : [],
+      postIds.length
+        ? db
+            .select({ postId: communityPostReactions.postId, userId: communityPostReactions.userId, reaction: communityPostReactions.reaction })
+            .from(communityPostReactions)
+            .where(inArray(communityPostReactions.postId, postIds))
+        : [],
+      commentIds.length
+        ? db
+            .select({ commentId: communityCommentReactions.commentId, userId: communityCommentReactions.userId, reaction: communityCommentReactions.reaction })
+            .from(communityCommentReactions)
+            .where(inArray(communityCommentReactions.commentId, commentIds))
+        : [],
+    ]);
+
     return posts.map(post => ({
       ...post,
       authorName: displayName(post.authorName),
       isOwner: post.authorId === ctx.user.id,
+      attachments: attachments.filter(attachment => attachment.postId === post.id),
+      reactions: summarizeReactions(postReactions.filter(reaction => reaction.postId === post.id), ctx.user.id),
       comments: comments
         .filter(comment => comment.postId === post.id)
         .map(comment => ({
           ...comment,
           authorName: displayName(comment.authorName),
           isOwner: comment.authorId === ctx.user.id,
+          reactions: summarizeReactions(commentReactions.filter(reaction => reaction.commentId === comment.id), ctx.user.id),
         })),
     }));
   }),
@@ -140,6 +219,141 @@ export const communityRouter = router({
       .returning();
 
     return comment;
+  }),
+
+  uploadAttachment: protectedProcedure.input(attachmentSchema).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw databaseUnavailable();
+
+    const [post] = await db
+      .select({ authorId: communityPosts.authorId, status: communityPosts.status })
+      .from(communityPosts)
+      .where(eq(communityPosts.id, input.postId));
+    if (!post || post.status !== "active") {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Discussion not found" });
+    }
+    if (!canAttachToCommunityPost(post.authorId, ctx.user.id)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Only the discussion author can add attachments" });
+    }
+
+    const bytes = decodeImageDataUrl(input.dataUrl, input.mimeType);
+    const extension = input.mimeType === "image/jpeg" ? "jpg" : input.mimeType.split("/")[1];
+    const attachment = await db.transaction(async tx => {
+      await tx.execute(sql`select pg_advisory_xact_lock(${input.postId})`);
+      const existing = await tx
+        .select({ id: communityPostAttachments.id })
+        .from(communityPostAttachments)
+        .where(eq(communityPostAttachments.postId, input.postId));
+      if (existing.length >= COMMUNITY_ATTACHMENT_RULES.maxFilesPerPost) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "A discussion can include up to two images" });
+      }
+      const uploaded = await storagePut(
+        `community/${ctx.user.id}/posts/${input.postId}/${crypto.randomUUID()}.${extension}`,
+        bytes,
+        input.mimeType
+      );
+      const [created] = await tx
+        .insert(communityPostAttachments)
+        .values({
+          postId: input.postId,
+          authorId: ctx.user.id,
+          storageKey: uploaded.key,
+          url: uploaded.url,
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+          byteSize: bytes.length,
+        })
+        .returning();
+      return created;
+    });
+    return attachment;
+  }),
+
+  removeAttachment: protectedProcedure
+    .input(z.object({ attachmentId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw databaseUnavailable();
+      const [attachment] = await db
+        .select({ id: communityPostAttachments.id, authorId: communityPostAttachments.authorId })
+        .from(communityPostAttachments)
+        .where(eq(communityPostAttachments.id, input.attachmentId));
+      if (!attachment) throw new TRPCError({ code: "NOT_FOUND", message: "Attachment not found" });
+      if (attachment.authorId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only the attachment owner can remove it" });
+      }
+      await db.delete(communityPostAttachments).where(eq(communityPostAttachments.id, attachment.id));
+      return { success: true };
+    }),
+
+  reactToPost: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive(), reaction: reactionSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw databaseUnavailable();
+      const [post] = await db
+        .select({ id: communityPosts.id })
+        .from(communityPosts)
+        .where(and(eq(communityPosts.id, input.postId), eq(communityPosts.status, "active")));
+      if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "Discussion not found" });
+
+      const [existing] = await db
+        .select({ id: communityPostReactions.id, reaction: communityPostReactions.reaction })
+        .from(communityPostReactions)
+        .where(and(eq(communityPostReactions.postId, input.postId), eq(communityPostReactions.userId, ctx.user.id)));
+      if (reactionMutationAction(existing?.reaction, input.reaction) === "remove") {
+        await db.delete(communityPostReactions).where(eq(communityPostReactions.id, existing.id));
+        return { reaction: null };
+      }
+      await db
+        .insert(communityPostReactions)
+        .values({ postId: input.postId, userId: ctx.user.id, reaction: input.reaction })
+        .onConflictDoUpdate({
+          target: [communityPostReactions.userId, communityPostReactions.postId],
+          set: { reaction: input.reaction },
+        });
+      return { reaction: input.reaction };
+    }),
+
+  reactToComment: protectedProcedure
+    .input(z.object({ commentId: z.number().int().positive(), reaction: reactionSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw databaseUnavailable();
+      const [comment] = await db
+        .select({ id: communityComments.id })
+        .from(communityComments)
+        .where(and(eq(communityComments.id, input.commentId), eq(communityComments.status, "active")));
+      if (!comment) throw new TRPCError({ code: "NOT_FOUND", message: "Reply not found" });
+
+      const [existing] = await db
+        .select({ id: communityCommentReactions.id, reaction: communityCommentReactions.reaction })
+        .from(communityCommentReactions)
+        .where(and(eq(communityCommentReactions.commentId, input.commentId), eq(communityCommentReactions.userId, ctx.user.id)));
+      if (reactionMutationAction(existing?.reaction, input.reaction) === "remove") {
+        await db.delete(communityCommentReactions).where(eq(communityCommentReactions.id, existing.id));
+        return { reaction: null };
+      }
+      await db
+        .insert(communityCommentReactions)
+        .values({ commentId: input.commentId, userId: ctx.user.id, reaction: input.reaction })
+        .onConflictDoUpdate({
+          target: [communityCommentReactions.userId, communityCommentReactions.commentId],
+          set: { reaction: input.reaction },
+        });
+      return { reaction: input.reaction };
+    }),
+
+  profile: router({
+    get: protectedProcedure.query(({ ctx }) => ({ tradingStyle: ctx.user.tradingStyle })),
+    setTradingStyle: protectedProcedure
+      .input(z.object({ tradingStyle: z.enum(TRADING_STYLES).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw databaseUnavailable();
+        await db.update(users).set({ tradingStyle: input.tradingStyle }).where(eq(users.id, ctx.user.id));
+        return { tradingStyle: input.tradingStyle };
+      }),
   }),
 
   reportPost: protectedProcedure.input(reportSchema).mutation(async ({ ctx, input }) => {

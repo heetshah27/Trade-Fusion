@@ -6,7 +6,8 @@ if (!connectionString) {
   throw new Error("NEON_DATABASE_URL is required to apply the community migration.");
 }
 
-const migration = await readFile("drizzle/0001_complete_jazinda.sql", "utf8");
+const migrationPath = process.argv[2] || "drizzle/0001_complete_jazinda.sql";
+const migration = await readFile(migrationPath, "utf8");
 const statements = migration
   .split("--> statement-breakpoint")
   .map(statement => statement.trim())
@@ -18,7 +19,7 @@ try {
   for (const statement of statements) {
     await sql.unsafe(statement);
   }
-  console.log(`Applied ${statements.length} Trader’s Room migration statements to Neon.`);
+  console.log(`Applied ${statements.length} migration statements from ${migrationPath} to Neon.`);
 } finally {
   await sql.end({ timeout: 5 });
 }

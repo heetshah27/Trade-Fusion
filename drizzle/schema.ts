@@ -1,4 +1,4 @@
-import { decimal, index, integer, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { decimal, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
@@ -17,6 +17,16 @@ export const communityCategoryEnum = pgEnum("community_category", [
 ]);
 export const communityContentStatusEnum = pgEnum("community_content_status", ["active", "removed"]);
 export const communityReportStatusEnum = pgEnum("community_report_status", ["open", "reviewed"]);
+export const communityReactionEnum = pgEnum("community_reaction", ["insightful", "support", "question"]);
+export const tradingStyleEnum = pgEnum("trading_style", [
+  "scalper",
+  "day_trader",
+  "swing_trader",
+  "position_trader",
+  "options_trader",
+  "crypto_trader",
+  "forex_trader",
+]);
 
 export const users = pgTable("users", {
   /**
@@ -30,6 +40,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").default("user").notNull(),
+  tradingStyle: tradingStyleEnum("tradingStyle"),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn", { withTimezone: true }).defaultNow().notNull(),
@@ -126,7 +137,73 @@ export const communityPostReports = pgTable(
   ]
 );
 
+/** Images and chart captures are stored in S3; this table contains metadata only. */
+export const communityPostAttachments = pgTable(
+  "community_post_attachments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    authorId: integer("authorId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    storageKey: varchar("storageKey", { length: 512 }).notNull(),
+    url: varchar("url", { length: 640 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    mimeType: varchar("mimeType", { length: 100 }).notNull(),
+    byteSize: integer("byteSize").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_attachments_post_idx").on(table.postId),
+    index("community_attachments_author_idx").on(table.authorId),
+  ]
+);
+
+/** One reaction of each target type per member; a subsequent choice replaces the prior one. */
+export const communityPostReactions = pgTable(
+  "community_post_reactions",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reaction: communityReactionEnum("reaction").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_post_reactions_post_idx").on(table.postId),
+    uniqueIndex("community_post_reactions_user_post_unique").on(table.userId, table.postId),
+  ]
+);
+
+export const communityCommentReactions = pgTable(
+  "community_comment_reactions",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    commentId: integer("commentId")
+      .notNull()
+      .references(() => communityComments.id, { onDelete: "cascade" }),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reaction: communityReactionEnum("reaction").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_comment_reactions_comment_idx").on(table.commentId),
+    uniqueIndex("community_comment_reactions_user_comment_unique").on(table.userId, table.commentId),
+  ]
+);
+
 export type CommunityPost = typeof communityPosts.$inferSelect;
 export type InsertCommunityPost = typeof communityPosts.$inferInsert;
 export type CommunityComment = typeof communityComments.$inferSelect;
 export type InsertCommunityComment = typeof communityComments.$inferInsert;
+export type CommunityPostAttachment = typeof communityPostAttachments.$inferSelect;
+export type CommunityPostReaction = typeof communityPostReactions.$inferSelect;
+export type CommunityCommentReaction = typeof communityCommentReactions.$inferSelect;
