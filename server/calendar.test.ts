@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   calendarFallback,
+  getCalendarCoverage,
   getLiveCalendarEvents,
   parseForexFactoryFeed,
   toIsoDate,
@@ -62,6 +63,16 @@ describe("ForexFactory calendar parser", () => {
     });
     expect(events[1]?.forecast).toBeUndefined();
     expect(events[1]?.previous).toBeUndefined();
+  });
+
+  it("retains source-published Friday events and reports the weekly coverage end date", () => {
+    const fridayFeed = SAMPLE_FOREX_FACTORY_FEED.replace(
+      "</weeklyevents>",
+      `<event><title>Retail Sales</title><country>USD</country><date><![CDATA[08-14-2026]]></date><time><![CDATA[8:30am]]></time><impact><![CDATA[High]]></impact></event></weeklyevents>`
+    );
+    const events = parseForexFactoryFeed(fridayFeed);
+    expect(events.some(event => event.date === "2026-08-14" && event.event === "Retail Sales")).toBe(true);
+    expect(getCalendarCoverage(events)).toEqual({ coverageStart: "2026-08-10", coverageEnd: "2026-08-14" });
   });
 
   it("discards incomplete source records instead of filling them with mock values", () => {

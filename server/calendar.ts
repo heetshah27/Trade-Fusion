@@ -28,6 +28,8 @@ export interface CalendarResponse {
   sourceStatus: "live" | "stale" | "unavailable";
   refreshedAt: string;
   message?: string;
+  coverageStart?: string;
+  coverageEnd?: string;
 }
 
 let cachedCalendar: CalendarResponse | null = null;
@@ -111,6 +113,11 @@ export function parseForexFactoryFeed(xml: string): EconomicEvent[] {
   return events;
 }
 
+export function getCalendarCoverage(events: EconomicEvent[]) {
+  const dates = events.map(event => event.date).sort();
+  return { coverageStart: dates[0], coverageEnd: dates.at(-1) };
+}
+
 export function calendarFallback(cached: CalendarResponse | null, message: string): CalendarResponse {
   if (cached?.events.length) {
     return {
@@ -155,10 +162,12 @@ export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
       throw new Error("ForexFactory feed contained no valid calendar events");
     }
 
+    const coverage = getCalendarCoverage(events);
     cachedCalendar = {
       events,
       sourceStatus: "live",
       refreshedAt: new Date().toISOString(),
+      ...coverage,
     };
     cachedAt = now;
     return cachedCalendar;

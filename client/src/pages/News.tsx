@@ -24,7 +24,11 @@ interface CalendarResponse {
   sourceStatus: 'live' | 'stale' | 'unavailable';
   refreshedAt: string;
   message?: string;
+  coverageStart?: string;
+  coverageEnd?: string;
 }
+
+const formatCoverageDate = (date?: string) => date ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(`${date}T12:00:00Z`)) : null;
 
 const getImpactColor = (impact: string) => {
   switch (impact) {
@@ -54,6 +58,9 @@ export default function News() {
   const { data: calendar, isLoading, isFetching, refetch } = trpc.calendar.getEvents.useQuery();
   const response = calendar as CalendarResponse | undefined;
   const events = response?.events ?? [];
+  const coverageLabel = response?.coverageStart && response?.coverageEnd
+    ? `${formatCoverageDate(response.coverageStart)} – ${formatCoverageDate(response.coverageEnd)}`
+    : 'This week';
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
@@ -102,7 +109,7 @@ export default function News() {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">
             <span className="rounded-full border border-blue-300/[0.12] bg-blue-400/[0.06] px-2.5 py-1 text-blue-200">Source · ForexFactory</span>
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Coverage · This week</span>
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Coverage · {coverageLabel}</span>
             <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Timezone · New York</span>
             <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Update cycle · 5 min</span>
           </div>
@@ -265,7 +272,7 @@ export default function News() {
             <div>
               <h3 className="text-white font-semibold mb-2">Calendar operating notes</h3>
               <p className="text-slate-400 text-sm">
-                ForexFactory publishes a current-week export and updates it at most hourly. UTC source times are converted to U.S. Eastern Time with daylight-saving adjustments. If the source is temporarily unavailable, Trade Fusion preserves the last verified weekly calendar and labels it clearly.
+                ForexFactory publishes a current-week export and updates it at most hourly. Trade Fusion lists every valid source event through the displayed coverage end date, including Friday releases when they are published. UTC source times are converted to U.S. Eastern Time with daylight-saving adjustments. If the source is temporarily unavailable, Trade Fusion preserves the last verified weekly calendar and labels it clearly.
               </p>
             </div>
           </div>
