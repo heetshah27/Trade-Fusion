@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <AvatarFallback className="bg-slate-800 text-xs text-[oklch(0.70_0.16_250)]">{user.name?.charAt(0).toUpperCase() ?? <CircleUserRound className="h-4 w-4" />}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-              <p className="truncate text-xs font-medium text-slate-200">{user.name || "Trader"}</p>
+              <p className="truncate text-xs font-medium text-slate-200">{profile?.name || user.name || "Trader"}</p>
               <p className="mt-0.5 truncate text-[10px] text-slate-600">Private account</p>
             </div>
             <button onClick={() => void logout()} className="rounded-md p-1.5 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-200 group-data-[collapsible=icon]:hidden" aria-label="Sign out"><LogOut className="h-3.5 w-3.5" /></button>

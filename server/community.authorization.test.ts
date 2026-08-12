@@ -1,5 +1,6 @@
 import { canAttachToCommunityPost, canDeleteCommunityPost, canModerateCommunity, isCommunityFounder, reactionMutationAction, toPublicCommunityAuthor } from "./community";
 import { describe, expect, it } from "vitest";
+import { communityAuthorIdentity } from "./community";
 
 describe("Trader’s Room authorization", () => {
   it("allows only administrators to access moderation authority", () => {
@@ -28,6 +29,14 @@ describe("Trader’s Room authorization", () => {
     const author = toPublicCommunityAuthor({ id: 3, authorOpenId: "project-owner", authorName: "Founder" }, "project-owner");
     expect(author).toEqual({ id: 3, authorName: "Founder", isFounder: true });
     expect("authorOpenId" in author).toBe(false);
+  });
+
+  it("returns an explicit initials fallback when a community member has no custom photo", () => {
+    expect(communityAuthorIdentity("  Ben FX ", null)).toEqual({
+      authorName: "Ben FX",
+      authorAvatarUrl: null,
+      authorInitial: "B",
+    });
   });
 
   it("removes an identical reaction and upserts a changed or new reaction", () => {

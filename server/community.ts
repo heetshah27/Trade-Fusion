@@ -82,6 +82,15 @@ export function toPublicCommunityAuthor<T extends { authorOpenId: string }>(auth
   return { ...publicAuthor, isFounder: isCommunityFounder(authorOpenId, projectOwnerOpenId) };
 }
 
+export function communityAuthorIdentity(name: string | null, customAvatarUrl: string | null) {
+  const authorName = displayName(name);
+  return {
+    authorName,
+    authorAvatarUrl: customAvatarUrl,
+    authorInitial: authorName.charAt(0).toUpperCase(),
+  };
+}
+
 export function reactionMutationAction(currentReaction: CommunityReaction | null | undefined, nextReaction: CommunityReaction) {
   return currentReaction === nextReaction ? "remove" : "upsert";
 }
@@ -128,6 +137,7 @@ export const communityRouter = router({
         authorName: users.name,
         authorOpenId: users.openId,
         authorTradingStyle: users.tradingStyle,
+        authorAvatarUrl: users.profileAvatarUrl,
       })
       .from(communityPosts)
       .innerJoin(users, eq(communityPosts.authorId, users.id))
@@ -146,6 +156,7 @@ export const communityRouter = router({
             authorName: users.name,
             authorOpenId: users.openId,
             authorTradingStyle: users.tradingStyle,
+            authorAvatarUrl: users.profileAvatarUrl,
           })
           .from(communityComments)
           .innerJoin(users, eq(communityComments.authorId, users.id))
@@ -183,9 +194,10 @@ export const communityRouter = router({
 
     return posts.map(post => {
       const publicPost = toPublicCommunityAuthor(post, ENV.ownerOpenId);
+      const postIdentity = communityAuthorIdentity(publicPost.authorName, publicPost.authorAvatarUrl);
       return {
       ...publicPost,
-      authorName: displayName(publicPost.authorName),
+      ...postIdentity,
       isOwner: publicPost.authorId === ctx.user.id,
       attachments: attachments.filter(attachment => attachment.postId === post.id),
       reactions: summarizeReactions(postReactions.filter(reaction => reaction.postId === post.id), ctx.user.id),
@@ -193,9 +205,10 @@ export const communityRouter = router({
         .filter(comment => comment.postId === post.id)
         .map(comment => {
           const publicComment = toPublicCommunityAuthor(comment, ENV.ownerOpenId);
+          const commentIdentity = communityAuthorIdentity(publicComment.authorName, publicComment.authorAvatarUrl);
           return {
           ...publicComment,
-          authorName: displayName(publicComment.authorName),
+          ...commentIdentity,
           isOwner: publicComment.authorId === ctx.user.id,
           reactions: summarizeReactions(commentReactions.filter(reaction => reaction.commentId === comment.id), ctx.user.id),
         };

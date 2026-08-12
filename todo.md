@@ -77,3 +77,7 @@
 - [x] Increase secure Account profile-photo uploads from 2 MB to 10 MB.
 - [x] Make author names and identity badges prominent on Trader’s Room posts and replies while keeping account photos private by default.
 - [x] Test and publish the brand, upload-limit, and community author-identity update.
+- [x] Add secure Account display-name editing with validation and persistence.
+- [x] Return safe display names and custom profile-avatar or initials fallbacks in Trader’s Room author data.
+- [x] Render member profile photos beside Trader’s Room posts and replies.
+- [x] Test and publish the member personalization update.

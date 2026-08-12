@@ -27,6 +27,7 @@ vi.mock("@/lib/trpc", () => {
     id: 12,
     authorId: 7,
     authorName: "Ava Trader",
+    authorAvatarUrl: "/manus-storage/account-avatars/7/ava.webp",
     isFounder: true,
     authorTradingStyle: "day_trader",
     category: "trade_ideas",
@@ -40,6 +41,7 @@ vi.mock("@/lib/trpc", () => {
       id: 21,
       authorId: 8,
       authorName: "Ben FX",
+      authorAvatarUrl: "/manus-storage/account-avatars/8/ben.webp",
       isFounder: false,
       authorTradingStyle: "forex_trader",
       body: "The level looks constructive if the stop remains defined.",
@@ -91,6 +93,7 @@ describe("Populated Trader’s Room community controls", () => {
     expect(screen.getByAltText("gold-chart.png")).toBeTruthy();
     expect(screen.getByText("Posted by")).toBeTruthy();
     expect(screen.getByText("Ava Trader")).toBeTruthy();
+    expect(screen.getByAltText("Ava Trader profile").getAttribute("src")).toContain("account-avatars/7/ava.webp");
     expect(screen.getAllByText("Founder · Moderator")).toHaveLength(2);
     expect(screen.getAllByLabelText("Insightful reaction")).toHaveLength(1);
     expect(screen.getByText("2")).toBeTruthy();
@@ -110,6 +113,7 @@ describe("Populated Trader’s Room community controls", () => {
     await user.click(screen.getByRole("button", { name: "Reply" }));
     expect(screen.getByText("Reply from")).toBeTruthy();
     expect(screen.getByText("Ben FX")).toBeTruthy();
+    expect(screen.getByAltText("Ben FX profile").getAttribute("src")).toContain("account-avatars/8/ben.webp");
     expect(screen.getByText("Forex Trader")).toBeTruthy();
     expect(screen.getAllByLabelText("Support reaction")).toHaveLength(2);
 

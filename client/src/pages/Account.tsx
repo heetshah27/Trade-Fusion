@@ -1,10 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BadgeCheck, CircleUserRound, ImagePlus, LoaderCircle, Mail, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { BadgeCheck, Check, CircleUserRound, ImagePlus, LoaderCircle, Mail, Pencil, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
 
 const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -15,6 +15,8 @@ export default function Account() {
   const { data: profile } = trpc.account.profile.useQuery();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const initial = (profile?.name || user?.name || "T").charAt(0).toUpperCase();
 
   const uploadPhoto = trpc.account.uploadProfilePhoto.useMutation({
@@ -31,6 +33,16 @@ export default function Account() {
     },
     onError: error => setUploadError(error.message),
   });
+  const updateDisplayName = trpc.account.updateDisplayName.useMutation({
+    onSuccess: async () => {
+      setEditingName(false);
+      setUploadError(null);
+      await utils.account.profile.invalidate();
+    },
+    onError: error => setUploadError(error.message),
+  });
+
+  useEffect(() => setDisplayName(profile?.name || user?.name || "Trader"), [profile?.name, user?.name]);
 
   const choosePhoto = () => fileInputRef.current?.click();
   const handlePhotoSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +63,12 @@ export default function Account() {
     reader.readAsDataURL(file);
   };
 
-  const isWorking = uploadPhoto.isPending || removePhoto.isPending;
+  const isWorking = uploadPhoto.isPending || removePhoto.isPending || updateDisplayName.isPending;
+  const saveDisplayName = () => {
+    const nextName = displayName.trim();
+    if (!nextName) return setUploadError("Enter a display name before saving.");
+    updateDisplayName.mutate({ displayName: nextName });
+  };
 
   return (
     <div className="min-h-full bg-[#07101f] px-5 py-8 text-white sm:px-7 lg:px-10">
@@ -74,7 +91,7 @@ export default function Account() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate text-xl font-semibold text-white">{profile?.name || "Trader"}</h2>
+                  {editingName ? <div className="flex w-full max-w-sm items-center gap-2"><input value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={40} autoFocus className="h-9 min-w-0 flex-1 rounded-lg border border-blue-300/[0.22] bg-[#0a1427] px-3 text-sm font-semibold text-white outline-none focus:ring-1 focus:ring-blue-300/60" aria-label="Display name" /><Button type="button" size="icon" onClick={saveDisplayName} disabled={isWorking} className="h-9 w-9 bg-blue-500 text-white hover:bg-blue-400" aria-label="Save display name"><Check className="h-4 w-4" /></Button><Button type="button" size="icon" variant="outline" onClick={() => { setEditingName(false); setDisplayName(profile?.name || user?.name || "Trader"); }} disabled={isWorking} className="h-9 w-9 border-white/[0.12] text-slate-300 hover:bg-white/[0.06]" aria-label="Cancel display name editing"><X className="h-4 w-4" /></Button></div> : <><h2 className="truncate text-xl font-semibold text-white">{profile?.name || "Trader"}</h2><button type="button" onClick={() => setEditingName(true)} className="rounded-md p-1 text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-blue-200" aria-label="Edit display name"><Pencil className="h-3.5 w-3.5" /></button></>}
                   {profile?.role === "admin" && <span className="inline-flex items-center gap-1 rounded-full border border-blue-300/[0.20] bg-blue-400/[0.10] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-blue-100"><ShieldCheck className="h-3 w-3" />Founder · Moderator</span>}
                 </div>
                 <p className="mt-2 flex items-center gap-2 text-sm text-slate-400"><Mail className="h-4 w-4 text-slate-500" />{profile?.email || "Email unavailable"}</p>
@@ -85,7 +102,7 @@ export default function Account() {
                   {profile?.customAvatarUrl && <Button type="button" variant="outline" onClick={() => removePhoto.mutate()} disabled={isWorking} className="border-white/[0.12] text-slate-300 hover:bg-white/[0.06] hover:text-white"><Trash2 className="mr-2 h-4 w-4" />Use email avatar</Button>}
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handlePhotoSelection} />
-                <p className="mt-3 text-xs leading-5 text-slate-500">JPG, PNG, or WebP up to 10 MB. Your custom image is private to your authenticated workspace.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-500">JPG, PNG, or WebP up to 10 MB. Your custom image appears beside your messages in Trader’s Room.</p>
                 {uploadError && <p className="mt-2 text-xs text-red-300" role="alert">{uploadError}</p>}
               </div>
             </div>
