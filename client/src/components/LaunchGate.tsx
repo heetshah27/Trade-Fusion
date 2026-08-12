@@ -3,7 +3,7 @@ import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BarChart3, LockKeyhole, Loader2, ShieldCheck, Sparkles } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import React, { type ReactNode, useEffect, useState } from "react";
 import { getLaunchState, INTRO_DURATION_MS } from "@/lib/launchState";
 
 type LaunchGateProps = {
@@ -96,6 +96,7 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
       style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}
     >
       <LaunchBackground />
+      <div className="absolute left-6 top-6 z-10"><BrandMark /></div>
       <div className="relative w-full px-6" style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
         <section className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-950/60 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
         <BrandMark />

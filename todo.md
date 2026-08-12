@@ -59,3 +59,8 @@
 - [x] Display a Founder · Moderator badge for the project owner in Trader’s Room discussions.
 - [x] Verify founder-badge responses never expose OAuth identifiers to community members.
 - [x] Test and publish the Founder · Moderator badge update.
+- [x] Keep the Trade Fusion brand mark visible through loading and sign-in states.
+- [x] Add private in-app notifications for community replies and reactions.
+- [x] Create an Account workspace with an email-linked profile avatar and member details.
+- [x] Test the new brand, notification, and account experiences across desktop and mobile.
+- [x] Publish the member experience update.

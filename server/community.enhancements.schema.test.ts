@@ -19,7 +19,7 @@ describe("Neon Trader’s Room enhancement schema", () => {
     const tables = await sql<{ table_name: string }[]>`
       select table_name from information_schema.tables
       where table_schema = 'public'
-        and table_name in ('community_post_attachments', 'community_post_reactions', 'community_comment_reactions')
+        and table_name in ('community_post_attachments', 'community_post_reactions', 'community_comment_reactions', 'community_notifications')
     `;
     const columns = await sql<{ column_name: string }[]>`
       select column_name from information_schema.columns
@@ -33,6 +33,7 @@ describe("Neon Trader’s Room enhancement schema", () => {
 
     expect(tables.map(row => row.table_name).sort()).toEqual([
       "community_comment_reactions",
+      "community_notifications",
       "community_post_attachments",
       "community_post_reactions",
     ]);

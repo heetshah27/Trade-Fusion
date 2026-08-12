@@ -18,6 +18,7 @@ export const communityCategoryEnum = pgEnum("community_category", [
 export const communityContentStatusEnum = pgEnum("community_content_status", ["active", "removed"]);
 export const communityReportStatusEnum = pgEnum("community_report_status", ["open", "reviewed"]);
 export const communityReactionEnum = pgEnum("community_reaction", ["insightful", "support", "question"]);
+export const communityNotificationTypeEnum = pgEnum("community_notification_type", ["post_reply", "post_reaction", "comment_reaction"]);
 export const tradingStyleEnum = pgEnum("trading_style", [
   "scalper",
   "day_trader",
@@ -200,6 +201,32 @@ export const communityCommentReactions = pgTable(
   ]
 );
 
+/** Private in-app alerts for replies and reactions in Trader’s Room. */
+export const communityNotifications = pgTable(
+  "community_notifications",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    recipientId: integer("recipientId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    actorId: integer("actorId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: communityNotificationTypeEnum("type").notNull(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    commentId: integer("commentId").references(() => communityComments.id, { onDelete: "cascade" }),
+    reaction: communityReactionEnum("reaction"),
+    readAt: timestamp("readAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_notifications_recipient_created_idx").on(table.recipientId, table.createdAt),
+    index("community_notifications_recipient_read_idx").on(table.recipientId, table.readAt),
+  ]
+);
+
 export type CommunityPost = typeof communityPosts.$inferSelect;
 export type InsertCommunityPost = typeof communityPosts.$inferInsert;
 export type CommunityComment = typeof communityComments.$inferSelect;
@@ -207,3 +234,4 @@ export type InsertCommunityComment = typeof communityComments.$inferInsert;
 export type CommunityPostAttachment = typeof communityPostAttachments.$inferSelect;
 export type CommunityPostReaction = typeof communityPostReactions.$inferSelect;
 export type CommunityCommentReaction = typeof communityCommentReactions.$inferSelect;
+export type CommunityNotification = typeof communityNotifications.$inferSelect;

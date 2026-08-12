@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -14,28 +14,32 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, LogOut, MessagesSquare, PanelLeft, ShieldCheck } from "lucide-react";
+import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, LogOut, MessagesSquare, PanelLeft, ShieldCheck, UserRound } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { appRoutes } from "@/lib/appRoutes";
+import { trpc } from "@/lib/trpc";
+import { NotificationMenu } from "./NotificationMenu";
 
 const menuItems = [
   { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: appRoutes.journal },
   { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
   { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },
+  { icon: UserRound, label: "Account", subtitle: "Profile and privacy", path: appRoutes.account },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const { data: profile } = trpc.account.profile.useQuery(undefined, { enabled: Boolean(user) });
 
   if (loading) return <DashboardLayoutSkeleton />;
 
   if (!user) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#07101f] px-6 text-white">
-        <div className="tf-blue-glow w-full max-w-sm rounded-[1.25rem] border border-blue-300/10 bg-[#101d35]/90 p-8 text-center shadow-2xl">
+        <div className="tf-blue-glow w-full max-w-sm rounded-[1.25rem] border border-blue-300/10 bg-[#101d35]/90 p-8 text-center shadow-2xl"><div className="mb-7 flex items-center justify-center gap-2"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[oklch(0.66_0.18_250)] text-sm font-black text-slate-950">TF</span><span className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></span></div>
           <ShieldCheck className="mx-auto h-7 w-7 text-[oklch(0.70_0.16_250)]" />
           <h1 className="mt-4 text-xl font-semibold">Secure workspace</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">Sign in to access your private Trade Fusion journal.</p>
@@ -94,6 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarFooter className="border-t border-blue-200/[0.08] p-3">
           <div className="flex items-center gap-3 rounded-xl px-2 py-2">
             <Avatar className="h-8 w-8 border border-white/10 bg-slate-800">
+              <AvatarImage src={profile?.avatarUrl ?? undefined} alt={`${profile?.name || user.name || "Trader"} profile`} />
               <AvatarFallback className="bg-slate-800 text-xs text-[oklch(0.70_0.16_250)]">{user.name?.charAt(0).toUpperCase() ?? <CircleUserRound className="h-4 w-4" />}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
@@ -115,7 +120,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="mt-0.5 text-xs text-slate-400">Private performance journal</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-blue-300/[0.16] bg-blue-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-200"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.18_250)]" /> Secure sync</div>
+          <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-blue-300/[0.16] bg-blue-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-200"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.18_250)]" /> Secure sync</div></div>
         </header>
         <main className="min-w-0">{children}</main>
       </SidebarInset>

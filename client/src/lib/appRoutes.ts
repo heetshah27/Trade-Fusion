@@ -3,4 +3,5 @@ export const appRoutes = {
   journal: "/app",
   calendar: "/app/news",
   community: "/app/room",
+  account: "/app/account",
 } as const;

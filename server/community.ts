@@ -20,6 +20,7 @@ import { getDb } from "./db";
 import { ENV } from "./_core/env";
 import { protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
+import { createCommunityNotification } from "./notifications";
 
 const communityCategories = [
   "trade_ideas",
@@ -218,25 +219,33 @@ export const communityRouter = router({
       .returning();
 
     return post;
-  }),
+ }),
 
-  addComment: protectedProcedure.input(commentSchema).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
-    if (!db) throw databaseUnavailable();
+ addComment: protectedProcedure.input(commentSchema).mutation(async ({ ctx, input }) => {
+   const db = await getDb();
+   if (!db) throw databaseUnavailable();
 
-    const [post] = await db
-      .select({ id: communityPosts.id })
-      .from(communityPosts)
-      .where(and(eq(communityPosts.id, input.postId), eq(communityPosts.status, "active")));
+   const [post] = await db
+      .select({ id: communityPosts.id, authorId: communityPosts.authorId })
+     .from(communityPosts)
+     .where(and(eq(communityPosts.id, input.postId), eq(communityPosts.status, "active")));
 
     if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "Discussion not found" });
 
-    const [comment] = await db
-      .insert(communityComments)
-      .values({ postId: input.postId, authorId: ctx.user.id, body: input.body })
-      .returning();
+   const [comment] = await db
+     .insert(communityComments)
+     .values({ postId: input.postId, authorId: ctx.user.id, body: input.body })
+     .returning();
 
-    return comment;
+    await createCommunityNotification(db, {
+      recipientId: post.authorId,
+      actorId: ctx.user.id,
+      type: "post_reply",
+      postId: input.postId,
+      commentId: comment.id,
+    });
+
+   return comment;
   }),
 
   uploadAttachment: protectedProcedure.input(attachmentSchema).mutation(async ({ ctx, input }) => {
@@ -304,15 +313,15 @@ export const communityRouter = router({
       return { success: true };
     }),
 
-  reactToPost: protectedProcedure
-    .input(z.object({ postId: z.number().int().positive(), reaction: reactionSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db) throw databaseUnavailable();
-      const [post] = await db
-        .select({ id: communityPosts.id })
-        .from(communityPosts)
-        .where(and(eq(communityPosts.id, input.postId), eq(communityPosts.status, "active")));
+ reactToPost: protectedProcedure
+   .input(z.object({ postId: z.number().int().positive(), reaction: reactionSchema }))
+   .mutation(async ({ ctx, input }) => {
+     const db = await getDb();
+     if (!db) throw databaseUnavailable();
+     const [post] = await db
+        .select({ id: communityPosts.id, authorId: communityPosts.authorId })
+       .from(communityPosts)
+       .where(and(eq(communityPosts.id, input.postId), eq(communityPosts.status, "active")));
       if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "Discussion not found" });
 
       const [existing] = await db
@@ -323,25 +332,32 @@ export const communityRouter = router({
         await db.delete(communityPostReactions).where(eq(communityPostReactions.id, existing.id));
         return { reaction: null };
       }
-      await db
-        .insert(communityPostReactions)
-        .values({ postId: input.postId, userId: ctx.user.id, reaction: input.reaction })
-        .onConflictDoUpdate({
-          target: [communityPostReactions.userId, communityPostReactions.postId],
-          set: { reaction: input.reaction },
-        });
-      return { reaction: input.reaction };
+     await db
+       .insert(communityPostReactions)
+       .values({ postId: input.postId, userId: ctx.user.id, reaction: input.reaction })
+       .onConflictDoUpdate({
+         target: [communityPostReactions.userId, communityPostReactions.postId],
+         set: { reaction: input.reaction },
+       });
+      await createCommunityNotification(db, {
+        recipientId: post.authorId,
+        actorId: ctx.user.id,
+        type: "post_reaction",
+        postId: input.postId,
+        reaction: input.reaction,
+      });
+     return { reaction: input.reaction };
     }),
 
-  reactToComment: protectedProcedure
-    .input(z.object({ commentId: z.number().int().positive(), reaction: reactionSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db) throw databaseUnavailable();
-      const [comment] = await db
-        .select({ id: communityComments.id })
-        .from(communityComments)
-        .where(and(eq(communityComments.id, input.commentId), eq(communityComments.status, "active")));
+ reactToComment: protectedProcedure
+   .input(z.object({ commentId: z.number().int().positive(), reaction: reactionSchema }))
+   .mutation(async ({ ctx, input }) => {
+     const db = await getDb();
+     if (!db) throw databaseUnavailable();
+     const [comment] = await db
+        .select({ id: communityComments.id, authorId: communityComments.authorId, postId: communityComments.postId })
+       .from(communityComments)
+       .where(and(eq(communityComments.id, input.commentId), eq(communityComments.status, "active")));
       if (!comment) throw new TRPCError({ code: "NOT_FOUND", message: "Reply not found" });
 
       const [existing] = await db
@@ -352,14 +368,22 @@ export const communityRouter = router({
         await db.delete(communityCommentReactions).where(eq(communityCommentReactions.id, existing.id));
         return { reaction: null };
       }
-      await db
-        .insert(communityCommentReactions)
-        .values({ commentId: input.commentId, userId: ctx.user.id, reaction: input.reaction })
-        .onConflictDoUpdate({
-          target: [communityCommentReactions.userId, communityCommentReactions.commentId],
-          set: { reaction: input.reaction },
-        });
-      return { reaction: input.reaction };
+     await db
+       .insert(communityCommentReactions)
+       .values({ commentId: input.commentId, userId: ctx.user.id, reaction: input.reaction })
+       .onConflictDoUpdate({
+         target: [communityCommentReactions.userId, communityCommentReactions.commentId],
+         set: { reaction: input.reaction },
+       });
+      await createCommunityNotification(db, {
+        recipientId: comment.authorId,
+        actorId: ctx.user.id,
+        type: "comment_reaction",
+        postId: comment.postId,
+        commentId: comment.id,
+        reaction: input.reaction,
+      });
+     return { reaction: input.reaction };
     }),
 
   profile: router({
