@@ -5,13 +5,17 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import { Link } from "wouter";
 
-const tickers = [
+import { trpc } from "@/lib/trpc";
+
+const fallbackTickers = [
   { symbol: "EUR/USD", price: "1.0842", change: "+0.34%", positive: true },
   { symbol: "GBP/USD", price: "1.2915", change: "+0.18%", positive: true },
   { symbol: "USD/JPY", price: "147.60", change: "-0.42%", positive: false },
   { symbol: "XAU/USD", price: "2,385.40", change: "+0.85%", positive: true },
   { symbol: "BTC/USD", price: "64,250.00", change: "+1.92%", positive: true },
+  { symbol: "ETH/USD", price: "3,450.00", change: "+2.10%", positive: true },
   { symbol: "S&P 500", price: "5,420.10", change: "+0.45%", positive: true },
+  { symbol: "NASDAQ", price: "18,940.25", change: "+0.78%", positive: true },
 ];
 
 const features = [
@@ -275,23 +279,29 @@ function WorkspacePreview() {
 
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: liveTickers } = trpc.ticker.quotes.useQuery(undefined, {
+    refetchInterval: 30_000,
+  });
+  const tickers = liveTickers && liveTickers.length > 0 ? liveTickers : fallbackTickers;
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#061023] text-white">
-      {/* Live Market Ticker Tape */}
+      {/* Live Market Ticker Tape with Automatic Marquee */}
       <div className="relative z-30 border-b border-white/[0.08] bg-[#050d1a] py-2.5 overflow-hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 overflow-x-auto whitespace-nowrap scrollbar-none sm:gap-8 lg:px-8">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-blue-400 shrink-0 bg-[#050d1a] pr-3 sticky left-0 z-10 shadow-[8px_0_12px_-4px_rgba(5,13,26,0.9)]">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 overflow-hidden whitespace-nowrap lg:px-8">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-blue-400 shrink-0 bg-[#050d1a] pr-3 sticky left-0 z-20 shadow-[12px_0_16px_-4px_rgba(5,13,26,0.95)]">
             <Zap className="h-3.5 w-3.5 text-amber-400 animate-pulse shrink-0" /> <span className="hidden sm:inline">Live Ticker Feed:</span><span className="sm:hidden">Feed:</span>
           </div>
-          <div className="flex items-center gap-6 sm:gap-8 text-xs font-mono shrink-0">
-            {tickers.map(t => (
-              <div key={t.symbol} className="flex items-center gap-2">
-                <span className="text-slate-400">{t.symbol}</span>
-                <span className="text-white font-semibold">{t.price}</span>
-                <span className={t.positive ? "text-emerald-400 font-medium" : "text-red-400 font-medium"}>{t.change}</span>
-              </div>
-            ))}
+          <div className="relative overflow-hidden w-full">
+            <div className="animate-ticker flex items-center gap-8 text-xs font-mono">
+              {[...tickers, ...tickers].map((t, idx) => (
+                <div key={`${t.symbol}-${idx}`} className="flex items-center gap-2 shrink-0">
+                  <span className="text-slate-400">{t.symbol}</span>
+                  <span className="text-white font-semibold">{t.price}</span>
+                  <span className={t.positive ? "text-emerald-400 font-medium" : "text-red-400 font-medium"}>{t.change}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
