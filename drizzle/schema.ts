@@ -42,6 +42,8 @@ export const users = pgTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").default("user").notNull(),
   tradingStyle: tradingStyleEnum("tradingStyle"),
+  profileAvatarUrl: text("profileAvatarUrl"),
+  profileAvatarKey: text("profileAvatarKey"),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn", { withTimezone: true }).defaultNow().notNull(),

@@ -70,3 +70,6 @@
 - [x] Supersede the selected Option A one-second ticker release with the user-selected A1 public-quote cadence.
 - [x] Adjust the selected A1 public crypto quote ticker to a verified 5–10 second cadence with last-update status.
 - [x] Publish the selected A1 public-quote ticker release.
+- [x] Add secure custom profile-photo upload and persistence for authenticated accounts.
+- [x] Keep the email-linked avatar as a fallback and add profile-photo replacement controls.
+- [x] Test and publish the custom Account profile-photo experience.
