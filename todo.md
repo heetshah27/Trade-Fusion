@@ -56,3 +56,6 @@
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.
+- [x] Display a Founder · Moderator badge for the project owner in Trader’s Room discussions.
+- [x] Verify founder-badge responses never expose OAuth identifiers to community members.
+- [x] Test and publish the Founder · Moderator badge update.

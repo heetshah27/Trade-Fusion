@@ -27,6 +27,7 @@ vi.mock("@/lib/trpc", () => {
     id: 12,
     authorId: 7,
     authorName: "Ava Trader",
+    isFounder: true,
     authorTradingStyle: "day_trader",
     category: "trade_ideas",
     title: "Gold long",
@@ -39,6 +40,7 @@ vi.mock("@/lib/trpc", () => {
       id: 21,
       authorId: 8,
       authorName: "Ben FX",
+      isFounder: false,
       authorTradingStyle: "forex_trader",
       body: "The level looks constructive if the stop remains defined.",
       createdAt: new Date("2026-08-12T12:05:00Z"),
@@ -52,7 +54,7 @@ vi.mock("@/lib/trpc", () => {
       community: {
         list: { useQuery: () => ({ data: [post], isLoading: false, isFetching: false }) },
         profile: {
-          get: { useQuery: () => ({ data: { tradingStyle: "day_trader" } }) },
+          get: { useQuery: () => ({ data: { tradingStyle: "day_trader", isFounder: true } }) },
           setTradingStyle: { useMutation: () => mutation() },
         },
         createPost: { useMutation: () => mutation() },
@@ -87,7 +89,7 @@ describe("Populated Trader’s Room community controls", () => {
     const { rerender } = render(<Community />);
 
     expect(screen.getByAltText("gold-chart.png")).toBeTruthy();
-    expect(screen.getAllByText("Day Trader")).toHaveLength(2);
+    expect(screen.getAllByText("Founder · Moderator")).toHaveLength(2);
     expect(screen.getAllByLabelText("Insightful reaction")).toHaveLength(1);
     expect(screen.getByText("2")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Remove" })).toBeTruthy();
@@ -96,7 +98,7 @@ describe("Populated Trader’s Room community controls", () => {
     fireEvent(window, new Event("resize"));
     rerender(<Community />);
     expect(screen.getByAltText("gold-chart.png")).toBeTruthy();
-    expect(screen.getAllByText("Day Trader")).toHaveLength(2);
+    expect(screen.getAllByText("Founder · Moderator")).toHaveLength(2);
   });
 
   it("reveals reply-level badges and sends post/comment reaction requests", async () => {

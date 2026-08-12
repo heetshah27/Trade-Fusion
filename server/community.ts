@@ -17,6 +17,7 @@ import {
   type CommunityReaction,
 } from "../shared/communityConfig";
 import { getDb } from "./db";
+import { ENV } from "./_core/env";
 import { protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 
@@ -71,6 +72,15 @@ export function canAttachToCommunityPost(postAuthorId: number, currentUserId: nu
   return postAuthorId === currentUserId;
 }
 
+export function isCommunityFounder(authorOpenId: string, projectOwnerOpenId: string) {
+  return Boolean(projectOwnerOpenId) && authorOpenId === projectOwnerOpenId;
+}
+
+export function toPublicCommunityAuthor<T extends { authorOpenId: string }>(author: T, projectOwnerOpenId: string) {
+  const { authorOpenId, ...publicAuthor } = author;
+  return { ...publicAuthor, isFounder: isCommunityFounder(authorOpenId, projectOwnerOpenId) };
+}
+
 export function reactionMutationAction(currentReaction: CommunityReaction | null | undefined, nextReaction: CommunityReaction) {
   return currentReaction === nextReaction ? "remove" : "upsert";
 }
@@ -115,6 +125,7 @@ export const communityRouter = router({
         createdAt: communityPosts.createdAt,
         updatedAt: communityPosts.updatedAt,
         authorName: users.name,
+        authorOpenId: users.openId,
         authorTradingStyle: users.tradingStyle,
       })
       .from(communityPosts)
@@ -132,6 +143,7 @@ export const communityRouter = router({
             body: communityComments.body,
             createdAt: communityComments.createdAt,
             authorName: users.name,
+            authorOpenId: users.openId,
             authorTradingStyle: users.tradingStyle,
           })
           .from(communityComments)
@@ -168,21 +180,27 @@ export const communityRouter = router({
         : [],
     ]);
 
-    return posts.map(post => ({
-      ...post,
-      authorName: displayName(post.authorName),
-      isOwner: post.authorId === ctx.user.id,
+    return posts.map(post => {
+      const publicPost = toPublicCommunityAuthor(post, ENV.ownerOpenId);
+      return {
+      ...publicPost,
+      authorName: displayName(publicPost.authorName),
+      isOwner: publicPost.authorId === ctx.user.id,
       attachments: attachments.filter(attachment => attachment.postId === post.id),
       reactions: summarizeReactions(postReactions.filter(reaction => reaction.postId === post.id), ctx.user.id),
       comments: comments
         .filter(comment => comment.postId === post.id)
-        .map(comment => ({
-          ...comment,
-          authorName: displayName(comment.authorName),
-          isOwner: comment.authorId === ctx.user.id,
+        .map(comment => {
+          const publicComment = toPublicCommunityAuthor(comment, ENV.ownerOpenId);
+          return {
+          ...publicComment,
+          authorName: displayName(publicComment.authorName),
+          isOwner: publicComment.authorId === ctx.user.id,
           reactions: summarizeReactions(commentReactions.filter(reaction => reaction.commentId === comment.id), ctx.user.id),
-        })),
-    }));
+        };
+        }),
+    };
+    });
   }),
 
   createPost: protectedProcedure.input(createPostSchema).mutation(async ({ ctx, input }) => {
@@ -345,7 +363,10 @@ export const communityRouter = router({
     }),
 
   profile: router({
-    get: protectedProcedure.query(({ ctx }) => ({ tradingStyle: ctx.user.tradingStyle })),
+    get: protectedProcedure.query(({ ctx }) => ({
+      tradingStyle: ctx.user.tradingStyle,
+      isFounder: isCommunityFounder(ctx.user.openId, ENV.ownerOpenId),
+    })),
     setTradingStyle: protectedProcedure
       .input(z.object({ tradingStyle: z.enum(TRADING_STYLES).nullable() }))
       .mutation(async ({ ctx, input }) => {
