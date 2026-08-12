@@ -99,3 +99,7 @@
 - [x] Build responsive historical replay controls and publish the Backtest replay feature.
 - [x] Deliver the selected Option C source-backed crypto replay for supported Kraken pairs.
 - [x] Prepare the replay data contract for future licensed forex, gold, and index candle providers.
+- [x] Configure the provided Alpha Vantage credential securely for licensed historical replay data.
+- [x] Add Alpha Vantage forex and gold candle normalization with truthful provider fallback states.
+- [x] Extend private Backtest replay for licensed FX and gold symbols, then test and publish the multi-asset update.
+- [x] Save and publish the Alpha Vantage forex and gold replay update.

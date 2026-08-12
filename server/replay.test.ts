@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeKrakenCandles, requireReplaySymbol } from "./replay";
+import { normalizeAlphaFxDaily, normalizeAlphaGoldHistory, normalizeKrakenCandles, requireReplaySymbol } from "./replay";
 
 describe("historical replay candle contract", () => {
   it("normalizes and sorts valid Kraken OHLC rows without inventing prices", () => {
@@ -14,8 +14,14 @@ describe("historical replay candle contract", () => {
     ]);
   });
 
-  it("accepts only the initially supported source-backed crypto pairs", () => {
+  it("accepts the source-backed crypto, licensed FX, and licensed gold symbols", () => {
     expect(requireReplaySymbol("BTC/USD")).toBe("BTCUSD");
-    expect(() => requireReplaySymbol("XAUUSD")).toThrow(/BTC\/USD, ETH\/USD, and SOL\/USD/);
+    expect(requireReplaySymbol("EUR/USD")).toBe("EURUSD");
+    expect(requireReplaySymbol("XAUUSD")).toBe("XAUUSD");
+  });
+
+  it("normalizes licensed Alpha Vantage FX OHLC and gold price-line responses without inventing gold candles", () => {
+    expect(normalizeAlphaFxDaily({ "2026-08-11": { "1. open": "1.15", "2. high": "1.16", "3. low": "1.14", "4. close": "1.155" } })).toEqual([{ time: 1786406400, open: 1.15, high: 1.16, low: 1.14, close: 1.155 }]);
+    expect(normalizeAlphaGoldHistory([{ date: "2026-08-11", price: "4405.33" }])).toEqual([{ time: 1786406400, value: 4405.33 }]);
   });
 });

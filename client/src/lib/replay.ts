@@ -1,10 +1,10 @@
 export type ReplayInterval = "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d";
 
-const supportedSymbols = new Set(["BTCUSD", "ETHUSD", "SOLUSD"]);
+const supportedSymbols = new Set(["BTCUSD", "ETHUSD", "SOLUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD"]);
 
 export function toReplaySymbol(symbol: string) {
   const normalized = symbol.replace(/[^A-Za-z]/g, "").toUpperCase();
-  return supportedSymbols.has(normalized) ? normalized as "BTCUSD" | "ETHUSD" | "SOLUSD" : null;
+  return supportedSymbols.has(normalized) ? normalized as "BTCUSD" | "ETHUSD" | "SOLUSD" | "EURUSD" | "GBPUSD" | "USDJPY" | "XAUUSD" : null;
 }
 
 export function toReplayInterval(timeframe: string): ReplayInterval {
