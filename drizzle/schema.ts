@@ -1,4 +1,4 @@
-import { decimal, integer, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { decimal, index, integer, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
@@ -9,6 +9,14 @@ import { decimal, integer, pgEnum, pgTable, text, timestamp, varchar } from "dri
 // Enums for PostgreSQL
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const directionEnum = pgEnum("direction", ["LONG", "SHORT"]);
+export const communityCategoryEnum = pgEnum("community_category", [
+  "trade_ideas",
+  "execution_review",
+  "psychology",
+  "market_context",
+]);
+export const communityContentStatusEnum = pgEnum("community_content_status", ["active", "removed"]);
+export const communityReportStatusEnum = pgEnum("community_report_status", ["open", "reviewed"]);
 
 export const users = pgTable("users", {
   /**
@@ -51,3 +59,74 @@ export const trades = pgTable("trades", {
 
 export type Trade = typeof trades.$inferSelect;
 export type InsertTrade = typeof trades.$inferInsert;
+
+/**
+ * Trader’s Room posts. Trade journal data is never copied here automatically;
+ * members decide what information to share in their discussion text.
+ */
+export const communityPosts = pgTable(
+  "community_posts",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    authorId: integer("authorId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    category: communityCategoryEnum("category").notNull(),
+    title: varchar("title", { length: 140 }).notNull(),
+    body: text("body").notNull(),
+    status: communityContentStatusEnum("status").default("active").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_posts_author_idx").on(table.authorId),
+    index("community_posts_category_created_idx").on(table.category, table.createdAt),
+  ]
+);
+
+export const communityComments = pgTable(
+  "community_comments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    authorId: integer("authorId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    status: communityContentStatusEnum("status").default("active").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_comments_post_created_idx").on(table.postId, table.createdAt),
+    index("community_comments_author_idx").on(table.authorId),
+  ]
+);
+
+/** Member reports are visible only to moderators through protected procedures. */
+export const communityPostReports = pgTable(
+  "community_post_reports",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    reporterId: integer("reporterId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reason: varchar("reason", { length: 500 }).notNull(),
+    status: communityReportStatusEnum("status").default("open").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("community_reports_post_idx").on(table.postId),
+    index("community_reports_status_idx").on(table.status),
+  ]
+);
+
+export type CommunityPost = typeof communityPosts.$inferSelect;
+export type InsertCommunityPost = typeof communityPosts.$inferInsert;
+export type CommunityComment = typeof communityComments.$inferSelect;
+export type InsertCommunityComment = typeof communityComments.$inferInsert;

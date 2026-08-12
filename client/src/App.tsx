@@ -8,6 +8,7 @@ import LaunchGate from "./components/LaunchGate";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import News from "./pages/News";
+import Community from "./pages/Community";
 import Landing from "./pages/Landing";
 import { appRoutes } from "./lib/appRoutes";
 
@@ -18,6 +19,7 @@ function WorkspaceRouter() {
         <Switch>
           <Route path={appRoutes.journal} component={Home} />
           <Route path={appRoutes.calendar} component={News} />
+          <Route path={appRoutes.community} component={Community} />
           <Route component={NotFound} />
         </Switch>
       </DashboardLayout>
@@ -29,6 +31,7 @@ function Router() {
   return (
     <Switch>
       <Route path={appRoutes.calendar} component={WorkspaceRouter} />
+      <Route path={appRoutes.community} component={WorkspaceRouter} />
       <Route path={appRoutes.journal} component={WorkspaceRouter} />
       <Route path={appRoutes.landing} component={Landing} />
       <Route component={NotFound} />

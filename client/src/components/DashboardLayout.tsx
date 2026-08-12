@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, LogOut, PanelLeft, ShieldCheck } from "lucide-react";
+import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, LogOut, MessagesSquare, PanelLeft, ShieldCheck } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -23,6 +23,7 @@ import { appRoutes } from "@/lib/appRoutes";
 const menuItems = [
   { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: appRoutes.journal },
   { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
+  { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

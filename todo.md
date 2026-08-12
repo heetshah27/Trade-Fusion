@@ -42,6 +42,10 @@
 - [x] Define the scroll-driven dashboard reveal sequence and audit TF monogram placement.
 - [x] Implement an accessible scroll-driven dashboard preview reveal on the landing page.
 - [x] Test and publish the scroll-reveal animation and TF branding update.
+- [x] Define Trader’s Room discussion scope, member rules, and moderation model.
+- [x] Create private community tables and authenticated discussion procedures.
+- [x] Build the Trader’s Room interface and workspace navigation entry.
+- [x] Test member privacy and moderation flows, then publish Trader’s Room.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.
