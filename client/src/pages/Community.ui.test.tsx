@@ -89,6 +89,8 @@ describe("Populated Trader’s Room community controls", () => {
     const { rerender } = render(<Community />);
 
     expect(screen.getByAltText("gold-chart.png")).toBeTruthy();
+    expect(screen.getByText("Posted by")).toBeTruthy();
+    expect(screen.getByText("Ava Trader")).toBeTruthy();
     expect(screen.getAllByText("Founder · Moderator")).toHaveLength(2);
     expect(screen.getAllByLabelText("Insightful reaction")).toHaveLength(1);
     expect(screen.getByText("2")).toBeTruthy();
@@ -106,6 +108,8 @@ describe("Populated Trader’s Room community controls", () => {
     render(<Community />);
 
     await user.click(screen.getByRole("button", { name: "Reply" }));
+    expect(screen.getByText("Reply from")).toBeTruthy();
+    expect(screen.getByText("Ben FX")).toBeTruthy();
     expect(screen.getByText("Forex Trader")).toBeTruthy();
     expect(screen.getAllByLabelText("Support reaction")).toHaveLength(2);
 

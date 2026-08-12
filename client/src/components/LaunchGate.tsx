@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { BarChart3, LockKeyhole, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { LockKeyhole, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import React, { type ReactNode, useEffect, useState } from "react";
 import { getLaunchState, INTRO_DURATION_MS } from "@/lib/launchState";
 
@@ -20,8 +20,9 @@ function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
           isLarge ? "h-12 w-12" : "h-9 w-9"
         }`}
       >
-        <BarChart3 className={isLarge ? "h-6 w-6 text-slate-950" : "h-4 w-4 text-slate-950"} strokeWidth={2.5} />
-        <span className="absolute inset-x-0 bottom-0 h-1/3 bg-slate-950/10" />
+        <span className={`${isLarge ? "text-lg" : "text-xs"} relative z-10 font-black tracking-[-0.12em] text-slate-950`}>TF</span>
+        <span className="absolute bottom-2 left-2 h-1 w-1 rounded-full bg-emerald-300" />
+        <span className="absolute bottom-2 right-2 h-1 w-1 rounded-full bg-rose-300" />
       </div>
       <div className="leading-none">
         <div className={`${isLarge ? "text-2xl" : "text-base"} font-bold tracking-[-0.04em] text-white`}>

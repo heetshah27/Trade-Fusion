@@ -73,3 +73,7 @@
 - [x] Add secure custom profile-photo upload and persistence for authenticated accounts.
 - [x] Keep the email-linked avatar as a fallback and add profile-photo replacement controls.
 - [x] Test and publish the custom Account profile-photo experience.
+- [x] Replace remaining legacy workspace/loading logo treatment with the current Trade Fusion brand mark.
+- [x] Increase secure Account profile-photo uploads from 2 MB to 10 MB.
+- [x] Make author names and identity badges prominent on Trader’s Room posts and replies while keeping account photos private by default.
+- [x] Test and publish the brand, upload-limit, and community author-identity update.

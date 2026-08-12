@@ -6,7 +6,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { BadgeCheck, CircleUserRound, ImagePlus, LoaderCircle, Mail, ShieldCheck, Trash2, UserRound } from "lucide-react";
 
-const MAX_PROFILE_PHOTO_BYTES = 2 * 1024 * 1024;
+const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function Account() {
@@ -42,7 +42,7 @@ export default function Account() {
       return;
     }
     if (file.size > MAX_PROFILE_PHOTO_BYTES) {
-      setUploadError("Profile photos must be 2 MB or smaller.");
+      setUploadError("Profile photos must be 10 MB or smaller.");
       return;
     }
     const reader = new FileReader();
@@ -85,7 +85,7 @@ export default function Account() {
                   {profile?.customAvatarUrl && <Button type="button" variant="outline" onClick={() => removePhoto.mutate()} disabled={isWorking} className="border-white/[0.12] text-slate-300 hover:bg-white/[0.06] hover:text-white"><Trash2 className="mr-2 h-4 w-4" />Use email avatar</Button>}
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handlePhotoSelection} />
-                <p className="mt-3 text-xs leading-5 text-slate-500">JPG, PNG, or WebP up to 2 MB. Your custom image is private to your authenticated workspace.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-500">JPG, PNG, or WebP up to 10 MB. Your custom image is private to your authenticated workspace.</p>
                 {uploadError && <p className="mt-2 text-xs text-red-300" role="alert">{uploadError}</p>}
               </div>
             </div>

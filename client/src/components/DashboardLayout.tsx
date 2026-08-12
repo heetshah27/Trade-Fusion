@@ -54,8 +54,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar collapsible="icon" className="border-r border-blue-200/[0.08] bg-[#0a1427] text-slate-300">
         <SidebarHeader className="h-[76px] border-b border-blue-200/[0.08] px-3 py-0">
           <div className="flex h-full items-center gap-3 px-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[oklch(0.66_0.18_250)] shadow-[0_8px_24px_oklch(0.45_0.18_250_/_0.38)]">
-              <ChartNoAxesCombined className="h-4 w-4 text-white" strokeWidth={2.6} />
+            <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-[oklch(0.66_0.18_250)] shadow-[0_8px_24px_oklch(0.45_0.18_250_/_0.38)]">
+              <span className="relative z-10 text-xs font-black tracking-[-0.12em] text-slate-950">TF</span>
+              <span className="absolute bottom-1.5 left-1.5 h-1 w-1 rounded-full bg-emerald-300" />
+              <span className="absolute bottom-1.5 right-1.5 h-1 w-1 rounded-full bg-rose-300" />
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></div>

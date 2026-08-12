@@ -24,7 +24,7 @@ describe("Account custom profile photo", () => {
     render(<Account />);
     expect(screen.getByText("Replace photo")).toBeTruthy();
     expect(screen.getByText("Use email avatar")).toBeTruthy();
-    expect(screen.getByText(/JPG, PNG, or WebP up to 2 MB/)).toBeTruthy();
+    expect(screen.getByText(/JPG, PNG, or WebP up to 10 MB/)).toBeTruthy();
     expect(screen.getByText("Profile photo fallback")).toBeTruthy();
   });
 });

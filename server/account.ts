@@ -8,7 +8,7 @@ import { protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 
 const PROFILE_PHOTO_RULES = {
-  maxBytes: 2 * 1024 * 1024,
+  maxBytes: 10 * 1024 * 1024,
   acceptedMimeTypes: ["image/jpeg", "image/png", "image/webp"] as const,
 };
 
@@ -32,7 +32,7 @@ export function decodeProfilePhoto(dataUrl: string, expectedMimeType: string) {
   }
   const bytes = Buffer.from(match[2], "base64");
   if (bytes.length === 0 || bytes.length > PROFILE_PHOTO_RULES.maxBytes) {
-    throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "Profile photo must be 2 MB or smaller" });
+    throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "Profile photo must be 10 MB or smaller" });
   }
 
   const validSignature =
