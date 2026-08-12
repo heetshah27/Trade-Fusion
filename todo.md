@@ -49,10 +49,10 @@
 - [x] Define attachment limits, reaction types, and member trading-style badge options.
 - [x] Create secure attachment, reaction, and trading-style profile schema and APIs.
 - [x] Add chart/image upload, post/comment reactions, and member badge controls to Trader's Room.
-- [ ] Test media permissions, reaction uniqueness, and responsive community interactions.
+- [x] Test media permissions, reaction uniqueness, and responsive community interactions.
 - [x] Publish the enhanced Trader's Room feature set.
 - [x] Add API-level procedure coverage for attachment permissions/limits and post/comment reaction behavior.
-- [ ] Verify populated Trader’s Room discussions, reactions, and attachments at desktop and mobile breakpoints.
+- [x] Verify populated Trader’s Room discussions, reactions, and attachments at desktop and mobile breakpoints.
 - [x] Configure the dedicated Neon connection for OAuth and trade storage.
 - [x] Create and verify the Neon users and trades tables.
 - [x] Test Neon-backed sign-in and private trade persistence.

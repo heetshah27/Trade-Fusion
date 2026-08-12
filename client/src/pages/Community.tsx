@@ -31,7 +31,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import React, { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const categories = [
