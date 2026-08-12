@@ -64,3 +64,9 @@
 - [x] Create an Account workspace with an email-linked profile avatar and member details.
 - [x] Test the new brand, notification, and account experiences across desktop and mobile.
 - [x] Publish the member experience update.
+- [x] Replace simulated ticker movement with real Kraken crypto quotes refreshed through the selected 5–10 second A1 polling cadence.
+- [x] Clearly label any reference-only ticker instruments that are not streaming quotes.
+- [x] Test Kraken provider timeout fallback and recovery alongside mobile ticker motion.
+- [x] Supersede the selected Option A one-second ticker release with the user-selected A1 public-quote cadence.
+- [x] Adjust the selected A1 public crypto quote ticker to a verified 5–10 second cadence with last-update status.
+- [x] Publish the selected A1 public-quote ticker release.
