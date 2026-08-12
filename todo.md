@@ -94,3 +94,8 @@
 - [x] Add protected backtest APIs and performance metrics isolated from live trades.
 - [x] Build the Backtest workspace with session creation and simulated-trade entry.
 - [x] Test and publish the private Backtest workspace.
+- [x] Select a compliant historical candle-data source for private Backtest replay.
+- [x] Add private replay state, source-backed candle delivery, and simulated trade overlays.
+- [x] Build responsive historical replay controls and publish the Backtest replay feature.
+- [x] Deliver the selected Option C source-backed crypto replay for supported Kraken pairs.
+- [x] Prepare the replay data contract for future licensed forex, gold, and index candle providers.
