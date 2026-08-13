@@ -109,6 +109,8 @@ export const backtestTrades = pgTable(
     sessionId: integer("sessionId").notNull().references(() => backtestSessions.id, { onDelete: "cascade" }),
     userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
     date: varchar("date", { length: 10 }).notNull(),
+    entryAt: timestamp("entryAt", { withTimezone: true }),
+    exitAt: timestamp("exitAt", { withTimezone: true }),
     direction: directionEnum("direction").notNull(),
     entryPrice: decimal("entryPrice", { precision: 14, scale: 5 }).notNull(),
     exitPrice: decimal("exitPrice", { precision: 14, scale: 5 }).notNull(),
@@ -125,6 +127,7 @@ export const backtestTrades = pgTable(
   },
   table => [
     index("backtest_trades_session_date_idx").on(table.sessionId, table.date),
+    index("backtest_trades_session_entry_at_idx").on(table.sessionId, table.entryAt),
     index("backtest_trades_user_idx").on(table.userId),
   ]
 );

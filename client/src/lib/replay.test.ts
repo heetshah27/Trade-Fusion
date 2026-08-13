@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toReplayInterval, toReplaySymbol } from "./replay";
+import { filterReplayRange, toReplayInterval, toReplaySymbol } from "./replay";
 
 describe("Backtest replay helpers", () => {
   it("accepts source-backed crypto and licensed multi-asset replay symbols", () => {
@@ -12,5 +12,10 @@ describe("Backtest replay helpers", () => {
     expect(toReplayInterval("1H")).toBe("1h");
     expect(toReplayInterval("60m")).toBe("1h");
     expect(toReplayInterval("Daily")).toBe("1d");
+  });
+
+  it("limits replay points to a member-selected recent date range", () => {
+    expect(filterReplayRange([{ time: 0 }, { time: 86_400 }, { time: 172_800 }], 1)).toEqual([{ time: 86_400 }, { time: 172_800 }]);
+    expect(filterReplayRange([{ time: 0 }, { time: 86_400 }], null)).toHaveLength(2);
   });
 });

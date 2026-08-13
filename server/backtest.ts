@@ -21,6 +21,8 @@ const sessionInput = z.object({
 const tradeInput = z.object({
   sessionId: z.number().int().positive(),
   date: dateSchema,
+  entryAt: z.string().datetime().nullable().optional(),
+  exitAt: z.string().datetime().nullable().optional(),
   direction: z.enum(["LONG", "SHORT"]),
   entryPrice: numericInput,
   exitPrice: numericInput,
@@ -62,11 +64,18 @@ export function isBacktestSessionOwnedByUser(sessionUserId: number, authenticate
   return sessionUserId === authenticatedUserId;
 }
 
+export function hasValidBacktestTradeWindow(entryAt?: string | null, exitAt?: string | null) {
+  if (!entryAt || !exitAt) return true;
+  return Date.parse(entryAt) <= Date.parse(exitAt);
+}
+
 function toClientTrade(trade: BacktestTradeRow) {
   return {
     id: trade.id,
     sessionId: trade.sessionId,
     date: trade.date,
+    entryAt: trade.entryAt?.toISOString() ?? null,
+    exitAt: trade.exitAt?.toISOString() ?? null,
     direction: trade.direction,
     entryPrice: numberValue(trade.entryPrice),
     exitPrice: numberValue(trade.exitPrice),
@@ -179,12 +188,15 @@ export const backtestRouter = router({
   createTrade: protectedProcedure.input(tradeInput).mutation(async ({ ctx, input }) => {
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     if (session.status !== "active") throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive simulated trades" });
+    if (!hasValidBacktestTradeWindow(input.entryAt, input.exitAt)) throw new TRPCError({ code: "BAD_REQUEST", message: "Simulated exit time must be after the entry time" });
     const pnl = computedPnl(input);
     const rMultiple = computedRMultiple(input);
     const [created] = await db.insert(backtestTrades).values({
       sessionId: session.id,
       userId: ctx.user.id,
       date: input.date,
+      entryAt: input.entryAt ? new Date(input.entryAt) : null,
+      exitAt: input.exitAt ? new Date(input.exitAt) : null,
       direction: input.direction,
       entryPrice: String(input.entryPrice),
       exitPrice: String(input.exitPrice),

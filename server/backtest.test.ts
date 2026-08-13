@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateBacktestMetrics, isBacktestSessionOwnedByUser } from "./backtest";
+import { calculateBacktestMetrics, hasValidBacktestTradeWindow, isBacktestSessionOwnedByUser } from "./backtest";
 
 describe("Backtest ownership and metrics", () => {
   it("keeps each simulated session private to its owner", () => {
@@ -22,5 +22,10 @@ describe("Backtest ownership and metrics", () => {
       maxDrawdown: 100,
       averageR: 0.75,
     });
+  });
+
+  it("accepts distinct saved entry and exit windows while rejecting backwards replay markers", () => {
+    expect(hasValidBacktestTradeWindow("2026-08-11T09:15:00.000Z", "2026-08-11T11:45:00.000Z")).toBe(true);
+    expect(hasValidBacktestTradeWindow("2026-08-11T11:45:00.000Z", "2026-08-11T09:15:00.000Z")).toBe(false);
   });
 });

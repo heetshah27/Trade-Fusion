@@ -19,3 +19,10 @@ export function toReplayInterval(timeframe: string): ReplayInterval {
 export function replayDateLabel(timestamp: number) {
   return new Date(timestamp * 1000).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
+
+export function filterReplayRange<T extends { time: number }>(points: T[], rangeDays: number | null) {
+  if (!rangeDays || !points.length) return points;
+  const newestTime = points[points.length - 1].time;
+  const cutoff = newestTime - rangeDays * 86_400;
+  return points.filter(point => point.time >= cutoff);
+}

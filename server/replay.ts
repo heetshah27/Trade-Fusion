@@ -8,6 +8,7 @@ export const replayIntervalSchema = z.enum(["1m", "5m", "15m", "30m", "1h", "4h"
 const KRAKEN_PAIRS = { BTCUSD: "XBTUSD", ETHUSD: "ETHUSD", SOLUSD: "SOLUSD" } as const;
 const KRAKEN_INTERVALS = { "1m": 1, "5m": 5, "15m": 15, "30m": 30, "1h": 60, "4h": 240, "1d": 1440 } as const;
 const ALPHA_FX = { EURUSD: ["EUR", "USD"], GBPUSD: ["GBP", "USD"], USDJPY: ["USD", "JPY"] } as const;
+const TWELVE_FX_INTERVALS = { "15m": "15min", "1h": "1h" } as const;
 
 export type ReplayCandle = { time: number; open: number; high: number; low: number; close: number };
 export type ReplayPricePoint = { time: number; value: number };
@@ -18,7 +19,7 @@ export type ReplayResponse = {
   candles: ReplayCandle[];
   prices: ReplayPricePoint[];
   seriesType: ReplaySeriesType;
-  source: "Kraken public OHLC" | "Alpha Vantage FX_DAILY" | "Alpha Vantage GOLD_SILVER_HISTORY";
+  source: "Kraken public OHLC" | "Alpha Vantage FX_DAILY" | "Alpha Vantage GOLD_SILVER_HISTORY" | "Twelve Data Time Series";
   sourceStatus: "live" | "unavailable";
   assetClass: "crypto" | "forex" | "gold";
   coverageStart: number | null;
@@ -29,6 +30,7 @@ export type ReplayResponse = {
 const cache = new Map<string, { expiresAt: number; value: ReplayResponse }>();
 const KRAKEN_CACHE_MS = 60_000;
 const ALPHA_CACHE_MS = 15 * 60_000;
+const TWELVE_CACHE_MS = 5 * 60_000;
 
 function unixDate(value: string) {
   const timestamp = Date.parse(`${value}T00:00:00Z`) / 1000;
@@ -57,6 +59,13 @@ export function normalizeAlphaGoldHistory(rows: Array<{ date: string; price: str
   return rows
     .map(row => ({ time: unixDate(row.date), value: Number(row.price) }))
     .filter((point): point is ReplayPricePoint => point.time !== null && Number.isFinite(point.value))
+    .sort((left, right) => left.time - right.time);
+}
+
+export function normalizeTwelveDataCandles(rows: Array<{ datetime: string; open: string; high: string; low: string; close: string }>): ReplayCandle[] {
+  return rows
+    .map(row => ({ time: Date.parse(`${row.datetime.replace(" ", "T")}Z`) / 1000, open: Number(row.open), high: Number(row.high), low: Number(row.low), close: Number(row.close) }))
+    .filter(candle => Number.isFinite(candle.time) && Number.isFinite(candle.open) && Number.isFinite(candle.high) && Number.isFinite(candle.low) && Number.isFinite(candle.close))
     .sort((left, right) => left.time - right.time);
 }
 
@@ -93,6 +102,12 @@ function alphaUrl(params: Record<string, string>) {
 
 function alphaError(payload: Record<string, unknown>) {
   return typeof payload["Error Message"] === "string" || typeof payload.Information === "string" || typeof payload.Note === "string";
+}
+
+function twelveUrl(params: Record<string, string>) {
+  const key = process.env.TWELVE_DATA_API_KEY;
+  if (!key) throw new Error("Twelve Data is not configured");
+  return `https://api.twelvedata.com/time_series?${new URLSearchParams({ ...params, apikey: key }).toString()}`;
 }
 
 async function fetchAlphaFx(symbol: keyof typeof ALPHA_FX): Promise<ReplayResponse> {
@@ -134,9 +149,29 @@ async function fetchAlphaGold(): Promise<ReplayResponse> {
   }
 }
 
+async function fetchTwelveFx(symbol: keyof typeof ALPHA_FX, interval: keyof typeof TWELVE_FX_INTERVALS): Promise<ReplayResponse> {
+  const key = `twelve:fx:${symbol}:${interval}`;
+  const cached = cache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  try {
+    const [fromSymbol, toSymbol] = ALPHA_FX[symbol];
+    const response = await fetch(twelveUrl({ symbol: `${fromSymbol}/${toSymbol}`, interval: TWELVE_FX_INTERVALS[interval], outputsize: "1000", timezone: "UTC" }), { signal: AbortSignal.timeout(12_000) });
+    if (!response.ok) throw new Error(`Twelve Data returned ${response.status}`);
+    const payload = await response.json() as { status?: string; message?: string; values?: Array<{ datetime: string; open: string; high: string; low: string; close: string }> };
+    if (payload.status === "error" || !Array.isArray(payload.values)) throw new Error(payload.message || "Twelve Data did not return intraday FX OHLC data");
+    const candles = normalizeTwelveDataCandles(payload.values);
+    if (!candles.length) throw new Error("Twelve Data returned no usable intraday FX candles");
+    return cacheResponse(key, { candles, prices: [], seriesType: "candlestick", source: "Twelve Data Time Series", sourceStatus: "live", assetClass: "forex", coverageStart: candles[0].time, coverageEnd: candles[candles.length - 1].time, note: `Licensed ${TWELVE_FX_INTERVALS[interval]} FX OHLC candles are supplied by Twelve Data and cached server-side to protect the free-tier request budget.` }, TWELVE_CACHE_MS);
+  } catch (error) {
+    console.warn("[Replay] Twelve Data intraday FX unavailable", error);
+    return unavailable("Twelve Data Time Series", "forex", "Twelve Data intraday FX candles are temporarily unavailable. No substitute data is shown.");
+  }
+}
+
 export async function getReplaySeries(symbol: z.infer<typeof replaySymbolSchema>, interval: z.infer<typeof replayIntervalSchema>): Promise<ReplayResponse> {
   if (symbol in KRAKEN_PAIRS) return fetchKrakenCandles(symbol as keyof typeof KRAKEN_PAIRS, interval);
   if (symbol in ALPHA_FX) {
+    if (interval in TWELVE_FX_INTERVALS) return fetchTwelveFx(symbol as keyof typeof ALPHA_FX, interval as keyof typeof TWELVE_FX_INTERVALS);
     if (interval !== "1d") return unavailable("Alpha Vantage FX_DAILY", "forex", "Licensed Alpha Vantage FX replay currently provides daily OHLC candles only. Select the 1d interval.");
     return fetchAlphaFx(symbol as keyof typeof ALPHA_FX);
   }
@@ -146,7 +181,7 @@ export async function getReplaySeries(symbol: z.infer<typeof replaySymbolSchema>
 
 export const replayRouter = router({
   candles: protectedProcedure.input(z.object({ symbol: replaySymbolSchema, interval: replayIntervalSchema })).query(async ({ input }) => getReplaySeries(input.symbol, input.interval)),
-  supportedInstruments: protectedProcedure.query(() => ({ crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], goldDaily: ["XAUUSD"], futureProviderRequired: ["indices", "intraday_fx", "intraday_gold"] })),
+  supportedInstruments: protectedProcedure.query(() => ({ crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], forexIntraday: { symbols: ["EURUSD", "GBPUSD", "USDJPY"], intervals: ["15m", "1h"] }, goldDaily: ["XAUUSD"], futureProviderRequired: ["indices", "intraday_gold"] })),
 });
 
 export function requireReplaySymbol(value: string) {

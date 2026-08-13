@@ -24,7 +24,13 @@ describe("Neon Backtest schema", () => {
       where table_schema = 'public' and table_name = 'backtest_sessions'
         and column_name in ('userId', 'strategyName', 'initialBalance', 'status')
     `;
+    const tradeColumns = await sql<{ column_name: string }[]>`
+      select column_name from information_schema.columns
+      where table_schema = 'public' and table_name = 'backtest_trades'
+        and column_name in ('entryAt', 'exitAt')
+    `;
     expect(tables.map(row => row.table_name).sort()).toEqual(["backtest_sessions", "backtest_trades"]);
     expect(sessionColumns.map(row => row.column_name).sort()).toEqual(["initialBalance", "status", "strategyName", "userId"]);
+    expect(tradeColumns.map(row => row.column_name).sort()).toEqual(["entryAt", "exitAt"]);
   });
 });

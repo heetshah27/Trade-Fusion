@@ -103,3 +103,14 @@
 - [x] Add Alpha Vantage forex and gold candle normalization with truthful provider fallback states.
 - [x] Extend private Backtest replay for licensed FX and gold symbols, then test and publish the multi-asset update.
 - [x] Save and publish the Alpha Vantage forex and gold replay update.
+- [x] Select and configure a compliant intraday FX candle provider for 1-hour and 15-minute Backtest replay.
+- [x] Add user-selected date-range filtering to private historical replay.
+- [x] Render clear simulated entry and exit markers on replay charts.
+- [x] Test and publish the advanced intraday Backtest replay update.
+- [x] Compare and validate no-cost intraday FX candle sources before selecting the advanced replay provider.
+- [x] Configure the supplied Twelve Data key securely and validate its intraday FX response.
+- [x] Add server-cached 15-minute and one-hour FX replay candles from Twelve Data.
+- [x] Test and publish date-range filters and explicit simulated entry/exit replay markers.
+- [x] Store distinct simulated entry and exit timestamps so replay markers align with the actual trade span.
+- [x] Verify range-filtered chart markers land on their saved entry and exit candles before publishing the advanced replay update.
+- [x] Save and publish the complete cached intraday FX, date-range, and precise-marker Backtest replay update.
