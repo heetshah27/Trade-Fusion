@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateBacktestMetrics, hasValidAnnotationGeometry, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionEditable, isBacktestSessionOwnedByUser } from "./backtest";
+import { calculateBacktestMetrics, hasValidAnnotationGeometry, hasValidBacktestTradeWindow, hasValidPartialTakeProfit, isBacktestAnnotationOwnedByUser, isBacktestSessionEditable, isBacktestSessionOwnedByUser } from "./backtest";
 
 describe("Backtest ownership and metrics", () => {
   it("keeps each simulated session private to its owner", () => {
@@ -42,5 +42,12 @@ describe("Backtest ownership and metrics", () => {
   it("requires valid time-price anchors for private trendlines and zones", () => {
     expect(hasValidAnnotationGeometry({ sessionId: 1, kind: "trendline", price: 2400, endPrice: 2410, startAt: "2026-08-12T10:00:00.000Z", endAt: "2026-08-12T11:00:00.000Z", label: "Trend" })).toBe(true);
     expect(hasValidAnnotationGeometry({ sessionId: 1, kind: "zone", price: 2420, endPrice: null, startAt: null, endAt: null, label: "Zone" })).toBe(false);
+  });
+
+  it("accepts a bounded partial take-profit while rejecting incomplete or oversized partial exits", () => {
+    const baseTrade = { sessionId: 1, date: "2026-08-12", direction: "LONG" as const, entryPrice: 100, exitPrice: 110, quantity: 2, fees: 0, setupTag: "Replay", notes: "" };
+    expect(hasValidPartialTakeProfit({ ...baseTrade, takeProfit: 108, takeProfitQuantity: 1 })).toBe(true);
+    expect(hasValidPartialTakeProfit({ ...baseTrade, takeProfit: 108, takeProfitQuantity: null })).toBe(false);
+    expect(hasValidPartialTakeProfit({ ...baseTrade, takeProfit: 108, takeProfitQuantity: 3 })).toBe(false);
   });
 });

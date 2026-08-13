@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import React from "react";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn(), annotations: [] as Array<{ id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string }>, chartClickHandler: undefined as undefined | ((param: { time: number; point: { x: number; y: number } }) => void) }));
+const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), updateAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn(), annotations: [] as Array<{ id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string }>, chartClickHandler: undefined as undefined | ((param: { time: number; point: { x: number; y: number } }) => void) }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
@@ -21,6 +21,7 @@ vi.mock("@/lib/trpc", () => ({
     backtest: {
       listAnnotations: { useQuery: () => ({ data: mocks.annotations, refetch: mocks.refetchAnnotations }) },
       createAnnotation: { useMutation: () => ({ mutate: mocks.createAnnotation, isPending: false }) },
+      updateAnnotation: { useMutation: () => ({ mutate: mocks.updateAnnotation, isPending: false }) },
       deleteAnnotation: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
       createTrade: { useMutation: () => ({ mutate: mocks.createTrade, isPending: false }) },
     },
@@ -30,7 +31,7 @@ vi.mock("@/lib/trpc", () => ({
 vi.mock("lightweight-charts", () => ({
   CandlestickSeries: "Candlestick",
   ColorType: { Solid: "solid" },
-  createChart: () => ({ addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn(), coordinateToPrice: (coordinate: number) => 2400 + coordinate, priceToCoordinate: (price: number) => 2600 - price }), timeScale: () => ({ fitContent: vi.fn(), timeToCoordinate: (time: number) => time % 1000, subscribeVisibleTimeRangeChange: vi.fn(), unsubscribeVisibleTimeRangeChange: vi.fn() }), subscribeClick: (handler: (param: { time: number; point: { x: number; y: number } }) => void) => { mocks.chartClickHandler = handler; }, applyOptions: vi.fn(), remove: vi.fn() }),
+  createChart: () => ({ addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn(), coordinateToPrice: (coordinate: number) => 2400 + coordinate, priceToCoordinate: (price: number) => 2600 - price }), timeScale: () => ({ fitContent: vi.fn(), timeToCoordinate: (time: number) => time % 1000, coordinateToTime: (coordinate: number) => coordinate < 50 ? 1_786_579_200 : 1_786_582_800, subscribeVisibleTimeRangeChange: vi.fn(), unsubscribeVisibleTimeRangeChange: vi.fn() }), subscribeClick: (handler: (param: { time: number; point: { x: number; y: number } }) => void) => { mocks.chartClickHandler = handler; }, unsubscribeClick: vi.fn(), applyOptions: vi.fn(), remove: vi.fn() }),
   createSeriesMarkers: (_series: unknown, markers: unknown[]) => { mocks.markers(markers); return {}; },
 }));
 
@@ -105,16 +106,31 @@ describe("BacktestReplay", () => {
     expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 11, direction: "LONG", entryPrice: "100", exitPrice: "110" }));
   });
 
-  it("creates a two-click private supply/demand zone for an active strategy", async () => {
+  it("creates a private supply/demand zone by dragging smoothly across an active chart", async () => {
     const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 12, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
     await user.click(screen.getByRole("button", { name: /tools/i }));
     await user.click(screen.getByRole("menuitem", { name: /zone rectangle/i }));
-    await waitFor(() => expect(mocks.chartClickHandler).toBeTypeOf("function"));
-    await act(async () => { mocks.chartClickHandler?.({ time: 1_786_579_200, point: { x: 20, y: 10 } }); });
-    await waitFor(() => expect(screen.getByText(/second click saves a private/i)).toBeTruthy());
-    await act(async () => { mocks.chartClickHandler?.({ time: 1_786_582_800, point: { x: 90, y: 30 } }); });
-    expect(mocks.createAnnotation).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 12, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z" }));
+    const chart = screen.getByTestId("historical-replay-chart");
+    Object.defineProperty(chart, "getBoundingClientRect", { value: () => ({ left: 0, top: 0, width: 300, height: 410, right: 300, bottom: 410 }) });
+    fireEvent.pointerDown(chart, { clientX: 20, clientY: 10, button: 0, pointerId: 1 });
+    fireEvent.pointerMove(chart, { clientX: 90, clientY: 30, pointerId: 1 });
+    expect(screen.getByTestId("supply-demand-zone")).toBeTruthy();
+    fireEvent.pointerUp(chart, { clientX: 90, clientY: 30, pointerId: 1 });
+    await waitFor(() => expect(mocks.createAnnotation).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 12, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z" })));
+  });
+
+  it("stores an optional partial target and its closed quantity with a Buy or Sell simulation", async () => {
+    const user = userEvent.setup();
+    render(<BacktestReplay session={{ id: 15, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await user.clear(screen.getByLabelText("Execution entry price"));
+    await user.type(screen.getByLabelText("Execution entry price"), "100");
+    await user.clear(screen.getByLabelText("Execution exit price"));
+    await user.type(screen.getByLabelText("Execution exit price"), "110");
+    await user.type(screen.getByLabelText("Partial take-profit price"), "108");
+    await user.type(screen.getByLabelText("Partial take-profit quantity"), "0.5");
+    await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
+    expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 15, takeProfit: "108", takeProfitQuantity: "0.5" }));
   });
 
   it("renders a persisted supply/demand zone as a visible time-bounded rectangle", async () => {
@@ -122,6 +138,18 @@ describe("BacktestReplay", () => {
     render(<BacktestReplay session={{ id: 14, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
     await waitFor(() => expect(screen.getByTestId("supply-demand-zone")).toBeTruthy());
     expect(screen.getByTestId("supply-demand-zone").getAttribute("title")).toBe("London demand");
+  });
+
+  it("persists a zone resize from a direct corner handle without recreating the chart", async () => {
+    mocks.annotations = [{ id: 49, sessionId: 16, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z", label: "New York supply", createdAt: "2026-08-13T02:00:00.000Z" }];
+    render(<BacktestReplay session={{ id: 16, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await waitFor(() => expect(screen.getByTestId("zone-resize-handle-nw")).toBeTruthy());
+    const chart = screen.getByTestId("historical-replay-chart");
+    Object.defineProperty(chart, "getBoundingClientRect", { value: () => ({ left: 0, top: 0, width: 300, height: 410, right: 300, bottom: 410 }) });
+    fireEvent.pointerDown(screen.getByTestId("zone-resize-handle-nw"), { clientX: 20, clientY: 10, button: 0, pointerId: 1 });
+    fireEvent.pointerMove(chart, { clientX: 20, clientY: 15, pointerId: 1 });
+    fireEvent.pointerUp(chart, { clientX: 20, clientY: 15, pointerId: 1 });
+    await waitFor(() => expect(mocks.updateAnnotation).toHaveBeenCalledWith(expect.objectContaining({ id: 49, price: 2410, endPrice: 2415, label: "New York supply" })));
   });
 
   it("makes archived Backtest charts visibly read-only instead of accepting drawing clicks", async () => {

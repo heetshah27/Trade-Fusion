@@ -130,3 +130,9 @@
 - [x] Add a responsive simulated trade-history panel that lists each executed trade with direction, entry/exit, and net P&L.
 - [x] Test and publish the streamlined Backtest drawing and execution workflow.
 - [x] Save and publish the streamlined Backtest drawing, Buy/Sell execution, and trade-history workflow after 87-test validation.
+- [x] Replace laggy two-click chart drawing with a smooth drag-to-draw zone interaction.
+- [x] Add direct draggable resize handles for saved private supply/demand rectangles and persist their geometry.
+- [x] Add partial take-profit and stop-loss sizing controls to private Buy/Sell simulation execution.
+- [x] Test the performance, resize, and partial-exit Backtest upgrade.
+- [x] Save and publish the validated performance, resize, and partial-exit Backtest upgrade.
+- [x] Save a new checkpoint and publish the performance, resize, and partial-exit Backtest upgrade after 90-test validation.

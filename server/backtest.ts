@@ -29,6 +29,7 @@ const tradeInput = z.object({
   quantity: numericInput,
   stopLoss: numericInput.optional().nullable(),
   takeProfit: numericInput.optional().nullable(),
+  takeProfitQuantity: numericInput.optional().nullable(),
   fees: numericInput.default(0),
   setupTag: z.string().trim().max(80).optional().default(""),
   notes: z.string().trim().max(3000).optional().default(""),
@@ -37,6 +38,15 @@ const tradeInput = z.object({
 const annotationInput = z.object({
   sessionId: z.number().int().positive(),
   kind: z.enum(["support", "resistance", "trendline", "zone"]),
+  price: numericInput,
+  endPrice: numericInput.optional().nullable(),
+  startAt: z.string().datetime().optional().nullable(),
+  endAt: z.string().datetime().optional().nullable(),
+  label: z.string().trim().max(120).optional().default(""),
+});
+
+const updateAnnotationInput = z.object({
+  id: z.number().int().positive(),
   price: numericInput,
   endPrice: numericInput.optional().nullable(),
   startAt: z.string().datetime().optional().nullable(),
@@ -58,7 +68,12 @@ function computedPnl(input: z.infer<typeof tradeInput>) {
   const entry = numberValue(input.entryPrice);
   const exit = numberValue(input.exitPrice);
   const quantity = numberValue(input.quantity);
-  return input.direction === "LONG" ? (exit - entry) * quantity : (entry - exit) * quantity;
+  const takeProfit = input.takeProfit === null || input.takeProfit === undefined || input.takeProfit === "" ? null : numberValue(input.takeProfit);
+  const takeProfitQuantity = input.takeProfitQuantity === null || input.takeProfitQuantity === undefined || input.takeProfitQuantity === "" ? 0 : numberValue(input.takeProfitQuantity);
+  const targetQuantity = takeProfit === null ? 0 : takeProfitQuantity;
+  const exitQuantity = quantity - targetQuantity;
+  const directionalResult = (price: number, size: number) => input.direction === "LONG" ? (price - entry) * size : (entry - price) * size;
+  return directionalResult(exit, exitQuantity) + (takeProfit === null ? 0 : directionalResult(takeProfit, targetQuantity));
 }
 
 function computedRMultiple(input: z.infer<typeof tradeInput>) {
@@ -87,6 +102,16 @@ export function hasValidBacktestTradeWindow(entryAt?: string | null, exitAt?: st
   return Date.parse(entryAt) <= Date.parse(exitAt);
 }
 
+export function hasValidPartialTakeProfit(input: z.infer<typeof tradeInput>) {
+  const hasTarget = input.takeProfit !== null && input.takeProfit !== undefined && input.takeProfit !== "";
+  const hasTargetQuantity = input.takeProfitQuantity !== null && input.takeProfitQuantity !== undefined && input.takeProfitQuantity !== "";
+  if (!hasTarget && !hasTargetQuantity) return true;
+  if (!hasTarget || !hasTargetQuantity) return false;
+  const quantity = numberValue(input.quantity);
+  const takeProfitQuantity = numberValue(input.takeProfitQuantity);
+  return Number.isFinite(takeProfitQuantity) && takeProfitQuantity > 0 && takeProfitQuantity <= quantity;
+}
+
 export function hasValidAnnotationGeometry(input: z.infer<typeof annotationInput>) {
   const requiresGeometry = input.kind === "trendline" || input.kind === "zone";
   if (!requiresGeometry) return true;
@@ -107,6 +132,7 @@ function toClientTrade(trade: BacktestTradeRow) {
     quantity: numberValue(trade.quantity),
     stopLoss: trade.stopLoss === null ? null : numberValue(trade.stopLoss),
     takeProfit: trade.takeProfit === null ? null : numberValue(trade.takeProfit),
+    takeProfitQuantity: trade.takeProfitQuantity === null ? null : numberValue(trade.takeProfitQuantity),
     pnl: numberValue(trade.pnl),
     fees: numberValue(trade.fees),
     rMultiple: trade.rMultiple === null ? null : numberValue(trade.rMultiple),
@@ -224,6 +250,19 @@ export const backtestRouter = router({
     };
   }),
 
+  updateAnnotation: protectedProcedure.input(updateAnnotationInput).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw databaseUnavailable();
+    const [annotation] = await db.select().from(backtestAnnotations).where(and(eq(backtestAnnotations.id, input.id), eq(backtestAnnotations.userId, ctx.user.id)));
+    if (!annotation || !isBacktestAnnotationOwnedByUser(annotation.userId, ctx.user.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Chart annotation not found" });
+    const { session } = await getOwnedSession(annotation.sessionId, ctx.user.id);
+    if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
+    const geometryInput = { sessionId: annotation.sessionId, kind: annotation.kind as "support" | "resistance" | "trendline" | "zone", price: input.price, endPrice: input.endPrice, startAt: input.startAt, endAt: input.endAt, label: input.label };
+    if (!hasValidAnnotationGeometry(geometryInput)) throw new TRPCError({ code: "BAD_REQUEST", message: "Trendlines and zones require valid start and end anchors" });
+    const [updated] = await db.update(backtestAnnotations).set({ price: String(input.price), endPrice: input.endPrice === null || input.endPrice === undefined || input.endPrice === "" ? null : String(input.endPrice), startAt: input.startAt ? new Date(input.startAt) : null, endAt: input.endAt ? new Date(input.endAt) : null, label: input.label || null }).where(eq(backtestAnnotations.id, annotation.id)).returning();
+    return { id: updated.id, sessionId: updated.sessionId, kind: updated.kind as "support" | "resistance" | "trendline" | "zone", price: numberValue(updated.price), endPrice: updated.endPrice === null ? null : numberValue(updated.endPrice), startAt: updated.startAt?.toISOString() ?? null, endAt: updated.endAt?.toISOString() ?? null, label: updated.label || "", createdAt: updated.createdAt.toISOString() };
+  }),
+
   deleteAnnotation: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw databaseUnavailable();
@@ -272,6 +311,7 @@ export const backtestRouter = router({
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive simulated trades" });
     if (!hasValidBacktestTradeWindow(input.entryAt, input.exitAt)) throw new TRPCError({ code: "BAD_REQUEST", message: "Simulated exit time must be after the entry time" });
+    if (!hasValidPartialTakeProfit(input)) throw new TRPCError({ code: "BAD_REQUEST", message: "Partial take-profit requires a target price and a quantity no greater than the simulated position" });
     const pnl = computedPnl(input);
     const rMultiple = computedRMultiple(input);
     const [created] = await db.insert(backtestTrades).values({
@@ -286,6 +326,7 @@ export const backtestRouter = router({
       quantity: String(input.quantity),
       stopLoss: input.stopLoss === null || input.stopLoss === undefined || input.stopLoss === "" ? null : String(input.stopLoss),
       takeProfit: input.takeProfit === null || input.takeProfit === undefined || input.takeProfit === "" ? null : String(input.takeProfit),
+      takeProfitQuantity: input.takeProfitQuantity === null || input.takeProfitQuantity === undefined || input.takeProfitQuantity === "" ? null : String(input.takeProfitQuantity),
       pnl: pnl.toFixed(2),
       fees: String(input.fees || 0),
       rMultiple: rMultiple === null ? null : rMultiple.toFixed(2),

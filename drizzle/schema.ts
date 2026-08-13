@@ -117,6 +117,7 @@ export const backtestTrades = pgTable(
     quantity: decimal("quantity", { precision: 14, scale: 4 }).notNull(),
     stopLoss: decimal("stopLoss", { precision: 14, scale: 5 }),
     takeProfit: decimal("takeProfit", { precision: 14, scale: 5 }),
+    takeProfitQuantity: decimal("takeProfitQuantity", { precision: 14, scale: 4 }),
     pnl: decimal("pnl", { precision: 14, scale: 2 }).notNull(),
     fees: decimal("fees", { precision: 14, scale: 2 }).default("0").notNull(),
     rMultiple: decimal("rMultiple", { precision: 10, scale: 2 }),
