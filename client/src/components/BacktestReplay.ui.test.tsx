@@ -4,7 +4,9 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), updateAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn(), annotations: [] as Array<{ id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string }>, chartClickHandler: undefined as undefined | ((param: { time: number; point: { x: number; y: number } }) => void) }));
+const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createChart: vi.fn(), createAnnotation: vi.fn(), updateAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn(), toastMessage: vi.fn(), annotations: [] as Array<{ id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string }>, chartClickHandler: undefined as undefined | ((param: { time: number; point: { x: number; y: number } }) => void) }));
+
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), message: mocks.toastMessage } }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
@@ -31,7 +33,7 @@ vi.mock("@/lib/trpc", () => ({
 vi.mock("lightweight-charts", () => ({
   CandlestickSeries: "Candlestick",
   ColorType: { Solid: "solid" },
-  createChart: () => ({ addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn(), coordinateToPrice: (coordinate: number) => 2400 + coordinate, priceToCoordinate: (price: number) => 2600 - price }), timeScale: () => ({ fitContent: vi.fn(), timeToCoordinate: (time: number) => time % 1000, coordinateToTime: (coordinate: number) => coordinate < 50 ? 1_786_579_200 : 1_786_582_800, subscribeVisibleTimeRangeChange: vi.fn(), unsubscribeVisibleTimeRangeChange: vi.fn() }), subscribeClick: (handler: (param: { time: number; point: { x: number; y: number } }) => void) => { mocks.chartClickHandler = handler; }, unsubscribeClick: vi.fn(), applyOptions: vi.fn(), remove: vi.fn() }),
+  createChart: () => { mocks.createChart(); return { addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn(), coordinateToPrice: (coordinate: number) => 2400 + coordinate, priceToCoordinate: (price: number) => 2600 - price }), timeScale: () => ({ fitContent: vi.fn(), timeToCoordinate: (time: number) => time % 1000, coordinateToTime: (coordinate: number) => coordinate < 50 ? 1_786_579_200 : 1_786_582_800, subscribeVisibleTimeRangeChange: vi.fn(), unsubscribeVisibleTimeRangeChange: vi.fn() }), subscribeClick: (handler: (param: { time: number; point: { x: number; y: number } }) => void) => { mocks.chartClickHandler = handler; }, unsubscribeClick: vi.fn(), takeScreenshot: () => document.createElement("canvas"), applyOptions: vi.fn(), remove: vi.fn() }; },
   createSeriesMarkers: (_series: unknown, markers: unknown[]) => { mocks.markers(markers); return {}; },
 }));
 
@@ -75,6 +77,39 @@ describe("BacktestReplay", () => {
     expect(markers.some(marker => marker.time === 1_785_888_000)).toBe(false);
   });
 
+  it("keeps the chart instance stable while replay advances through candles", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<BacktestReplay session={{ id: 22, symbol: "BTCUSD", timeframe: "1H", trades: [] }} />);
+      const chartsBeforeReplay = mocks.createChart.mock.calls.length;
+      fireEvent.click(screen.getByRole("button", { name: /play replay/i }));
+      await act(async () => { vi.advanceTimersByTime(1_400); });
+      expect(mocks.createChart).toHaveBeenCalledTimes(chartsBeforeReplay);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("captures a private chart snapshot locally and triggers its download", () => {
+    const drawImage = vi.fn();
+    const fillRect = vi.fn();
+    const strokeRect = vi.fn();
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage, fillRect, strokeRect, set fillStyle(_value: string) {}, set strokeStyle(_value: string) {}, set lineWidth(_value: number) {} } as unknown as CanvasRenderingContext2D);
+    const toDataUrl = vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/png;base64,private-chart");
+    const download = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    try {
+      render(<BacktestReplay session={{ id: 23, symbol: "BTCUSD", timeframe: "1H", trades: [] }} />);
+      fireEvent.click(screen.getByLabelText("Download private chart snapshot"));
+      expect(drawImage).toHaveBeenCalled();
+      expect(toDataUrl).toHaveBeenCalledWith("image/png");
+      expect(download).toHaveBeenCalled();
+    } finally {
+      getContext.mockRestore();
+      toDataUrl.mockRestore();
+      download.mockRestore();
+    }
+  });
+
   it("creates a private support or resistance level for the selected session", async () => {
     const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 7, symbol: "XAUUSD", timeframe: "15m", trades: [] }} />);
@@ -89,6 +124,7 @@ describe("BacktestReplay", () => {
     const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 11, symbol: "BTCUSD", timeframe: "1H", trades: [] }} />);
     expect(screen.getByLabelText("Open full screen chart")).toBeTruthy();
+    expect(screen.getByLabelText("Download private chart snapshot")).toBeTruthy();
     expect(screen.getByText("Simulated execution")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /tools/i }));
     expect(screen.getByRole("menuitem", { name: /trendline/i })).toBeTruthy();
@@ -104,6 +140,16 @@ describe("BacktestReplay", () => {
     await user.type(screen.getByLabelText("Execution exit price"), "110");
     await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
     expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 11, direction: "LONG", entryPrice: "100", exitPrice: "110" }));
+  });
+
+  it("prepares a direct Buy with an exit time after the replay entry so it can save", async () => {
+    const user = userEvent.setup();
+    render(<BacktestReplay session={{ id: 18, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await user.click(screen.getByRole("button", { name: /^buy/i }));
+    await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
+    const payload = mocks.createTrade.mock.calls.at(-1)?.[0] as { entryAt: string; exitAt: string; sessionId: number };
+    expect(payload.sessionId).toBe(18);
+    expect(Date.parse(payload.exitAt)).toBeGreaterThan(Date.parse(payload.entryAt));
   });
 
   it("creates a private supply/demand zone by dragging smoothly across an active chart", async () => {
@@ -131,6 +177,13 @@ describe("BacktestReplay", () => {
     await user.type(screen.getByLabelText("Partial take-profit quantity"), "0.5");
     await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
     expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 15, takeProfit: "108", takeProfitQuantity: "0.5" }));
+  });
+
+  it("guides members when a partial target is incomplete instead of silently leaving the execution invalid", async () => {
+    const user = userEvent.setup();
+    render(<BacktestReplay session={{ id: 17, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await user.type(screen.getByLabelText("Partial take-profit price"), "108");
+    await waitFor(() => expect(mocks.toastMessage).toHaveBeenCalledWith(expect.stringMatching(/partial target/i)));
   });
 
   it("renders a persisted supply/demand zone as a visible time-bounded rectangle", async () => {

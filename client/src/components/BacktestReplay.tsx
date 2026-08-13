@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CandlestickSeries, ColorType, createChart, createSeriesMarkers, LineSeries, type IChartApi, type MouseEventParams, type Time, type UTCTimestamp } from "lightweight-charts";
-import { BoxSelect, Calculator, ChevronLeft, ChevronRight, CirclePause, CirclePlay, Crosshair, Layers3, Maximize2, Menu, Minimize2, Minus, MousePointer2, Plus, StepForward, Target, Trash2, TrendingUp, X } from "lucide-react";
+import { BoxSelect, Calculator, Camera, ChevronLeft, ChevronRight, CirclePause, CirclePlay, Crosshair, Layers3, Maximize2, Menu, Minimize2, Minus, MousePointer2, Plus, StepForward, Target, Trash2, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { filterReplayRange, replayDateLabel, toReplayInterval, toReplaySymbol, type ReplayInterval } from "@/lib/replay";
+import { toast } from "sonner";
 
 type ReplayTrade = { id: number; date: string; entryAt: string | null; exitAt: string | null; direction: "LONG" | "SHORT"; entryPrice: number; exitPrice: number; quantity?: number; pnl: number; fees: number };
 type ReplaySession = { id: number; symbol: string; timeframe: string; status?: "active" | "archived"; trades: ReplayTrade[] };
@@ -48,8 +49,8 @@ function normalizedZoneGeometry(first: ChartAnchor, second: ChartAnchor): ZoneGe
   };
 }
 
-function DrawingButton({ active, children, disabled = false, onClick }: { active: boolean; children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
-  return <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`border-blue-200/[0.12] ${active ? "bg-violet-400/20 text-violet-100" : "bg-transparent text-slate-300"}`}>{children}</Button>;
+function DrawingButton({ active, children, disabled = false, onClick, onSnapshot }: { active: boolean; children: React.ReactNode; disabled?: boolean; onClick: () => void; onSnapshot: () => void }) {
+  return <><Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`border-blue-200/[0.12] ${active ? "bg-violet-400/20 text-violet-100" : "bg-transparent text-slate-300"}`}>{children}</Button><Button type="button" size="sm" variant="outline" aria-label="Download private chart snapshot" onClick={onSnapshot} className="border-sky-300/30 bg-sky-400/10 text-sky-100"><Camera className="mr-1 h-3.5 w-3.5" /> Snapshot</Button></>;
 }
 
 export function BacktestReplay({ session }: { session: ReplaySession }) {
@@ -94,13 +95,20 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
   const pointToAnchorRef = useRef<(clientX: number, clientY: number) => ChartAnchor | null>(() => null);
   const zoneDragStartRef = useRef<ChartAnchor | null>(null);
   const zoneResizeRef = useRef<{ annotation: ReplayAnnotation; corner: ZoneCorner } | null>(null);
+  const executionValidationNoticeRef = useRef<string | null>(null);
   const utils = trpc.useUtils();
   const { data, isFetching } = trpc.replay.candles.useQuery({ symbol, interval }, { refetchOnWindowFocus: false, retry: false });
   const annotationsQuery = trpc.backtest.listAnnotations.useQuery({ sessionId: session.id });
   const createAnnotation = trpc.backtest.createAnnotation.useMutation({ onSuccess: () => { annotationsQuery.refetch(); setAnnotationLabel(""); setPendingAnchor(null); setDrawingTool("none"); } });
   const updateAnnotation = trpc.backtest.updateAnnotation.useMutation({ onSuccess: () => { annotationsQuery.refetch(); setZonePreview(null); setSelectedZoneId(null); } });
   const deleteAnnotation = trpc.backtest.deleteAnnotation.useMutation({ onSuccess: () => annotationsQuery.refetch() });
-  const createTrade = trpc.backtest.createTrade.useMutation({ onSuccess: () => utils.backtest.getSession.invalidate({ id: session.id }) });
+  const createTrade = trpc.backtest.createTrade.useMutation({
+    onSuccess: () => {
+      utils.backtest.getSession.invalidate({ id: session.id });
+      toast.success("Private simulated trade saved to this Backtest session.");
+    },
+    onError: error => toast.error(error.message || "The simulated trade could not be saved. Check the execution details and try again."),
+  });
   const annotations = annotationsQuery.data ?? [];
   const archived = session.status === "archived";
   const candles = data?.candles ?? [];
@@ -118,6 +126,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     setCursor(Math.max(0, filteredPoints.length - 1));
     setPlaying(false);
     setPendingAnchor(null);
+    setExecutionInitialized(false);
   }, [symbol, interval, rangeDays, filteredPoints.length]);
 
   useEffect(() => {
@@ -147,8 +156,8 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     return () => document.removeEventListener("fullscreenchange", handleFullscreen);
   }, []);
 
-  const visibleCandles = useMemo(() => filteredCandles.slice(0, cursor + 1), [filteredCandles, cursor]);
-  const visiblePrices = useMemo(() => filteredPrices.slice(0, cursor + 1), [filteredPrices, cursor]);
+  const visibleCandles = filteredCandles;
+  const visiblePrices = filteredPrices;
   const visibleTimes = data?.seriesType === "line" ? visiblePrices : visibleCandles;
   const visibleTrades = useMemo(() => session.trades.filter(trade => markerTimeForValue(visibleTimes, trade.entryAt ?? trade.date) !== null || markerTimeForValue(visibleTimes, trade.exitAt ?? trade.date) !== null), [session.trades, visibleTimes]);
   const current = filteredPoints[cursor];
@@ -186,11 +195,22 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     return { gross, net: gross - fees, partialPrice, partialQuantity, riskAmount, rMultiple: riskAmount && riskAmount > 0 ? (gross - fees) / riskAmount : null };
   }, [executionDirection, executionEntry, executionExit, executionQuantity, executionFees, executionRisk, executionTakeProfit, executionTakeProfitQuantity]);
 
+  useEffect(() => {
+    const hasExecutionInput = Boolean(executionEntry || executionExit || executionQuantity || executionTakeProfit || executionTakeProfitQuantity);
+    if (!hasExecutionInput || executionPreview) { executionValidationNoticeRef.current = null; return; }
+    const message = "Complete a valid entry, final exit, and positive quantity. If using a partial target, enter both its price and quantity.";
+    if (executionValidationNoticeRef.current === message) return;
+    executionValidationNoticeRef.current = message;
+    toast.message(message);
+  }, [executionEntry, executionExit, executionQuantity, executionTakeProfit, executionTakeProfitQuantity, executionPreview]);
+
   const saveExecution = () => {
-    if (!executionPreview || !executionEntryAt || !executionExitAt || !current) return;
+    if (archived) { toast.error("Reopen this strategy before recording a private simulation."); return; }
+    if (!executionPreview) { toast.error("Enter a valid entry, final exit, quantity, and complete both partial target fields if you use them."); return; }
+    if (!executionEntryAt || !executionExitAt || !current) { toast.error("Choose a replay entry and exit point before saving the simulation."); return; }
     const entryDate = new Date(executionEntryAt);
     const exitDate = new Date(executionExitAt);
-    if (Number.isNaN(entryDate.valueOf()) || Number.isNaN(exitDate.valueOf())) return;
+    if (Number.isNaN(entryDate.valueOf()) || Number.isNaN(exitDate.valueOf())) { toast.error("Use valid replay timestamps for the entry and exit."); return; }
     createTrade.mutate({
       sessionId: session.id,
       date: entryDate.toISOString().slice(0, 10),
@@ -211,9 +231,13 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
 
   const prepareMarketExecution = (direction: "LONG" | "SHORT") => {
     if (!current || currentPrice === null || archived) return;
+    const nextReplayPoint = visibleTimes.find(point => point.time > current.time);
+    const exitTime = nextReplayPoint?.time ?? current.time + 60;
     setExecutionDirection(direction);
     setExecutionEntry(String(currentPrice));
     setExecutionEntryAt(localDateTime(current.time));
+    setExecutionExitAt(localDateTime(exitTime));
+    if (!executionExit) setExecutionExit(String(pointPrice(nextReplayPoint) ?? currentPrice));
   };
 
   const addReplayLevel = (kind: "support" | "resistance") => {
@@ -239,7 +263,36 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     else await fullscreenContainer.current.requestFullscreen();
   };
 
+  const captureChartSnapshot = () => {
+    const chartCanvas = chartRef.current?.takeScreenshot(true, true);
+    const container = chartContainer.current;
+    if (!chartCanvas || !container) { toast.error("Load a chart before capturing a private snapshot."); return; }
+    const output = document.createElement("canvas");
+    output.width = chartCanvas.width;
+    output.height = chartCanvas.height;
+    const context = output.getContext("2d");
+    if (!context) { toast.error("Your browser could not prepare this chart snapshot."); return; }
+    context.drawImage(chartCanvas, 0, 0);
+    const scaleX = output.width / Math.max(1, container.clientWidth);
+    const scaleY = output.height / Math.max(1, container.clientHeight);
+    renderedZoneBoxes.forEach(zone => {
+      context.fillStyle = "rgba(251, 191, 36, 0.18)";
+      context.strokeStyle = "rgba(253, 230, 138, 0.95)";
+      context.lineWidth = Math.max(1, 1.5 * scaleX);
+      context.fillRect(zone.left * scaleX, zone.top * scaleY, zone.width * scaleX, zone.height * scaleY);
+      context.strokeRect(zone.left * scaleX, zone.top * scaleY, zone.width * scaleX, zone.height * scaleY);
+    });
+    const link = document.createElement("a");
+    link.download = `trade-fusion-${symbol.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.png`;
+    link.href = output.toDataURL("image/png");
+    link.click();
+    toast.success("Private chart snapshot downloaded.");
+  };
+
   const renderedZoneBoxes = zonePreview ? [...zoneBoxes.filter(zone => zone.id !== zonePreview.id), zonePreview] : zoneBoxes;
+  const chartDataKey = `${data?.seriesType ?? "candle"}:${visibleTimes.map(point => `${point.time}:${pointPrice(point) ?? ""}`).join("|")}`;
+  const chartTradeKey = session.trades.map(trade => `${trade.id}:${trade.entryAt ?? ""}:${trade.exitAt ?? ""}:${trade.pnl}:${trade.fees}`).join("|");
+  const chartAnnotationKey = annotations.map(annotation => `${annotation.id}:${annotation.kind}:${annotation.price}:${annotation.endPrice ?? ""}:${annotation.startAt ?? ""}:${annotation.endAt ?? ""}`).join("|");
 
   useEffect(() => {
     if (!chartContainer.current || !visibleTimes.length) return;
@@ -312,7 +365,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
       if (!anchor) return;
       event.preventDefault();
       zoneDragStartRef.current = anchor;
-      chartContainer.current?.setPointerCapture?.(event.pointerId);
+      try { chartContainer.current?.setPointerCapture?.(event.pointerId); } catch { /* Window-level pointer completion remains active. */ }
       const preview = zoneBoxForGeometry(normalizedZoneGeometry(anchor, anchor), -1, "New zone");
       setZonePreview(preview);
     };
@@ -361,7 +414,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     };
     updateZoneBoxes();
     chart.timeScale().subscribeVisibleTimeRangeChange(updateZoneBoxes);
-    chartContainer.current.addEventListener("pointerdown", handlePointerDown);
+    chartContainer.current.addEventListener("pointerdown", handlePointerDown, { capture: true });
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointercancel", handlePointerUp);
@@ -379,8 +432,8 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     const resize = new ResizeObserver(() => { chart.applyOptions({ width: chartContainer.current?.clientWidth ?? 0, height: isFullscreen ? Math.max(560, window.innerHeight - 310) : 410 }); updateZoneBoxes(); });
     resize.observe(chartContainer.current);
     chartRef.current = chart;
-    return () => { resize.disconnect(); chart.timeScale().unsubscribeVisibleTimeRangeChange(updateZoneBoxes); chart.unsubscribeClick(handleChartClick); chartContainer.current?.removeEventListener("pointerdown", handlePointerDown); window.removeEventListener("pointermove", handlePointerMove); window.removeEventListener("pointerup", handlePointerUp); window.removeEventListener("pointercancel", handlePointerUp); chart.remove(); chartRef.current = null; priceSeriesRef.current = null; };
-  }, [annotations, data?.seriesType, isFullscreen, session.id, visibleCandles, visiblePrices, visibleTimes, visibleTrades]);
+    return () => { resize.disconnect(); chart.timeScale().unsubscribeVisibleTimeRangeChange(updateZoneBoxes); chart.unsubscribeClick(handleChartClick); chartContainer.current?.removeEventListener("pointerdown", handlePointerDown, { capture: true }); window.removeEventListener("pointermove", handlePointerMove); window.removeEventListener("pointerup", handlePointerUp); window.removeEventListener("pointercancel", handlePointerUp); chart.remove(); chartRef.current = null; priceSeriesRef.current = null; };
+  }, [chartAnnotationKey, chartDataKey, chartTradeKey, isFullscreen, session.id]);
 
   return <section ref={fullscreenContainer} className={isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto bg-[#07101f] p-3 md:p-6" : "mt-5 overflow-hidden rounded-2xl border border-violet-300/[0.16] bg-[#0c1830]/88"}>
     <div className={`overflow-hidden rounded-2xl ${isFullscreen ? "border border-violet-300/[0.18]" : ""}`}>
@@ -390,7 +443,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
       </div>
       {!initialSymbol && <div className="border-b border-amber-300/[0.12] bg-amber-400/[0.06] px-5 py-3 text-xs text-amber-100">This Backtest session uses <strong>{session.symbol}</strong>. Choose a supported replay symbol to compare your saved simulation against source-backed history.</div>}
       {data?.sourceStatus === "unavailable" ? <div className="grid min-h-[410px] place-items-center p-8 text-center"><div><p className="text-sm font-medium text-slate-200">Historical source data is unavailable right now</p><p className="mt-2 max-w-md text-xs leading-5 text-slate-500">No fallback candles or prices are fabricated. Try another supported market or return when the provider responds.</p></div></div> : !chartPoints.length || isFetching ? <div className="grid min-h-[410px] place-items-center text-sm text-slate-500">Loading source-backed {data?.seriesType === "line" ? "price history" : "candles"}…</div> : <>
-        <div className="flex flex-col gap-3 border-b border-violet-300/[0.08] px-5 py-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"><span className="text-emerald-200">▲ Simulated entry</span><span className="text-rose-200">● Simulated exit</span><span>Markers use saved entry and exit timestamps.</span></div><div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">Draw on chart</span><DrawingButton active={drawingTool === "none"} onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }}><MousePointer2 className="mr-1 h-3.5 w-3.5" /> Cursor</DrawingButton><Button type="button" size="sm" variant="outline" aria-expanded={isToolPaletteOpen} aria-controls="backtest-drawing-palette" onClick={() => setIsToolPaletteOpen(value => !value)} className="border-violet-300/30 bg-violet-400/10 text-violet-100"><Menu className="mr-1 h-3.5 w-3.5" /> Tools</Button></div></div>
+        <div className="flex flex-col gap-3 border-b border-violet-300/[0.08] px-5 py-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"><span className="text-emerald-200">▲ Simulated entry</span><span className="text-rose-200">● Simulated exit</span><span>Markers use saved entry and exit timestamps.</span></div><div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">Draw on chart</span><DrawingButton active={drawingTool === "none"} onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} onSnapshot={captureChartSnapshot}><MousePointer2 className="mr-1 h-3.5 w-3.5" /> Cursor</DrawingButton><Button type="button" size="sm" variant="outline" aria-expanded={isToolPaletteOpen} aria-controls="backtest-drawing-palette" onClick={() => setIsToolPaletteOpen(value => !value)} className="border-violet-300/30 bg-violet-400/10 text-violet-100"><Menu className="mr-1 h-3.5 w-3.5" /> Tools</Button></div></div>
         {archived && <div role="status" className="border-b border-amber-300/[0.12] bg-amber-400/[0.06] px-5 py-2 text-xs text-amber-100">This strategy is archived and its chart is read-only. Use <strong>Reopen strategy</strong> above to add private drawings or simulations.</div>}
         {drawingTool !== "none" && !archived && <div className="flex items-center gap-2 border-b border-violet-300/[0.08] bg-violet-400/[0.06] px-5 py-2 text-xs text-violet-100"><Crosshair className="h-4 w-4" /><span>{drawingTool === "zone" ? "Click, hold, and drag across the chart to draw a private supply/demand rectangle." : "Click two chart points to place a private trendline."}</span><button type="button" onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} className="ml-auto rounded p-1 hover:bg-white/10" aria-label="Cancel drawing"><X className="h-4 w-4" /></button></div>}
         <div className="relative"><div ref={chartContainer} data-testid="historical-replay-chart" className={`w-full touch-none ${drawingTool === "zone" ? "cursor-crosshair" : ""} ${isFullscreen ? "min-h-[560px]" : "min-h-[410px]"}`} />{isToolPaletteOpen && <div id="backtest-drawing-palette" role="menu" className="absolute left-3 top-3 z-20 w-52 overflow-hidden rounded-xl border border-blue-200/[0.16] bg-[#0a1427]/95 p-2 shadow-2xl backdrop-blur"><div className="mb-1 flex items-center justify-between px-2 py-1"><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Drawing tools</span><button type="button" aria-label="Close drawing tools" onClick={() => setIsToolPaletteOpen(false)} className="rounded p-1 text-slate-500 hover:bg-white/10 hover:text-white"><X className="h-3.5 w-3.5" /></button></div><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("trendline"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-violet-400/15 disabled:cursor-not-allowed disabled:opacity-40"><TrendingUp className="h-4 w-4 text-violet-300" /><span>Trendline</span><span className="ml-auto font-mono text-[9px] text-slate-500">2 clicks</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("zone"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-40"><BoxSelect className="h-4 w-4 text-amber-200" /><span>Zone rectangle</span><span className="ml-auto font-mono text-[9px] text-slate-500">Drag</span></button><div className="my-1 border-t border-blue-200/[0.10]" /><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("support")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-sky-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-sky-300" /><span>Support level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("resistance")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-rose-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-rose-300" /><span>Resistance level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button></div>}{renderedZoneBoxes.map(zone => { const annotation = annotations.find(item => item.id === zone.id); const active = selectedZoneId === zone.id; return <div key={zone.id} data-testid="supply-demand-zone" title={zone.label} className={`pointer-events-none absolute z-10 border bg-amber-400/15 shadow-[inset_0_0_20px_rgba(251,191,36,0.10)] ${active || zone.id === -1 ? "border-amber-100 ring-1 ring-amber-200/60" : "border-amber-300/80"}`} style={{ left: zone.left, top: zone.top, width: zone.width, height: zone.height }}><span className="absolute left-1 top-1 rounded bg-[#0a1427]/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-amber-100">{zone.label}</span>{annotation && !archived && <>{(["nw", "ne", "sw", "se"] as ZoneCorner[]).map(corner => <button key={corner} type="button" aria-label={`Resize ${zone.label} ${corner}`} data-testid={`zone-resize-handle-${corner}`} onPointerDown={event => beginZoneResize(event, annotation, corner)} className={`pointer-events-auto absolute h-3 w-3 rounded-full border-2 border-[#0a1427] bg-amber-100 shadow ${corner.includes("n") ? "-top-1.5" : "-bottom-1.5"} ${corner.includes("w") ? "-left-1.5" : "-right-1.5"}`} />)}</>}</div>; })}</div>

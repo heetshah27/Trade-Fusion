@@ -47,7 +47,7 @@ function MetricCard({ label, value, tone = "text-white" }: { label: string; valu
 
 export default function Backtest() {
   const utils = trpc.useUtils();
-  const { data: sessions = [], isLoading: sessionsLoading } = trpc.backtest.listSessions.useQuery();
+  const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, error: sessionsQueryError, refetch: refetchSessions } = trpc.backtest.listSessions.useQuery();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const activeSessionId = selectedId ?? sessions[0]?.id ?? null;
   const { data: selectedSession, isLoading: detailLoading } = trpc.backtest.getSession.useQuery({ id: activeSessionId ?? 0 }, { enabled: activeSessionId !== null });
@@ -55,6 +55,10 @@ export default function Backtest() {
   const [tradeOpen, setTradeOpen] = useState(false);
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(emptySession);
   const [tradeDraft, setTradeDraft] = useState<TradeDraft>(emptyTrade);
+
+  useEffect(() => {
+    void refetchSessions();
+  }, [refetchSessions]);
 
   useEffect(() => {
     if (!selectedId && sessions[0]) setSelectedId(sessions[0].id);
@@ -97,7 +101,7 @@ export default function Backtest() {
       <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-blue-200/[0.10] bg-[#0c1830]/88 p-3">
           <div className="flex items-center justify-between px-2 py-2"><span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Your strategies</span><span className="rounded-full bg-violet-400/10 px-2 py-0.5 text-[10px] text-violet-200">{sessions.length}</span></div>
-          {sessionsLoading ? <div className="p-4 text-xs text-slate-500">Loading private sessions…</div> : sessions.length === 0 ? <div className="p-5 text-center"><BookOpenCheck className="mx-auto h-7 w-7 text-violet-300" /><p className="mt-3 text-sm font-medium text-slate-200">No backtests yet</p><p className="mt-1 text-xs leading-5 text-slate-500">Create a strategy session, then log simulated entries against your chosen historical range.</p></div> : <div className="space-y-2">{sessions.map(session => <button key={session.id} onClick={() => setSelectedId(session.id)} className={`w-full rounded-xl border p-3 text-left transition-colors ${activeSessionId === session.id ? "border-violet-300/30 bg-violet-400/[0.12]" : "border-transparent hover:bg-white/[0.04]"}`}><div className="flex items-center justify-between gap-2"><span className="truncate text-sm font-medium text-slate-100">{session.strategyName}</span><span className="font-mono text-[9px] uppercase text-violet-200">{session.status}</span></div><p className="mt-1 font-mono text-[10px] text-slate-500">{session.symbol} · {session.timeframe}</p><p className={`mt-2 text-sm font-semibold ${session.metrics.totalPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{session.metrics.totalPnl >= 0 ? "+" : ""}{currency.format(session.metrics.totalPnl)}</p></button>)}</div>}
+          {sessionsLoading ? <div className="p-4 text-xs text-slate-500">Loading private sessions…</div> : sessionsError ? <div className="p-4"><p className="text-xs text-rose-200">Private sessions could not load: {sessionsQueryError.message}</p><Button size="sm" variant="outline" onClick={() => refetchSessions()} className="mt-3 border-rose-300/30 text-rose-100">Retry sessions</Button></div> : sessions.length === 0 ? <div className="p-5 text-center"><BookOpenCheck className="mx-auto h-7 w-7 text-violet-300" /><p className="mt-3 text-sm font-medium text-slate-200">No backtests yet</p><p className="mt-1 text-xs leading-5 text-slate-500">Create a strategy session, then log simulated entries against your chosen historical range.</p></div> : <div className="space-y-2">{sessions.map(session => <button key={session.id} onClick={() => setSelectedId(session.id)} className={`w-full rounded-xl border p-3 text-left transition-colors ${activeSessionId === session.id ? "border-violet-300/30 bg-violet-400/[0.12]" : "border-transparent hover:bg-white/[0.04]"}`}><div className="flex items-center justify-between gap-2"><span className="truncate text-sm font-medium text-slate-100">{session.strategyName}</span><span className="font-mono text-[9px] uppercase text-violet-200">{session.status}</span></div><p className="mt-1 font-mono text-[10px] text-slate-500">{session.symbol} · {session.timeframe}</p><p className={`mt-2 text-sm font-semibold ${session.metrics.totalPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{session.metrics.totalPnl >= 0 ? "+" : ""}{currency.format(session.metrics.totalPnl)}</p></button>)}</div>}
         </aside>
 
         <section className="min-w-0">

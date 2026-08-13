@@ -4,13 +4,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ createSession: vi.fn(), invalidate: vi.fn(), reopenSession: vi.fn() }));
+const mocks = vi.hoisted(() => ({ createSession: vi.fn(), invalidate: vi.fn(), reopenSession: vi.fn(), refetchSessions: vi.fn() }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     useUtils: () => ({ backtest: { listSessions: { invalidate: mocks.invalidate }, getSession: { invalidate: mocks.invalidate } } }),
     backtest: {
-      listSessions: { useQuery: () => ({ data: [], isLoading: false }) },
+      listSessions: { useQuery: () => ({ data: [], isLoading: false, isError: false, error: null, refetch: mocks.refetchSessions }) },
       getSession: { useQuery: () => ({ data: undefined, isLoading: false }) },
       createSession: { useMutation: () => ({ mutate: mocks.createSession, isPending: false }) },
       createTrade: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },

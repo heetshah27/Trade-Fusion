@@ -136,3 +136,13 @@
 - [x] Test the performance, resize, and partial-exit Backtest upgrade.
 - [x] Save and publish the validated performance, resize, and partial-exit Backtest upgrade.
 - [x] Save a new checkpoint and publish the performance, resize, and partial-exit Backtest upgrade after 90-test validation.
+- [x] Diagnose and fix private zone rectangles that fail to start, render, or save on Backtest charts.
+- [x] Eliminate unnecessary historical-chart recreation and unstable playback motion causing visible lag.
+- [x] Repair Buy/Sell simulated trade submission with clear success and error feedback.
+- [x] Add a private chart snapshot tool for reviewing saved execution plans.
+- [x] Test the stabilized drawing, execution, and snapshot Backtest workflow.
+- [x] Save and publish the stabilized drawing, execution, and snapshot Backtest workflow after 94-test validation.
+- [x] Add regression coverage and visible guidance for invalid simulated-execution inputs.
+- [x] Add functional regression coverage for successful private chart snapshot capture and download behavior.
+- [x] Re-verify the repaired Backtest drawing, trade-save, and snapshot flows end to end before publishing.
+- [x] Save a new checkpoint and publish the stabilized Backtest drawing, execution, and snapshot workflow after 94-test validation.
