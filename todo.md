@@ -118,3 +118,7 @@
 - [x] Add private session-owned support/resistance levels and text annotations to Backtest charts.
 - [x] Test annotation ownership, intraday gold candlestick rendering, and publish the advanced charting update.
 - [x] Save and publish the verified intraday XAU/USD candlestick and private annotation release.
+- [x] Add a full-screen private Backtest chart workspace with keyboard-accessible exit controls.
+- [x] Add point-based simulated execution controls with entry, exit, risk, and P&L calculation.
+- [x] Add owner-scoped trendline and supply/demand-zone drawing tools to Backtest replay.
+- [x] Test and publish the enhanced private Backtest chart workspace.

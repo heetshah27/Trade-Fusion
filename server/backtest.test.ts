@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateBacktestMetrics, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionOwnedByUser } from "./backtest";
+import { calculateBacktestMetrics, hasValidAnnotationGeometry, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionOwnedByUser } from "./backtest";
 
 describe("Backtest ownership and metrics", () => {
   it("keeps each simulated session private to its owner", () => {
@@ -32,5 +32,10 @@ describe("Backtest ownership and metrics", () => {
   it("accepts distinct saved entry and exit windows while rejecting backwards replay markers", () => {
     expect(hasValidBacktestTradeWindow("2026-08-11T09:15:00.000Z", "2026-08-11T11:45:00.000Z")).toBe(true);
     expect(hasValidBacktestTradeWindow("2026-08-11T11:45:00.000Z", "2026-08-11T09:15:00.000Z")).toBe(false);
+  });
+
+  it("requires valid time-price anchors for private trendlines and zones", () => {
+    expect(hasValidAnnotationGeometry({ sessionId: 1, kind: "trendline", price: 2400, endPrice: 2410, startAt: "2026-08-12T10:00:00.000Z", endAt: "2026-08-12T11:00:00.000Z", label: "Trend" })).toBe(true);
+    expect(hasValidAnnotationGeometry({ sessionId: 1, kind: "zone", price: 2420, endPrice: null, startAt: null, endAt: null, label: "Zone" })).toBe(false);
   });
 });

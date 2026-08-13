@@ -4,10 +4,11 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), refetchAnnotations: vi.fn() }));
+const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn() }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
+    useUtils: () => ({ backtest: { getSession: { invalidate: mocks.invalidateSession } } }),
     replay: {
       candles: {
         useQuery: () => ({ data: { candles: [
@@ -21,6 +22,7 @@ vi.mock("@/lib/trpc", () => ({
       listAnnotations: { useQuery: () => ({ data: [], refetch: mocks.refetchAnnotations }) },
       createAnnotation: { useMutation: () => ({ mutate: mocks.createAnnotation, isPending: false }) },
       deleteAnnotation: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      createTrade: { useMutation: () => ({ mutate: mocks.createTrade, isPending: false }) },
     },
   },
 }));
@@ -48,7 +50,7 @@ describe("BacktestReplay", () => {
     expect(screen.getByLabelText("Replay date range")).toBeTruthy();
     expect(screen.getByText("▲ Simulated entry")).toBeTruthy();
     expect(screen.getByText("● Simulated exit")).toBeTruthy();
-    expect(screen.getByText("Chart annotations")).toBeTruthy();
+    expect(screen.getByText("Chart drawings")).toBeTruthy();
     expect(screen.getByLabelText("Annotation kind")).toBeTruthy();
     expect(screen.getByLabelText("Play replay")).toBeTruthy();
     expect(mocks.setData).toHaveBeenCalled();
@@ -80,5 +82,19 @@ describe("BacktestReplay", () => {
     await user.type(screen.getByLabelText("Annotation label"), "London high");
     await user.click(screen.getByRole("button", { name: /add level/i }));
     expect(mocks.createAnnotation).toHaveBeenCalledWith({ sessionId: 7, kind: "resistance", price: 2425.5, label: "London high" });
+  });
+
+  it("exposes focused chart controls and saves a point-based simulated execution", async () => {
+    const user = userEvent.setup();
+    render(<BacktestReplay session={{ id: 11, symbol: "BTCUSD", timeframe: "1H", trades: [] }} />);
+    expect(screen.getByLabelText("Open full screen chart")).toBeTruthy();
+    expect(screen.getByText("Simulated execution")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /trendline/i })).toBeTruthy();
+    await user.clear(screen.getByLabelText("Execution entry price"));
+    await user.type(screen.getByLabelText("Execution entry price"), "100");
+    await user.clear(screen.getByLabelText("Execution exit price"));
+    await user.type(screen.getByLabelText("Execution exit price"), "110");
+    await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
+    expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 11, direction: "LONG", entryPrice: "100", exitPrice: "110" }));
   });
 });

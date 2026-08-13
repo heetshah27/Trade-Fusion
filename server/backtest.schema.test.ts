@@ -32,11 +32,11 @@ describe("Neon Backtest schema", () => {
     const annotationColumns = await sql<{ column_name: string }[]>`
       select column_name from information_schema.columns
       where table_schema = 'public' and table_name = 'backtest_annotations'
-        and column_name in ('sessionId', 'userId', 'kind', 'price', 'label')
+        and column_name in ('sessionId', 'userId', 'kind', 'price', 'endPrice', 'startAt', 'endAt', 'label')
     `;
     expect(tables.map(row => row.table_name).sort()).toEqual(["backtest_annotations", "backtest_sessions", "backtest_trades"]);
     expect(sessionColumns.map(row => row.column_name).sort()).toEqual(["initialBalance", "status", "strategyName", "userId"]);
     expect(tradeColumns.map(row => row.column_name).sort()).toEqual(["entryAt", "exitAt"]);
-    expect(annotationColumns.map(row => row.column_name).sort()).toEqual(["kind", "label", "price", "sessionId", "userId"]);
+    expect(annotationColumns.map(row => row.column_name).sort()).toEqual(["endAt", "endPrice", "kind", "label", "price", "sessionId", "startAt", "userId"]);
   });
 });

@@ -36,8 +36,11 @@ const tradeInput = z.object({
 
 const annotationInput = z.object({
   sessionId: z.number().int().positive(),
-  kind: z.enum(["support", "resistance"]),
+  kind: z.enum(["support", "resistance", "trendline", "zone"]),
   price: numericInput,
+  endPrice: numericInput.optional().nullable(),
+  startAt: z.string().datetime().optional().nullable(),
+  endAt: z.string().datetime().optional().nullable(),
   label: z.string().trim().max(120).optional().default(""),
 });
 
@@ -78,6 +81,13 @@ export function isBacktestAnnotationOwnedByUser(annotationUserId: number, authen
 export function hasValidBacktestTradeWindow(entryAt?: string | null, exitAt?: string | null) {
   if (!entryAt || !exitAt) return true;
   return Date.parse(entryAt) <= Date.parse(exitAt);
+}
+
+export function hasValidAnnotationGeometry(input: z.infer<typeof annotationInput>) {
+  const requiresGeometry = input.kind === "trendline" || input.kind === "zone";
+  if (!requiresGeometry) return true;
+  if (input.endPrice === null || input.endPrice === undefined || !input.startAt || !input.endAt) return false;
+  return Date.parse(input.startAt) <= Date.parse(input.endAt);
 }
 
 function toClientTrade(trade: BacktestTradeRow) {
@@ -173,8 +183,11 @@ export const backtestRouter = router({
     return annotations.map(annotation => ({
       id: annotation.id,
       sessionId: annotation.sessionId,
-      kind: annotation.kind as "support" | "resistance",
+      kind: annotation.kind as "support" | "resistance" | "trendline" | "zone",
       price: numberValue(annotation.price),
+      endPrice: annotation.endPrice === null ? null : numberValue(annotation.endPrice),
+      startAt: annotation.startAt?.toISOString() ?? null,
+      endAt: annotation.endAt?.toISOString() ?? null,
       label: annotation.label || "",
       createdAt: annotation.createdAt.toISOString(),
     }));
@@ -183,18 +196,25 @@ export const backtestRouter = router({
   createAnnotation: protectedProcedure.input(annotationInput).mutation(async ({ ctx, input }) => {
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     if (session.status !== "active") throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
+    if (!hasValidAnnotationGeometry(input)) throw new TRPCError({ code: "BAD_REQUEST", message: "Trendlines and zones require valid start and end anchors" });
     const [created] = await db.insert(backtestAnnotations).values({
       sessionId: session.id,
       userId: ctx.user.id,
       kind: input.kind,
       price: String(input.price),
+      endPrice: input.endPrice === null || input.endPrice === undefined || input.endPrice === "" ? null : String(input.endPrice),
+      startAt: input.startAt ? new Date(input.startAt) : null,
+      endAt: input.endAt ? new Date(input.endAt) : null,
       label: input.label || null,
     }).returning();
     return {
       id: created.id,
       sessionId: created.sessionId,
-      kind: created.kind as "support" | "resistance",
+      kind: created.kind as "support" | "resistance" | "trendline" | "zone",
       price: numberValue(created.price),
+      endPrice: created.endPrice === null ? null : numberValue(created.endPrice),
+      startAt: created.startAt?.toISOString() ?? null,
+      endAt: created.endAt?.toISOString() ?? null,
       label: created.label || "",
       createdAt: created.createdAt.toISOString(),
     };
