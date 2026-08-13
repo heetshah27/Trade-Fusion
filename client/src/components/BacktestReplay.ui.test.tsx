@@ -205,6 +205,19 @@ describe("BacktestReplay", () => {
     await waitFor(() => expect(mocks.updateAnnotation).toHaveBeenCalledWith(expect.objectContaining({ id: 49, price: 2410, endPrice: 2415, label: "New York supply" })));
   });
 
+  it("moves a saved zone freely from its body and persists the shifted geometry only after release", async () => {
+    mocks.annotations = [{ id: 50, sessionId: 19, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z", label: "London demand", createdAt: "2026-08-13T02:00:00.000Z" }];
+    render(<BacktestReplay session={{ id: 19, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await waitFor(() => expect(screen.getByTestId("supply-demand-zone")).toBeTruthy());
+    const chart = screen.getByTestId("historical-replay-chart");
+    Object.defineProperty(chart, "getBoundingClientRect", { value: () => ({ left: 0, top: 0, width: 300, height: 410, right: 300, bottom: 410 }) });
+    fireEvent.pointerDown(screen.getByTestId("supply-demand-zone"), { clientX: 220, clientY: 180, button: 0, pointerId: 1 });
+    fireEvent.pointerMove(chart, { clientX: 260, clientY: 200, pointerId: 1 });
+    expect(mocks.updateAnnotation).not.toHaveBeenCalled();
+    fireEvent.pointerUp(chart, { clientX: 260, clientY: 200, pointerId: 1 });
+    await waitFor(() => expect(mocks.updateAnnotation).toHaveBeenCalledWith(expect.objectContaining({ id: 50, price: 2430, endPrice: 2450, label: "London demand" })));
+  });
+
   it("makes archived Backtest charts visibly read-only instead of accepting drawing clicks", async () => {
     const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 13, symbol: "BTCUSD", timeframe: "1H", status: "archived", trades: [] }} />);

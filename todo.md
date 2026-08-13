@@ -146,3 +146,11 @@
 - [x] Add functional regression coverage for successful private chart snapshot capture and download behavior.
 - [x] Re-verify the repaired Backtest drawing, trade-save, and snapshot flows end to end before publishing.
 - [x] Save a new checkpoint and publish the stabilized Backtest drawing, execution, and snapshot workflow after 94-test validation.
+- [x] Prepare and deliver the current Trade Fusion logo as an Instagram-ready profile image.
+- [x] Refine and deliver a more professional Trade Fusion Instagram profile logo while preserving the TF monogram identity.
+- [x] Add direct free-move dragging for saved private Backtest zone rectangles, in addition to corner resizing.
+- [x] Keep zone movement smooth by limiting chart updates to persisted drag completion rather than every pointer movement.
+- [x] Re-verify reliable direct Buy/Sell simulated orders alongside the free-move drawing workflow.
+- [x] Test the free-move Backtest chart update.
+- [x] Save and publish the verified free-move Backtest chart update after 95-test validation.
+- [x] Save a new checkpoint and publish the verified free-move Backtest chart update after 95-test validation.

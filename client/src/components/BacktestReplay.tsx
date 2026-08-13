@@ -14,6 +14,7 @@ type ChartAnchor = { time: number; price: number };
 type ZoneBox = { id: number; label: string; left: number; top: number; width: number; height: number };
 type ZoneGeometry = { price: number; endPrice: number; startAt: string; endAt: string };
 type ZoneCorner = "nw" | "ne" | "sw" | "se";
+type ZoneMoveState = { annotation: ReplayAnnotation; origin: ChartAnchor; geometry: ZoneGeometry };
 type CreateAnnotationInput = { sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice?: number | null; startAt?: string | null; endAt?: string | null; label?: string };
 type UpdateAnnotationInput = { id: number; price: number; endPrice?: number | null; startAt?: string | null; endAt?: string | null; label?: string };
 
@@ -95,6 +96,9 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
   const pointToAnchorRef = useRef<(clientX: number, clientY: number) => ChartAnchor | null>(() => null);
   const zoneDragStartRef = useRef<ChartAnchor | null>(null);
   const zoneResizeRef = useRef<{ annotation: ReplayAnnotation; corner: ZoneCorner } | null>(null);
+  const zoneMoveRef = useRef<ZoneMoveState | null>(null);
+  const zoneBoxesRef = useRef<ZoneBox[]>([]);
+  const annotationsRef = useRef<ReplayAnnotation[]>([]);
   const executionValidationNoticeRef = useRef<string | null>(null);
   const utils = trpc.useUtils();
   const { data, isFetching } = trpc.replay.candles.useQuery({ symbol, interval }, { refetchOnWindowFocus: false, retry: false });
@@ -117,6 +121,9 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
   const filteredCandles = useMemo(() => filterReplayRange(candles, rangeDays), [candles, rangeDays]);
   const filteredPrices = useMemo(() => filterReplayRange(prices, rangeDays), [prices, rangeDays]);
   const filteredPoints = data?.seriesType === "line" ? filteredPrices : filteredCandles;
+
+  useEffect(() => { zoneBoxesRef.current = zoneBoxes; }, [zoneBoxes]);
+  useEffect(() => { annotationsRef.current = annotations; }, [annotations]);
 
   useEffect(() => {
     if (symbol === "XAUUSD" && !goldIntervals.includes(interval)) setInterval("1h");
@@ -257,6 +264,19 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
+  const beginZoneMove = (event: React.PointerEvent<HTMLDivElement>, annotation: ReplayAnnotation) => {
+    if (archived || annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
+    const origin = pointToAnchorRef.current(event.clientX, event.clientY);
+    if (!origin) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedZoneId(annotation.id);
+    const geometry = { price: annotation.price, endPrice: annotation.endPrice, startAt: annotation.startAt, endAt: annotation.endAt };
+    zoneMoveRef.current = { annotation, origin, geometry };
+    setZonePreview(zoneGeometryToBoxRef.current(geometry, annotation.id, annotation.label || "Supply / demand zone"));
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
   const toggleFullscreen = async () => {
     if (!fullscreenContainer.current) return;
     if (document.fullscreenElement) await document.exitFullscreen();
@@ -357,12 +377,29 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     pointToAnchorRef.current = pointToAnchor;
     const updateZoneBoxes = () => {
       const nextBoxes = annotations.flatMap(annotation => annotation.kind === "zone" && annotation.endPrice !== null && annotation.startAt && annotation.endAt ? [zoneBoxForGeometry({ price: annotation.price, endPrice: annotation.endPrice, startAt: annotation.startAt, endAt: annotation.endAt }, annotation.id, annotation.label || "Supply / demand zone")].filter((box): box is ZoneBox => box !== null) : []);
+      annotationsRef.current = annotations;
+      zoneBoxesRef.current = nextBoxes;
       setZoneBoxes(currentBoxes => JSON.stringify(currentBoxes) === JSON.stringify(nextBoxes) ? currentBoxes : nextBoxes);
     };
     const handlePointerDown = (event: PointerEvent) => {
-      if (archivedRef.current || drawingToolRef.current !== "zone" || event.button !== 0) return;
+      if (archivedRef.current || event.button !== 0) return;
       const anchor = pointToAnchor(event.clientX, event.clientY);
       if (!anchor) return;
+      if (drawingToolRef.current !== "zone") {
+        const target = event.target instanceof HTMLElement ? event.target : null;
+        if (target?.closest("[data-testid^='zone-resize-handle']")) return;
+        const chartBounds = chartContainer.current?.getBoundingClientRect();
+        const box = chartBounds ? zoneBoxesRef.current.find(candidate => candidate.id > 0 && event.clientX >= chartBounds.left + candidate.left && event.clientX <= chartBounds.left + candidate.left + candidate.width && event.clientY >= chartBounds.top + candidate.top && event.clientY <= chartBounds.top + candidate.top + candidate.height) : undefined;
+        const annotation = box ? annotationsRef.current.find(candidate => candidate.id === box.id && candidate.kind === "zone" && candidate.endPrice !== null && candidate.startAt && candidate.endAt) : undefined;
+        if (!annotation || annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
+        event.preventDefault();
+        setSelectedZoneId(annotation.id);
+        const geometry = { price: annotation.price, endPrice: annotation.endPrice, startAt: annotation.startAt, endAt: annotation.endAt };
+        zoneMoveRef.current = { annotation, origin: anchor, geometry };
+        setZonePreview(zoneBoxForGeometry(geometry, annotation.id, annotation.label || "Supply / demand zone"));
+        try { chartContainer.current?.setPointerCapture?.(event.pointerId); } catch { /* Window-level pointer completion remains active. */ }
+        return;
+      }
       event.preventDefault();
       zoneDragStartRef.current = anchor;
       try { chartContainer.current?.setPointerCapture?.(event.pointerId); } catch { /* Window-level pointer completion remains active. */ }
@@ -378,17 +415,25 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
         return;
       }
       const resize = zoneResizeRef.current;
-      if (!resize) return;
-      const annotation = resize.annotation;
-      if (annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
-      const start = { time: Math.floor(Date.parse(annotation.startAt) / 1000), price: annotation.price };
-      const end = { time: Math.floor(Date.parse(annotation.endAt) / 1000), price: annotation.endPrice };
-      const timeStart = resize.corner.includes("w") ? anchor.time : start.time;
-      const timeEnd = resize.corner.includes("e") ? anchor.time : end.time;
-      const lower = resize.corner.includes("s") ? anchor.price : start.price;
-      const upper = resize.corner.includes("n") ? anchor.price : end.price;
-      const preview = zoneBoxForGeometry(normalizedZoneGeometry({ time: timeStart, price: lower }, { time: timeEnd, price: upper }), annotation.id, annotation.label || "Supply / demand zone");
-      setZonePreview(preview);
+      if (resize) {
+        const annotation = resize.annotation;
+        if (annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
+        const start = { time: Math.floor(Date.parse(annotation.startAt) / 1000), price: annotation.price };
+        const end = { time: Math.floor(Date.parse(annotation.endAt) / 1000), price: annotation.endPrice };
+        const timeStart = resize.corner.includes("w") ? anchor.time : start.time;
+        const timeEnd = resize.corner.includes("e") ? anchor.time : end.time;
+        const lower = resize.corner.includes("s") ? anchor.price : start.price;
+        const upper = resize.corner.includes("n") ? anchor.price : end.price;
+        const preview = zoneBoxForGeometry(normalizedZoneGeometry({ time: timeStart, price: lower }, { time: timeEnd, price: upper }), annotation.id, annotation.label || "Supply / demand zone");
+        setZonePreview(preview);
+        return;
+      }
+      const move = zoneMoveRef.current;
+      if (!move) return;
+      const timeShift = anchor.time - move.origin.time;
+      const priceShift = anchor.price - move.origin.price;
+      const geometry = { price: move.geometry.price + priceShift, endPrice: move.geometry.endPrice + priceShift, startAt: timestampToIso(Math.floor(Date.parse(move.geometry.startAt) / 1000) + timeShift), endAt: timestampToIso(Math.floor(Date.parse(move.geometry.endAt) / 1000) + timeShift) };
+      setZonePreview(zoneBoxForGeometry(geometry, move.annotation.id, move.annotation.label || "Supply / demand zone"));
     };
     const handlePointerUp = (event: PointerEvent) => {
       const anchor = pointToAnchor(event.clientX, event.clientY);
@@ -403,14 +448,23 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
         return;
       }
       const resize = zoneResizeRef.current;
-      if (!resize) return;
-      zoneResizeRef.current = null;
-      const annotation = resize.annotation;
-      if (annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
-      const start = { time: Math.floor(Date.parse(annotation.startAt) / 1000), price: annotation.price };
-      const end = { time: Math.floor(Date.parse(annotation.endAt) / 1000), price: annotation.endPrice };
-      const geometry = normalizedZoneGeometry({ time: resize.corner.includes("w") ? anchor.time : start.time, price: resize.corner.includes("s") ? anchor.price : start.price }, { time: resize.corner.includes("e") ? anchor.time : end.time, price: resize.corner.includes("n") ? anchor.price : end.price });
-      updateAnnotationMutateRef.current({ id: annotation.id, ...geometry, label: annotation.label });
+      if (resize) {
+        zoneResizeRef.current = null;
+        const annotation = resize.annotation;
+        if (annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return;
+        const start = { time: Math.floor(Date.parse(annotation.startAt) / 1000), price: annotation.price };
+        const end = { time: Math.floor(Date.parse(annotation.endAt) / 1000), price: annotation.endPrice };
+        const geometry = normalizedZoneGeometry({ time: resize.corner.includes("w") ? anchor.time : start.time, price: resize.corner.includes("s") ? anchor.price : start.price }, { time: resize.corner.includes("e") ? anchor.time : end.time, price: resize.corner.includes("n") ? anchor.price : end.price });
+        updateAnnotationMutateRef.current({ id: annotation.id, ...geometry, label: annotation.label });
+        return;
+      }
+      const move = zoneMoveRef.current;
+      if (!move) return;
+      zoneMoveRef.current = null;
+      const timeShift = anchor.time - move.origin.time;
+      const priceShift = anchor.price - move.origin.price;
+      const geometry = { price: move.geometry.price + priceShift, endPrice: move.geometry.endPrice + priceShift, startAt: timestampToIso(Math.floor(Date.parse(move.geometry.startAt) / 1000) + timeShift), endAt: timestampToIso(Math.floor(Date.parse(move.geometry.endAt) / 1000) + timeShift) };
+      updateAnnotationMutateRef.current({ id: move.annotation.id, ...geometry, label: move.annotation.label });
     };
     updateZoneBoxes();
     chart.timeScale().subscribeVisibleTimeRangeChange(updateZoneBoxes);
@@ -446,7 +500,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
         <div className="flex flex-col gap-3 border-b border-violet-300/[0.08] px-5 py-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"><span className="text-emerald-200">▲ Simulated entry</span><span className="text-rose-200">● Simulated exit</span><span>Markers use saved entry and exit timestamps.</span></div><div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">Draw on chart</span><DrawingButton active={drawingTool === "none"} onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} onSnapshot={captureChartSnapshot}><MousePointer2 className="mr-1 h-3.5 w-3.5" /> Cursor</DrawingButton><Button type="button" size="sm" variant="outline" aria-expanded={isToolPaletteOpen} aria-controls="backtest-drawing-palette" onClick={() => setIsToolPaletteOpen(value => !value)} className="border-violet-300/30 bg-violet-400/10 text-violet-100"><Menu className="mr-1 h-3.5 w-3.5" /> Tools</Button></div></div>
         {archived && <div role="status" className="border-b border-amber-300/[0.12] bg-amber-400/[0.06] px-5 py-2 text-xs text-amber-100">This strategy is archived and its chart is read-only. Use <strong>Reopen strategy</strong> above to add private drawings or simulations.</div>}
         {drawingTool !== "none" && !archived && <div className="flex items-center gap-2 border-b border-violet-300/[0.08] bg-violet-400/[0.06] px-5 py-2 text-xs text-violet-100"><Crosshair className="h-4 w-4" /><span>{drawingTool === "zone" ? "Click, hold, and drag across the chart to draw a private supply/demand rectangle." : "Click two chart points to place a private trendline."}</span><button type="button" onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} className="ml-auto rounded p-1 hover:bg-white/10" aria-label="Cancel drawing"><X className="h-4 w-4" /></button></div>}
-        <div className="relative"><div ref={chartContainer} data-testid="historical-replay-chart" className={`w-full touch-none ${drawingTool === "zone" ? "cursor-crosshair" : ""} ${isFullscreen ? "min-h-[560px]" : "min-h-[410px]"}`} />{isToolPaletteOpen && <div id="backtest-drawing-palette" role="menu" className="absolute left-3 top-3 z-20 w-52 overflow-hidden rounded-xl border border-blue-200/[0.16] bg-[#0a1427]/95 p-2 shadow-2xl backdrop-blur"><div className="mb-1 flex items-center justify-between px-2 py-1"><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Drawing tools</span><button type="button" aria-label="Close drawing tools" onClick={() => setIsToolPaletteOpen(false)} className="rounded p-1 text-slate-500 hover:bg-white/10 hover:text-white"><X className="h-3.5 w-3.5" /></button></div><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("trendline"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-violet-400/15 disabled:cursor-not-allowed disabled:opacity-40"><TrendingUp className="h-4 w-4 text-violet-300" /><span>Trendline</span><span className="ml-auto font-mono text-[9px] text-slate-500">2 clicks</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("zone"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-40"><BoxSelect className="h-4 w-4 text-amber-200" /><span>Zone rectangle</span><span className="ml-auto font-mono text-[9px] text-slate-500">Drag</span></button><div className="my-1 border-t border-blue-200/[0.10]" /><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("support")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-sky-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-sky-300" /><span>Support level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("resistance")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-rose-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-rose-300" /><span>Resistance level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button></div>}{renderedZoneBoxes.map(zone => { const annotation = annotations.find(item => item.id === zone.id); const active = selectedZoneId === zone.id; return <div key={zone.id} data-testid="supply-demand-zone" title={zone.label} className={`pointer-events-none absolute z-10 border bg-amber-400/15 shadow-[inset_0_0_20px_rgba(251,191,36,0.10)] ${active || zone.id === -1 ? "border-amber-100 ring-1 ring-amber-200/60" : "border-amber-300/80"}`} style={{ left: zone.left, top: zone.top, width: zone.width, height: zone.height }}><span className="absolute left-1 top-1 rounded bg-[#0a1427]/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-amber-100">{zone.label}</span>{annotation && !archived && <>{(["nw", "ne", "sw", "se"] as ZoneCorner[]).map(corner => <button key={corner} type="button" aria-label={`Resize ${zone.label} ${corner}`} data-testid={`zone-resize-handle-${corner}`} onPointerDown={event => beginZoneResize(event, annotation, corner)} className={`pointer-events-auto absolute h-3 w-3 rounded-full border-2 border-[#0a1427] bg-amber-100 shadow ${corner.includes("n") ? "-top-1.5" : "-bottom-1.5"} ${corner.includes("w") ? "-left-1.5" : "-right-1.5"}`} />)}</>}</div>; })}</div>
+      <div className="relative"><div ref={chartContainer} data-testid="historical-replay-chart" className={`w-full touch-none ${drawingTool === "zone" ? "cursor-crosshair" : ""} ${isFullscreen ? "min-h-[560px]" : "min-h-[410px]"}`} />{isToolPaletteOpen && <div id="backtest-drawing-palette" role="menu" className="absolute left-3 top-3 z-20 w-52 overflow-hidden rounded-xl border border-blue-200/[0.16] bg-[#0a1427]/95 p-2 shadow-2xl backdrop-blur"><div className="mb-1 flex items-center justify-between px-2 py-1"><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Drawing tools</span><button type="button" aria-label="Close drawing tools" onClick={() => setIsToolPaletteOpen(false)} className="rounded p-1 text-slate-500 hover:bg-white/10 hover:text-white"><X className="h-3.5 w-3.5" /></button></div><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("trendline"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-violet-400/15 disabled:cursor-not-allowed disabled:opacity-40"><TrendingUp className="h-4 w-4 text-violet-300" /><span>Trendline</span><span className="ml-auto font-mono text-[9px] text-slate-500">2 clicks</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("zone"); setPendingAnchor(null); setIsToolPaletteOpen(false); }} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-slate-100 transition hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-40"><BoxSelect className="h-4 w-4 text-amber-200" /><span>Zone rectangle</span><span className="ml-auto font-mono text-[9px] text-slate-500">Drag</span></button><div className="my-1 border-t border-blue-200/[0.10]" /><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("support")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-sky-100 transition hover:bg-sky-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-sky-300" /><span>Support level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button><button type="button" role="menuitem" disabled={archived || createAnnotation.isPending} onClick={() => addReplayLevel("resistance")} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs text-rose-100 transition hover:bg-rose-400/15 disabled:cursor-not-allowed disabled:opacity-40"><Minus className="h-4 w-4 text-rose-300" /><span>Resistance level</span><span className="ml-auto font-mono text-[9px] text-slate-500">Now</span></button></div>}{renderedZoneBoxes.map(zone => { const annotation = annotations.find(item => item.id === zone.id); const active = selectedZoneId === zone.id; return <div key={zone.id} data-testid="supply-demand-zone" title={zone.label} onPointerDown={annotation && !archived ? event => beginZoneMove(event, annotation) : undefined} className={`absolute z-30 border bg-amber-400/15 shadow-[inset_0_0_20px_rgba(251,191,36,0.10)] ${annotation && !archived ? "pointer-events-auto cursor-grab touch-none active:cursor-grabbing" : "pointer-events-none"} ${active || zone.id === -1 ? "border-amber-100 ring-1 ring-amber-200/60" : "border-amber-300/80"}`} style={{ left: zone.left, top: zone.top, width: zone.width, height: zone.height }}><span className="pointer-events-none absolute left-1 top-1 rounded bg-[#0a1427]/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-amber-100">{zone.label}</span>{annotation && !archived && <>{(["nw", "ne", "sw", "se"] as ZoneCorner[]).map(corner => <button key={corner} type="button" aria-label={`Resize ${zone.label} ${corner}`} data-testid={`zone-resize-handle-${corner}`} onPointerDown={event => beginZoneResize(event, annotation, corner)} className={`pointer-events-auto absolute h-3 w-3 rounded-full border-2 border-[#0a1427] bg-amber-100 shadow ${corner.includes("n") ? "-top-1.5" : "-bottom-1.5"} ${corner.includes("w") ? "-left-1.5" : "-right-1.5"}`} />)}</>}</div>; })}</div>
         <div className="grid gap-4 border-t border-violet-300/[0.10] bg-violet-400/[0.04] px-5 py-4 xl:grid-cols-[0.9fr_1.2fr]">
           <div><div className="mb-2 flex items-center justify-between"><div><p className="text-xs font-semibold text-slate-200">Chart drawings</p><p className="text-[11px] text-slate-500">Private support, resistance, trendline, and supply/demand context.</p></div><span className="font-mono text-[9px] uppercase tracking-[0.12em] text-violet-200">Session only</span></div><div className="flex flex-col gap-2 sm:flex-row"><select aria-label="Annotation kind" value={annotationKind} onChange={event => setAnnotationKind(event.target.value as "support" | "resistance")} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-2 text-xs text-slate-200"><option value="support">Support</option><option value="resistance">Resistance</option></select><input aria-label="Annotation price" value={annotationPrice} onChange={event => setAnnotationPrice(event.target.value)} placeholder={String(currentPrice ?? "Price")} inputMode="decimal" className="h-9 min-w-0 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Annotation label" value={annotationLabel} onChange={event => setAnnotationLabel(event.target.value)} placeholder="Optional label" maxLength={120} className="h-9 min-w-0 flex-1 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><Button size="sm" disabled={createAnnotation.isPending || !Number.isFinite(Number(annotationPrice || currentPrice)) || archived} onClick={() => createAnnotation.mutate({ sessionId: session.id, kind: annotationKind, price: Number(annotationPrice || currentPrice), label: annotationLabel })} className="bg-violet-500 hover:bg-violet-400"><Plus className="mr-1 h-3.5 w-3.5" /> Add level</Button></div>{annotations.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{annotations.map(annotation => <div key={annotation.id} className="flex items-center gap-2 rounded-lg border border-violet-300/20 bg-violet-400/10 px-2 py-1 text-[11px] text-violet-100"><span>{annotation.kind} {annotation.price.toFixed(2)}{annotation.endPrice !== null ? ` → ${annotation.endPrice.toFixed(2)}` : ""}{annotation.label ? ` · ${annotation.label}` : ""}</span><button type="button" aria-label={`Delete ${annotation.kind} annotation`} onClick={() => deleteAnnotation.mutate({ id: annotation.id })} className="opacity-70 transition hover:opacity-100"><Trash2 className="h-3 w-3" /></button></div>)}</div>}</div>
           <div><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2"><Calculator className="h-4 w-4 text-emerald-300" /><div><p className="text-xs font-semibold text-slate-200">Simulated execution</p><p className="text-[11px] text-slate-500">Choose Buy or Sell, then define the final exit, protective stop, and any partial target.</p></div></div><span className="font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-200">Simulation</span></div><div data-testid="execution-quote-controls" className="mb-3 flex items-stretch overflow-hidden rounded-xl border border-blue-200/[0.14] bg-[#0a1427]"><button type="button" disabled={archived || sellQuote === null} onClick={() => prepareMarketExecution("SHORT")} className="min-w-0 flex-1 bg-rose-500/15 px-3 py-2 text-left transition hover:bg-rose-500/25 disabled:cursor-not-allowed disabled:opacity-40"><span className="block font-mono text-[9px] uppercase tracking-[0.14em] text-rose-200">Sell</span><span className="mt-1 block font-mono text-sm font-semibold text-rose-100">{sellQuote === null ? "—" : sellQuote.toFixed(quoteDecimals)}</span></button><div className="flex min-w-16 flex-col items-center justify-center border-x border-blue-200/[0.12] px-2"><span className="font-mono text-[9px] uppercase tracking-[0.12em] text-slate-500">Qty</span><input aria-label="Quick execution quantity" value={executionQuantity} onChange={event => setExecutionQuantity(event.target.value)} inputMode="decimal" className="mt-1 w-12 bg-transparent text-center font-mono text-xs text-slate-100 outline-none" /></div><button type="button" disabled={archived || buyQuote === null} onClick={() => prepareMarketExecution("LONG")} className="min-w-0 flex-1 bg-sky-500/15 px-3 py-2 text-right transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-40"><span className="block font-mono text-[9px] uppercase tracking-[0.14em] text-sky-200">Buy</span><span className="mt-1 block font-mono text-sm font-semibold text-sky-100">{buyQuote === null ? "—" : buyQuote.toFixed(quoteDecimals)}</span></button></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"><select aria-label="Execution direction" value={executionDirection} onChange={event => setExecutionDirection(event.target.value as "LONG" | "SHORT")} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-2 text-xs text-slate-200"><option value="LONG">Long</option><option value="SHORT">Short</option></select><input aria-label="Execution entry price" value={executionEntry} onChange={event => setExecutionEntry(event.target.value)} inputMode="decimal" placeholder="Entry price" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution exit price" value={executionExit} onChange={event => setExecutionExit(event.target.value)} inputMode="decimal" placeholder="Final exit price" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution stop loss" value={executionRisk} onChange={event => setExecutionRisk(event.target.value)} inputMode="decimal" placeholder="Stop-loss price (optional)" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Partial take-profit price" value={executionTakeProfit} onChange={event => setExecutionTakeProfit(event.target.value)} inputMode="decimal" placeholder="Partial take-profit price" className="h-9 rounded-lg border border-amber-300/20 bg-amber-400/[0.04] px-3 text-xs text-amber-100" /><input aria-label="Partial take-profit quantity" value={executionTakeProfitQuantity} onChange={event => setExecutionTakeProfitQuantity(event.target.value)} inputMode="decimal" placeholder="Partial quantity" className="h-9 rounded-lg border border-amber-300/20 bg-amber-400/[0.04] px-3 text-xs text-amber-100" /><input aria-label="Execution fees" value={executionFees} onChange={event => setExecutionFees(event.target.value)} inputMode="decimal" placeholder="Fees" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution setup" value={executionSetup} onChange={event => setExecutionSetup(event.target.value)} maxLength={80} placeholder="Setup tag" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /></div><div className="mt-2 flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => { if (!current || currentPrice === null) return; setExecutionEntry(String(currentPrice)); setExecutionEntryAt(localDateTime(current.time)); }} className="border-emerald-300/30 bg-emerald-400/10 text-emerald-100"><Target className="mr-1 h-3.5 w-3.5" /> Use replay point as entry</Button><Button type="button" size="sm" variant="outline" onClick={() => { if (!current || currentPrice === null) return; setExecutionExit(String(currentPrice)); setExecutionExitAt(localDateTime(current.time)); }} className="border-rose-300/30 bg-rose-400/10 text-rose-100"><Target className="mr-1 h-3.5 w-3.5" /> Use replay point as exit</Button>{executionPreview && <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${executionPreview.net >= 0 ? "bg-emerald-400/10 text-emerald-200" : "bg-rose-400/10 text-rose-200"}`}>P&L {executionPreview.net >= 0 ? "+" : ""}{executionPreview.net.toFixed(2)}{executionPreview.partialPrice !== null ? ` · partial ${executionPreview.partialQuantity}` : ""}{executionPreview.rMultiple !== null ? ` · ${executionPreview.rMultiple.toFixed(2)}R` : ""}</span>}<Button type="button" size="sm" disabled={!executionPreview || createTrade.isPending || archived} onClick={saveExecution} className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"><Plus className="mr-1 h-3.5 w-3.5" /> Save simulated trade</Button></div></div>
