@@ -89,7 +89,14 @@ describe("BacktestReplay", () => {
     render(<BacktestReplay session={{ id: 11, symbol: "BTCUSD", timeframe: "1H", trades: [] }} />);
     expect(screen.getByLabelText("Open full screen chart")).toBeTruthy();
     expect(screen.getByText("Simulated execution")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /trendline/i })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /tools/i }));
+    expect(screen.getByRole("menuitem", { name: /trendline/i })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: /zone rectangle/i })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /^sell/i }));
+    expect((screen.getByLabelText("Execution direction") as HTMLSelectElement).value).toBe("SHORT");
+    await user.click(screen.getByRole("button", { name: /^buy/i }));
+    expect((screen.getByLabelText("Execution direction") as HTMLSelectElement).value).toBe("LONG");
+    expect(screen.getByTestId("execution-quote-controls")).toBeTruthy();
     await user.clear(screen.getByLabelText("Execution entry price"));
     await user.type(screen.getByLabelText("Execution entry price"), "100");
     await user.clear(screen.getByLabelText("Execution exit price"));
@@ -101,7 +108,8 @@ describe("BacktestReplay", () => {
   it("creates a two-click private supply/demand zone for an active strategy", async () => {
     const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 12, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
-    await user.click(screen.getByRole("button", { name: /supply \/ demand/i }));
+    await user.click(screen.getByRole("button", { name: /tools/i }));
+    await user.click(screen.getByRole("menuitem", { name: /zone rectangle/i }));
     await waitFor(() => expect(mocks.chartClickHandler).toBeTypeOf("function"));
     await act(async () => { mocks.chartClickHandler?.({ time: 1_786_579_200, point: { x: 20, y: 10 } }); });
     await waitFor(() => expect(screen.getByText(/second click saves a private/i)).toBeTruthy());
@@ -116,9 +124,11 @@ describe("BacktestReplay", () => {
     expect(screen.getByTestId("supply-demand-zone").getAttribute("title")).toBe("London demand");
   });
 
-  it("makes archived Backtest charts visibly read-only instead of accepting drawing clicks", () => {
+  it("makes archived Backtest charts visibly read-only instead of accepting drawing clicks", async () => {
+    const user = userEvent.setup();
     render(<BacktestReplay session={{ id: 13, symbol: "BTCUSD", timeframe: "1H", status: "archived", trades: [] }} />);
     expect(screen.getByRole("status").textContent).toMatch(/archived/i);
-    expect((screen.getByRole("button", { name: /supply \/ demand/i }) as HTMLButtonElement).disabled).toBe(true);
+    await user.click(screen.getByRole("button", { name: /tools/i }));
+    expect((screen.getByRole("menuitem", { name: /zone rectangle/i }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

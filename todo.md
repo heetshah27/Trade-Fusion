@@ -125,3 +125,8 @@
 - [x] Diagnose and repair Backtest supply/demand-zone drawing so two chart clicks create a visible private zone.
 - [x] Add regression coverage and publish the repaired zone-drawing workflow.
 - [x] Save and publish the repaired Backtest zone-drawing workflow after 85-test validation.
+- [x] Redesign the Backtest drawing controls as a simple TradingView-inspired tool palette with clear geometric zone and line actions.
+- [x] Add prominent Buy and Sell simulated-execution buttons tied to the current replay price and private execution form.
+- [x] Add a responsive simulated trade-history panel that lists each executed trade with direction, entry/exit, and net P&L.
+- [x] Test and publish the streamlined Backtest drawing and execution workflow.
+- [x] Save and publish the streamlined Backtest drawing, Buy/Sell execution, and trade-history workflow after 87-test validation.

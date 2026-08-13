@@ -1,0 +1,5 @@
+# Backtest Interaction Design Notes
+
+The supplied TradingView reference presents drawing functions as a compact, left-aligned vertical menu with grouped categories and simple icon-plus-label rows. Its readable line actions include **Trendline**, **Ray**, **Horizontal line**, **Horizontal ray**, **Vertical line**, and **Crossline**. The companion reference establishes the desired execution treatment: clearly separated red **Sell** and blue **Buy** quote buttons with the quantity displayed between them.
+
+Trade Fusion will use an original, reduced version of this interaction model: a compact **Draw** palette offering only the tools supported by the private Backtest data model—trendline, supply/demand rectangle, horizontal support/resistance, and cursor. It will pair this palette with Buy/Sell simulation buttons prefilled from the visible replay price. Existing private execution fields will remain available as secondary controls, and a dedicated history panel will list actual saved simulations with their net P&L. No external drawing tools or unsupported channel/pitchfork features will be represented as functional controls.
