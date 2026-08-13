@@ -9,6 +9,7 @@ const KRAKEN_PAIRS = { BTCUSD: "XBTUSD", ETHUSD: "ETHUSD", SOLUSD: "SOLUSD" } as
 const KRAKEN_INTERVALS = { "1m": 1, "5m": 5, "15m": 15, "30m": 30, "1h": 60, "4h": 240, "1d": 1440 } as const;
 const ALPHA_FX = { EURUSD: ["EUR", "USD"], GBPUSD: ["GBP", "USD"], USDJPY: ["USD", "JPY"] } as const;
 const TWELVE_FX_INTERVALS = { "15m": "15min", "1h": "1h" } as const;
+const TWELVE_GOLD_INTERVALS = { "15m": "15min", "1h": "1h" } as const;
 
 export type ReplayCandle = { time: number; open: number; high: number; low: number; close: number };
 export type ReplayPricePoint = { time: number; value: number };
@@ -37,8 +38,8 @@ function unixDate(value: string) {
   return Number.isFinite(timestamp) ? timestamp : null;
 }
 
-function unavailable(source: ReplayResponse["source"], assetClass: ReplayResponse["assetClass"], note: string): ReplayResponse {
-  return { candles: [], prices: [], seriesType: assetClass === "gold" ? "line" : "candlestick", source, sourceStatus: "unavailable", assetClass, coverageStart: null, coverageEnd: null, note };
+function unavailable(source: ReplayResponse["source"], assetClass: ReplayResponse["assetClass"], note: string, seriesType: ReplaySeriesType = assetClass === "gold" ? "line" : "candlestick"): ReplayResponse {
+  return { candles: [], prices: [], seriesType, source, sourceStatus: "unavailable", assetClass, coverageStart: null, coverageEnd: null, note };
 }
 
 export function normalizeKrakenCandles(rows: KrakenRow[]): ReplayCandle[] {
@@ -168,6 +169,24 @@ async function fetchTwelveFx(symbol: keyof typeof ALPHA_FX, interval: keyof type
   }
 }
 
+async function fetchTwelveGold(interval: keyof typeof TWELVE_GOLD_INTERVALS): Promise<ReplayResponse> {
+  const key = `twelve:gold:${interval}`;
+  const cached = cache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  try {
+    const response = await fetch(twelveUrl({ symbol: "XAU/USD", interval: TWELVE_GOLD_INTERVALS[interval], outputsize: "1000", timezone: "UTC" }), { signal: AbortSignal.timeout(12_000) });
+    if (!response.ok) throw new Error(`Twelve Data returned ${response.status}`);
+    const payload = await response.json() as { status?: string; message?: string; values?: Array<{ datetime: string; open: string; high: string; low: string; close: string }> };
+    if (payload.status === "error" || !Array.isArray(payload.values)) throw new Error(payload.message || "Twelve Data did not return intraday XAU/USD OHLC data");
+    const candles = normalizeTwelveDataCandles(payload.values);
+    if (!candles.length) throw new Error("Twelve Data returned no usable intraday XAU/USD candles");
+    return cacheResponse(key, { candles, prices: [], seriesType: "candlestick", source: "Twelve Data Time Series", sourceStatus: "live", assetClass: "gold", coverageStart: candles[0].time, coverageEnd: candles[candles.length - 1].time, note: `Licensed ${TWELVE_GOLD_INTERVALS[interval]} XAU/USD OHLC candles are supplied by Twelve Data and cached server-side to protect the free-tier request budget.` }, TWELVE_CACHE_MS);
+  } catch (error) {
+    console.warn("[Replay] Twelve Data intraday gold unavailable", error);
+    return unavailable("Twelve Data Time Series", "gold", "Twelve Data intraday XAU/USD candles are temporarily unavailable. No substitute data is shown.", "candlestick");
+  }
+}
+
 export async function getReplaySeries(symbol: z.infer<typeof replaySymbolSchema>, interval: z.infer<typeof replayIntervalSchema>): Promise<ReplayResponse> {
   if (symbol in KRAKEN_PAIRS) return fetchKrakenCandles(symbol as keyof typeof KRAKEN_PAIRS, interval);
   if (symbol in ALPHA_FX) {
@@ -175,13 +194,14 @@ export async function getReplaySeries(symbol: z.infer<typeof replaySymbolSchema>
     if (interval !== "1d") return unavailable("Alpha Vantage FX_DAILY", "forex", "Licensed Alpha Vantage FX replay currently provides daily OHLC candles only. Select the 1d interval.");
     return fetchAlphaFx(symbol as keyof typeof ALPHA_FX);
   }
-  if (interval !== "1d") return unavailable("Alpha Vantage GOLD_SILVER_HISTORY", "gold", "Licensed Alpha Vantage gold replay currently provides daily price history only. Select the 1d interval.");
+  if (interval in TWELVE_GOLD_INTERVALS) return fetchTwelveGold(interval as keyof typeof TWELVE_GOLD_INTERVALS);
+  if (interval !== "1d") return unavailable("Twelve Data Time Series", "gold", "XAU/USD intraday replay currently supports the 15m and 1h intervals. Select one of those or the daily Alpha Vantage view.", "candlestick");
   return fetchAlphaGold();
 }
 
 export const replayRouter = router({
   candles: protectedProcedure.input(z.object({ symbol: replaySymbolSchema, interval: replayIntervalSchema })).query(async ({ input }) => getReplaySeries(input.symbol, input.interval)),
-  supportedInstruments: protectedProcedure.query(() => ({ crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], forexIntraday: { symbols: ["EURUSD", "GBPUSD", "USDJPY"], intervals: ["15m", "1h"] }, goldDaily: ["XAUUSD"], futureProviderRequired: ["indices", "intraday_gold"] })),
+  supportedInstruments: protectedProcedure.query(() => ({ crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], forexIntraday: { symbols: ["EURUSD", "GBPUSD", "USDJPY"], intervals: ["15m", "1h"] }, goldDaily: ["XAUUSD"], goldIntraday: { symbols: ["XAUUSD"], intervals: ["15m", "1h"] }, futureProviderRequired: ["indices"] })),
 });
 
 export function requireReplaySymbol(value: string) {

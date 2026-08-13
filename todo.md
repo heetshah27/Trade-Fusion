@@ -114,3 +114,7 @@
 - [x] Store distinct simulated entry and exit timestamps so replay markers align with the actual trade span.
 - [x] Verify range-filtered chart markers land on their saved entry and exit candles before publishing the advanced replay update.
 - [x] Save and publish the complete cached intraday FX, date-range, and precise-marker Backtest replay update.
+- [x] Select and configure a compliant intraday XAU/USD OHLC provider for short-timeframe candlestick replay.
+- [x] Add private session-owned support/resistance levels and text annotations to Backtest charts.
+- [x] Test annotation ownership, intraday gold candlestick rendering, and publish the advanced charting update.
+- [x] Save and publish the verified intraday XAU/USD candlestick and private annotation release.

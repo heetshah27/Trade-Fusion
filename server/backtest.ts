@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { backtestSessions, backtestTrades } from "../drizzle/schema";
+import { backtestAnnotations, backtestSessions, backtestTrades } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
 
@@ -34,6 +34,13 @@ const tradeInput = z.object({
   notes: z.string().trim().max(3000).optional().default(""),
 });
 
+const annotationInput = z.object({
+  sessionId: z.number().int().positive(),
+  kind: z.enum(["support", "resistance"]),
+  price: numericInput,
+  label: z.string().trim().max(120).optional().default(""),
+});
+
 type BacktestTradeRow = typeof backtestTrades.$inferSelect;
 
 function databaseUnavailable() {
@@ -62,6 +69,10 @@ function computedRMultiple(input: z.infer<typeof tradeInput>) {
 
 export function isBacktestSessionOwnedByUser(sessionUserId: number, authenticatedUserId: number) {
   return sessionUserId === authenticatedUserId;
+}
+
+export function isBacktestAnnotationOwnedByUser(annotationUserId: number, authenticatedUserId: number) {
+  return annotationUserId === authenticatedUserId;
 }
 
 export function hasValidBacktestTradeWindow(entryAt?: string | null, exitAt?: string | null) {
@@ -154,6 +165,48 @@ export const backtestRouter = router({
       trades: trades.map(toClientTrade),
       metrics: calculateBacktestMetrics(trades, numberValue(session.initialBalance)),
     };
+  }),
+
+  listAnnotations: protectedProcedure.input(z.object({ sessionId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+    const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
+    const annotations = await db.select().from(backtestAnnotations).where(eq(backtestAnnotations.sessionId, session.id)).orderBy(desc(backtestAnnotations.createdAt));
+    return annotations.map(annotation => ({
+      id: annotation.id,
+      sessionId: annotation.sessionId,
+      kind: annotation.kind as "support" | "resistance",
+      price: numberValue(annotation.price),
+      label: annotation.label || "",
+      createdAt: annotation.createdAt.toISOString(),
+    }));
+  }),
+
+  createAnnotation: protectedProcedure.input(annotationInput).mutation(async ({ ctx, input }) => {
+    const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
+    if (session.status !== "active") throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
+    const [created] = await db.insert(backtestAnnotations).values({
+      sessionId: session.id,
+      userId: ctx.user.id,
+      kind: input.kind,
+      price: String(input.price),
+      label: input.label || null,
+    }).returning();
+    return {
+      id: created.id,
+      sessionId: created.sessionId,
+      kind: created.kind as "support" | "resistance",
+      price: numberValue(created.price),
+      label: created.label || "",
+      createdAt: created.createdAt.toISOString(),
+    };
+  }),
+
+  deleteAnnotation: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw databaseUnavailable();
+    const [annotation] = await db.select().from(backtestAnnotations).where(and(eq(backtestAnnotations.id, input.id), eq(backtestAnnotations.userId, ctx.user.id)));
+    if (!annotation || !isBacktestAnnotationOwnedByUser(annotation.userId, ctx.user.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Chart annotation not found" });
+    await db.delete(backtestAnnotations).where(eq(backtestAnnotations.id, annotation.id));
+    return { success: true };
   }),
 
   createSession: protectedProcedure.input(sessionInput).mutation(async ({ ctx, input }) => {

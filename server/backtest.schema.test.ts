@@ -17,7 +17,7 @@ describe("Neon Backtest schema", () => {
     sql = postgres(connectionString!, { max: 1, connect_timeout: 10, idle_timeout: 1 });
     const tables = await sql<{ table_name: string }[]>`
       select table_name from information_schema.tables
-      where table_schema = 'public' and table_name in ('backtest_sessions', 'backtest_trades')
+      where table_schema = 'public' and table_name in ('backtest_sessions', 'backtest_trades', 'backtest_annotations')
     `;
     const sessionColumns = await sql<{ column_name: string }[]>`
       select column_name from information_schema.columns
@@ -29,8 +29,14 @@ describe("Neon Backtest schema", () => {
       where table_schema = 'public' and table_name = 'backtest_trades'
         and column_name in ('entryAt', 'exitAt')
     `;
-    expect(tables.map(row => row.table_name).sort()).toEqual(["backtest_sessions", "backtest_trades"]);
+    const annotationColumns = await sql<{ column_name: string }[]>`
+      select column_name from information_schema.columns
+      where table_schema = 'public' and table_name = 'backtest_annotations'
+        and column_name in ('sessionId', 'userId', 'kind', 'price', 'label')
+    `;
+    expect(tables.map(row => row.table_name).sort()).toEqual(["backtest_annotations", "backtest_sessions", "backtest_trades"]);
     expect(sessionColumns.map(row => row.column_name).sort()).toEqual(["initialBalance", "status", "strategyName", "userId"]);
     expect(tradeColumns.map(row => row.column_name).sort()).toEqual(["entryAt", "exitAt"]);
+    expect(annotationColumns.map(row => row.column_name).sort()).toEqual(["kind", "label", "price", "sessionId", "userId"]);
   });
 });

@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { calculateBacktestMetrics, hasValidBacktestTradeWindow, isBacktestSessionOwnedByUser } from "./backtest";
+import { calculateBacktestMetrics, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionOwnedByUser } from "./backtest";
 
 describe("Backtest ownership and metrics", () => {
   it("keeps each simulated session private to its owner", () => {
     expect(isBacktestSessionOwnedByUser(9, 9)).toBe(true);
     expect(isBacktestSessionOwnedByUser(9, 10)).toBe(false);
+  });
+
+  it("keeps session chart annotations private to their creator", () => {
+    expect(isBacktestAnnotationOwnedByUser(9, 9)).toBe(true);
+    expect(isBacktestAnnotationOwnedByUser(9, 10)).toBe(false);
   });
 
   it("calculates simulated performance without referencing live journal trades", () => {

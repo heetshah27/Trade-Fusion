@@ -132,8 +132,27 @@ export const backtestTrades = pgTable(
   ]
 );
 
+/** Private horizontal chart levels created by a member within a Backtest session. */
+export const backtestAnnotations = pgTable(
+  "backtest_annotations",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    sessionId: integer("sessionId").notNull().references(() => backtestSessions.id, { onDelete: "cascade" }),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    kind: varchar("kind", { length: 16 }).notNull(),
+    price: decimal("price", { precision: 14, scale: 5 }).notNull(),
+    label: varchar("label", { length: 120 }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("backtest_annotations_session_created_idx").on(table.sessionId, table.createdAt),
+    index("backtest_annotations_user_idx").on(table.userId),
+  ]
+);
+
 export type BacktestSession = typeof backtestSessions.$inferSelect;
 export type BacktestTrade = typeof backtestTrades.$inferSelect;
+export type BacktestAnnotation = typeof backtestAnnotations.$inferSelect;
 
 /**
  * Trader’s Room posts. Trade journal data is never copied here automatically;
