@@ -10,6 +10,7 @@ type ReplaySession = { id: number; symbol: string; timeframe: string; status?: "
 type ReplayAnnotation = { id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string };
 type DrawingTool = "none" | "trendline" | "zone";
 type ChartAnchor = { time: number; price: number };
+type ZoneBox = { id: number; label: string; left: number; top: number; width: number; height: number };
 
 const pairs = ["BTCUSD", "ETHUSD", "SOLUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD"] as const;
 const intervals: ReplayInterval[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1d"];
@@ -34,8 +35,8 @@ function localDateTime(value: number) {
   return new Date(value * 1000).toISOString().slice(0, 16);
 }
 
-function DrawingButton({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
-  return <Button type="button" size="sm" variant="outline" onClick={onClick} className={`border-blue-200/[0.12] ${active ? "bg-violet-400/20 text-violet-100" : "bg-transparent text-slate-300"}`}>{children}</Button>;
+function DrawingButton({ active, children, disabled = false, onClick }: { active: boolean; children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
+  return <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`border-blue-200/[0.12] ${active ? "bg-violet-400/20 text-violet-100" : "bg-transparent text-slate-300"}`}>{children}</Button>;
 }
 
 export function BacktestReplay({ session }: { session: ReplaySession }) {
@@ -61,6 +62,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
   const [executionEntryAt, setExecutionEntryAt] = useState("");
   const [executionExitAt, setExecutionExitAt] = useState("");
   const [executionInitialized, setExecutionInitialized] = useState(false);
+  const [zoneBoxes, setZoneBoxes] = useState<ZoneBox[]>([]);
   const chartContainer = useRef<HTMLDivElement | null>(null);
   const fullscreenContainer = useRef<HTMLElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -71,6 +73,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
   const deleteAnnotation = trpc.backtest.deleteAnnotation.useMutation({ onSuccess: () => annotationsQuery.refetch() });
   const createTrade = trpc.backtest.createTrade.useMutation({ onSuccess: () => utils.backtest.getSession.invalidate({ id: session.id }) });
   const annotations = annotationsQuery.data ?? [];
+  const archived = session.status === "archived";
   const candles = data?.candles ?? [];
   const prices = data?.prices ?? [];
   const chartPoints = data?.seriesType === "line" ? prices : candles;
@@ -87,6 +90,12 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     setPlaying(false);
     setPendingAnchor(null);
   }, [symbol, interval, rangeDays, filteredPoints.length]);
+
+  useEffect(() => {
+    if (!archived) return;
+    setDrawingTool("none");
+    setPendingAnchor(null);
+  }, [archived]);
 
   useEffect(() => {
     if (!playing || cursor >= filteredPoints.length - 1) { if (cursor >= filteredPoints.length - 1) setPlaying(false); return; }
@@ -178,11 +187,12 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
       const entryPosition = trade.direction === "LONG" ? "belowBar" : "aboveBar";
       const exitPosition = trade.direction === "LONG" ? "aboveBar" : "belowBar";
       const positive = trade.pnl - trade.fees >= 0;
-      const tradeMarkers: Array<{ time: UTCTimestamp; position: "belowBar" | "aboveBar"; color: string; shape: "arrowUp" | "arrowDown" | "circle"; text: string }> = [];
+      const tradeMarkers: Array<{ time: UTCTimestamp; position: "belowBar" | "aboveBar" | "inBar"; color: string; shape: "arrowUp" | "arrowDown" | "circle"; text: string }> = [];
       if (entryTime) tradeMarkers.push({ time: entryTime as UTCTimestamp, position: entryPosition, color: trade.direction === "LONG" ? "#56d39b" : "#fb7185", shape: trade.direction === "LONG" ? "arrowUp" : "arrowDown", text: `${trade.direction} entry` });
       if (exitTime) tradeMarkers.push({ time: exitTime as UTCTimestamp, position: exitPosition, color: positive ? "#56d39b" : "#fb7185", shape: "circle", text: `Exit ${positive ? "+" : ""}${(trade.pnl - trade.fees).toFixed(2)}` });
       return tradeMarkers;
     });
+    if (pendingAnchor && drawingTool !== "none") markers.push({ time: pendingAnchor.time as UTCTimestamp, position: "inBar", color: "#c084fc", shape: "circle", text: `${drawingTool === "zone" ? "Zone" : "Trendline"} start` });
     createSeriesMarkers(series, markers);
     annotations.forEach(annotation => {
       if (annotation.kind === "trendline" && annotation.startAt && annotation.endAt && annotation.endPrice !== null) {
@@ -197,8 +207,23 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
         series.createPriceLine({ price: annotation.price, color: annotation.kind === "support" ? "#38bdf8" : "#fb7185", lineWidth: 2, axisLabelVisible: true, title: annotation.label || (annotation.kind === "support" ? "Support" : "Resistance") });
       }
     });
+    const updateZoneBoxes = () => {
+      const nextBoxes = annotations.flatMap(annotation => {
+        if (annotation.kind !== "zone" || annotation.endPrice === null || !annotation.startAt || !annotation.endAt) return [];
+        const firstX = chart.timeScale().timeToCoordinate(Math.floor(Date.parse(annotation.startAt) / 1000) as UTCTimestamp);
+        const secondX = chart.timeScale().timeToCoordinate(Math.floor(Date.parse(annotation.endAt) / 1000) as UTCTimestamp);
+        const firstY = series.priceToCoordinate(annotation.price);
+        const secondY = series.priceToCoordinate(annotation.endPrice);
+        if (firstX === null || secondX === null || firstY === null || secondY === null) return [];
+        return [{ id: annotation.id, label: annotation.label || "Supply / demand zone", left: Math.min(firstX, secondX), top: Math.min(firstY, secondY), width: Math.max(2, Math.abs(secondX - firstX)), height: Math.max(2, Math.abs(secondY - firstY)) }];
+      });
+      setZoneBoxes(currentBoxes => JSON.stringify(currentBoxes) === JSON.stringify(nextBoxes) ? currentBoxes : nextBoxes);
+    };
+    updateZoneBoxes();
+    chart.timeScale().subscribeVisibleTimeRangeChange(updateZoneBoxes);
     if (drawingTool !== "none") {
       chart.subscribeClick(param => {
+        if (archived || createAnnotation.isPending) return;
         if (typeof param.time !== "number" || !param.point) return;
         const price = series.coordinateToPrice(param.point.y);
         if (price === null) return;
@@ -218,13 +243,12 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
       });
     }
     chart.timeScale().fitContent();
-    const resize = new ResizeObserver(() => chart.applyOptions({ width: chartContainer.current?.clientWidth ?? 0, height: isFullscreen ? Math.max(560, window.innerHeight - 310) : 410 }));
+    const resize = new ResizeObserver(() => { chart.applyOptions({ width: chartContainer.current?.clientWidth ?? 0, height: isFullscreen ? Math.max(560, window.innerHeight - 310) : 410 }); updateZoneBoxes(); });
     resize.observe(chartContainer.current);
     chartRef.current = chart;
-    return () => { resize.disconnect(); chart.remove(); chartRef.current = null; };
-  }, [annotations, createAnnotation, data?.seriesType, drawingTool, isFullscreen, pendingAnchor, session.id, visibleCandles, visiblePrices, visibleTimes, visibleTrades]);
+    return () => { resize.disconnect(); chart.timeScale().unsubscribeVisibleTimeRangeChange(updateZoneBoxes); chart.remove(); chartRef.current = null; };
+  }, [annotations, archived, createAnnotation, data?.seriesType, drawingTool, isFullscreen, pendingAnchor, session.id, visibleCandles, visiblePrices, visibleTimes, visibleTrades]);
 
-  const archived = session.status === "archived";
   return <section ref={fullscreenContainer} className={isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto bg-[#07101f] p-3 md:p-6" : "mt-5 overflow-hidden rounded-2xl border border-violet-300/[0.16] bg-[#0c1830]/88"}>
     <div className={`overflow-hidden rounded-2xl ${isFullscreen ? "border border-violet-300/[0.18]" : ""}`}>
       <div className="flex flex-col gap-4 border-b border-violet-300/[0.10] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
@@ -233,9 +257,10 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
       </div>
       {!initialSymbol && <div className="border-b border-amber-300/[0.12] bg-amber-400/[0.06] px-5 py-3 text-xs text-amber-100">This Backtest session uses <strong>{session.symbol}</strong>. Choose a supported replay symbol to compare your saved simulation against source-backed history.</div>}
       {data?.sourceStatus === "unavailable" ? <div className="grid min-h-[410px] place-items-center p-8 text-center"><div><p className="text-sm font-medium text-slate-200">Historical source data is unavailable right now</p><p className="mt-2 max-w-md text-xs leading-5 text-slate-500">No fallback candles or prices are fabricated. Try another supported market or return when the provider responds.</p></div></div> : !chartPoints.length || isFetching ? <div className="grid min-h-[410px] place-items-center text-sm text-slate-500">Loading source-backed {data?.seriesType === "line" ? "price history" : "candles"}…</div> : <>
-        <div className="flex flex-col gap-3 border-b border-violet-300/[0.08] px-5 py-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"><span className="text-emerald-200">▲ Simulated entry</span><span className="text-rose-200">● Simulated exit</span><span>Markers use saved entry and exit timestamps.</span></div><div className="flex flex-wrap gap-2"><DrawingButton active={drawingTool === "none"} onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }}><MousePointer2 className="mr-1 h-3.5 w-3.5" /> Cursor</DrawingButton><DrawingButton active={drawingTool === "trendline"} onClick={() => { setDrawingTool("trendline"); setPendingAnchor(null); }}><TrendingUp className="mr-1 h-3.5 w-3.5" /> Trendline</DrawingButton><DrawingButton active={drawingTool === "zone"} onClick={() => { setDrawingTool("zone"); setPendingAnchor(null); }}><BoxSelect className="mr-1 h-3.5 w-3.5" /> Supply / demand</DrawingButton></div></div>
-        {drawingTool !== "none" && <div className="flex items-center gap-2 border-b border-violet-300/[0.08] bg-violet-400/[0.06] px-5 py-2 text-xs text-violet-100"><Crosshair className="h-4 w-4" /><span>{pendingAnchor ? "Choose the second chart point to save this private drawing." : `Choose the first chart point to anchor your ${drawingTool}.`}</span><button type="button" onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} className="ml-auto rounded p-1 hover:bg-white/10" aria-label="Cancel drawing"><X className="h-4 w-4" /></button></div>}
-        <div ref={chartContainer} data-testid="historical-replay-chart" className={`w-full ${isFullscreen ? "min-h-[560px]" : "min-h-[410px]"}`} />
+        <div className="flex flex-col gap-3 border-b border-violet-300/[0.08] px-5 py-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-slate-500"><span className="text-emerald-200">▲ Simulated entry</span><span className="text-rose-200">● Simulated exit</span><span>Markers use saved entry and exit timestamps.</span></div><div className="flex flex-wrap gap-2"><DrawingButton active={drawingTool === "none"} onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }}><MousePointer2 className="mr-1 h-3.5 w-3.5" /> Cursor</DrawingButton><DrawingButton active={drawingTool === "trendline"} disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("trendline"); setPendingAnchor(null); }}><TrendingUp className="mr-1 h-3.5 w-3.5" /> Trendline</DrawingButton><DrawingButton active={drawingTool === "zone"} disabled={archived || createAnnotation.isPending} onClick={() => { setDrawingTool("zone"); setPendingAnchor(null); }}><BoxSelect className="mr-1 h-3.5 w-3.5" /> Supply / demand</DrawingButton></div></div>
+        {archived && <div role="status" className="border-b border-amber-300/[0.12] bg-amber-400/[0.06] px-5 py-2 text-xs text-amber-100">This strategy is archived and its chart is read-only. Use <strong>Reopen strategy</strong> above to add private drawings or simulations.</div>}
+        {drawingTool !== "none" && !archived && <div className="flex items-center gap-2 border-b border-violet-300/[0.08] bg-violet-400/[0.06] px-5 py-2 text-xs text-violet-100"><Crosshair className="h-4 w-4" /><span>{pendingAnchor ? "Second click saves a private, time-bounded drawing. The violet point marks the first anchor." : `Click the first chart point to anchor your ${drawingTool}.`}</span><button type="button" onClick={() => { setDrawingTool("none"); setPendingAnchor(null); }} className="ml-auto rounded p-1 hover:bg-white/10" aria-label="Cancel drawing"><X className="h-4 w-4" /></button></div>}
+        <div className="relative"><div ref={chartContainer} data-testid="historical-replay-chart" className={`w-full ${isFullscreen ? "min-h-[560px]" : "min-h-[410px]"}`} />{zoneBoxes.map(zone => <div key={zone.id} data-testid="supply-demand-zone" title={zone.label} className="pointer-events-none absolute z-10 border border-amber-300/80 bg-amber-400/15 shadow-[inset_0_0_20px_rgba(251,191,36,0.10)]" style={{ left: zone.left, top: zone.top, width: zone.width, height: zone.height }}><span className="absolute left-1 top-1 rounded bg-[#0a1427]/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-amber-100">{zone.label}</span></div>)}</div>
         <div className="grid gap-4 border-t border-violet-300/[0.10] bg-violet-400/[0.04] px-5 py-4 xl:grid-cols-[1fr_1.15fr]">
           <div><div className="mb-2 flex items-center justify-between"><div><p className="text-xs font-semibold text-slate-200">Chart drawings</p><p className="text-[11px] text-slate-500">Private support, resistance, trendline, and supply/demand context.</p></div><span className="font-mono text-[9px] uppercase tracking-[0.12em] text-violet-200">Session only</span></div><div className="flex flex-col gap-2 sm:flex-row"><select aria-label="Annotation kind" value={annotationKind} onChange={event => setAnnotationKind(event.target.value as "support" | "resistance")} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-2 text-xs text-slate-200"><option value="support">Support</option><option value="resistance">Resistance</option></select><input aria-label="Annotation price" value={annotationPrice} onChange={event => setAnnotationPrice(event.target.value)} placeholder={String(currentPrice ?? "Price")} inputMode="decimal" className="h-9 min-w-0 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Annotation label" value={annotationLabel} onChange={event => setAnnotationLabel(event.target.value)} placeholder="Optional label" maxLength={120} className="h-9 min-w-0 flex-1 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><Button size="sm" disabled={createAnnotation.isPending || !Number.isFinite(Number(annotationPrice || currentPrice)) || archived} onClick={() => createAnnotation.mutate({ sessionId: session.id, kind: annotationKind, price: Number(annotationPrice || currentPrice), label: annotationLabel })} className="bg-violet-500 hover:bg-violet-400"><Plus className="mr-1 h-3.5 w-3.5" /> Add level</Button></div>{annotations.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{annotations.map(annotation => <div key={annotation.id} className="flex items-center gap-2 rounded-lg border border-violet-300/20 bg-violet-400/10 px-2 py-1 text-[11px] text-violet-100"><span>{annotation.kind} {annotation.price.toFixed(2)}{annotation.endPrice !== null ? ` → ${annotation.endPrice.toFixed(2)}` : ""}{annotation.label ? ` · ${annotation.label}` : ""}</span><button type="button" aria-label={`Delete ${annotation.kind} annotation`} onClick={() => deleteAnnotation.mutate({ id: annotation.id })} className="opacity-70 transition hover:opacity-100"><Trash2 className="h-3 w-3" /></button></div>)}</div>}</div>
           <div><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2"><Calculator className="h-4 w-4 text-emerald-300" /><div><p className="text-xs font-semibold text-slate-200">Simulated execution</p><p className="text-[11px] text-slate-500">Save a point-based private trade; live journal metrics stay separate.</p></div></div><span className="font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-200">Simulation</span></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"><select aria-label="Execution direction" value={executionDirection} onChange={event => setExecutionDirection(event.target.value as "LONG" | "SHORT")} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-2 text-xs text-slate-200"><option value="LONG">Long</option><option value="SHORT">Short</option></select><input aria-label="Execution entry price" value={executionEntry} onChange={event => setExecutionEntry(event.target.value)} inputMode="decimal" placeholder="Entry price" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution exit price" value={executionExit} onChange={event => setExecutionExit(event.target.value)} inputMode="decimal" placeholder="Exit price" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution quantity" value={executionQuantity} onChange={event => setExecutionQuantity(event.target.value)} inputMode="decimal" placeholder="Quantity" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution stop loss" value={executionRisk} onChange={event => setExecutionRisk(event.target.value)} inputMode="decimal" placeholder="Stop loss (optional)" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution fees" value={executionFees} onChange={event => setExecutionFees(event.target.value)} inputMode="decimal" placeholder="Fees" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution entry time" type="datetime-local" value={executionEntryAt} onChange={event => setExecutionEntryAt(event.target.value)} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution exit time" type="datetime-local" value={executionExitAt} onChange={event => setExecutionExitAt(event.target.value)} className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /><input aria-label="Execution setup" value={executionSetup} onChange={event => setExecutionSetup(event.target.value)} maxLength={80} placeholder="Setup tag" className="h-9 rounded-lg border border-blue-200/[0.12] bg-[#0a1427] px-3 text-xs text-slate-100" /></div><div className="mt-2 flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => { if (!current || currentPrice === null) return; setExecutionEntry(String(currentPrice)); setExecutionEntryAt(localDateTime(current.time)); }} className="border-emerald-300/30 bg-emerald-400/10 text-emerald-100"><Target className="mr-1 h-3.5 w-3.5" /> Use replay point as entry</Button><Button type="button" size="sm" variant="outline" onClick={() => { if (!current || currentPrice === null) return; setExecutionExit(String(currentPrice)); setExecutionExitAt(localDateTime(current.time)); }} className="border-rose-300/30 bg-rose-400/10 text-rose-100"><Target className="mr-1 h-3.5 w-3.5" /> Use replay point as exit</Button>{executionPreview && <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${executionPreview.net >= 0 ? "bg-emerald-400/10 text-emerald-200" : "bg-rose-400/10 text-rose-200"}`}>P&L {executionPreview.net >= 0 ? "+" : ""}{executionPreview.net.toFixed(2)}{executionPreview.rMultiple !== null ? ` · ${executionPreview.rMultiple.toFixed(2)}R` : ""}</span>}<Button type="button" size="sm" disabled={!executionPreview || createTrade.isPending || archived} onClick={saveExecution} className="bg-emerald-500 text-slate-950 hover:bg-emerald-400"><Plus className="mr-1 h-3.5 w-3.5" /> Save simulated trade</Button></div></div>

@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ createSession: vi.fn(), invalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ createSession: vi.fn(), invalidate: vi.fn(), reopenSession: vi.fn() }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
@@ -15,6 +15,7 @@ vi.mock("@/lib/trpc", () => ({
       createSession: { useMutation: () => ({ mutate: mocks.createSession, isPending: false }) },
       createTrade: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
       archiveSession: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      reopenSession: { useMutation: () => ({ mutate: mocks.reopenSession, isPending: false }) },
       deleteTrade: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
     },
   },

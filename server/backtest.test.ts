@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateBacktestMetrics, hasValidAnnotationGeometry, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionOwnedByUser } from "./backtest";
+import { calculateBacktestMetrics, hasValidAnnotationGeometry, hasValidBacktestTradeWindow, isBacktestAnnotationOwnedByUser, isBacktestSessionEditable, isBacktestSessionOwnedByUser } from "./backtest";
 
 describe("Backtest ownership and metrics", () => {
   it("keeps each simulated session private to its owner", () => {
@@ -10,6 +10,11 @@ describe("Backtest ownership and metrics", () => {
   it("keeps session chart annotations private to their creator", () => {
     expect(isBacktestAnnotationOwnedByUser(9, 9)).toBe(true);
     expect(isBacktestAnnotationOwnedByUser(9, 10)).toBe(false);
+  });
+
+  it("allows private trade and chart markup only while a Backtest session is active", () => {
+    expect(isBacktestSessionEditable("active")).toBe(true);
+    expect(isBacktestSessionEditable("archived")).toBe(false);
   });
 
   it("calculates simulated performance without referencing live journal trades", () => {

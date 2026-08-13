@@ -78,6 +78,10 @@ export function isBacktestAnnotationOwnedByUser(annotationUserId: number, authen
   return annotationUserId === authenticatedUserId;
 }
 
+export function isBacktestSessionEditable(status: string | null | undefined) {
+  return status === "active";
+}
+
 export function hasValidBacktestTradeWindow(entryAt?: string | null, exitAt?: string | null) {
   if (!entryAt || !exitAt) return true;
   return Date.parse(entryAt) <= Date.parse(exitAt);
@@ -195,7 +199,7 @@ export const backtestRouter = router({
 
   createAnnotation: protectedProcedure.input(annotationInput).mutation(async ({ ctx, input }) => {
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
-    if (session.status !== "active") throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
+    if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
     if (!hasValidAnnotationGeometry(input)) throw new TRPCError({ code: "BAD_REQUEST", message: "Trendlines and zones require valid start and end anchors" });
     const [created] = await db.insert(backtestAnnotations).values({
       sessionId: session.id,
@@ -252,6 +256,12 @@ export const backtestRouter = router({
     return { success: true };
   }),
 
+  reopenSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const { db, session } = await getOwnedSession(input.id, ctx.user.id);
+    await db.update(backtestSessions).set({ status: "active", updatedAt: new Date() }).where(eq(backtestSessions.id, session.id));
+    return { success: true };
+  }),
+
   deleteSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const { db, session } = await getOwnedSession(input.id, ctx.user.id);
     await db.delete(backtestSessions).where(eq(backtestSessions.id, session.id));
@@ -260,7 +270,7 @@ export const backtestRouter = router({
 
   createTrade: protectedProcedure.input(tradeInput).mutation(async ({ ctx, input }) => {
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
-    if (session.status !== "active") throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive simulated trades" });
+    if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive simulated trades" });
     if (!hasValidBacktestTradeWindow(input.entryAt, input.exitAt)) throw new TRPCError({ code: "BAD_REQUEST", message: "Simulated exit time must be after the entry time" });
     const pnl = computedPnl(input);
     const rMultiple = computedRMultiple(input);

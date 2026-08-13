@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn() }));
+const mocks = vi.hoisted(() => ({ markers: vi.fn(), setData: vi.fn(), createAnnotation: vi.fn(), createTrade: vi.fn(), refetchAnnotations: vi.fn(), invalidateSession: vi.fn(), annotations: [] as Array<{ id: number; sessionId: number; kind: "support" | "resistance" | "trendline" | "zone"; price: number; endPrice: number | null; startAt: string | null; endAt: string | null; label: string; createdAt: string }>, chartClickHandler: undefined as undefined | ((param: { time: number; point: { x: number; y: number } }) => void) }));
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
@@ -19,7 +19,7 @@ vi.mock("@/lib/trpc", () => ({
       },
     },
     backtest: {
-      listAnnotations: { useQuery: () => ({ data: [], refetch: mocks.refetchAnnotations }) },
+      listAnnotations: { useQuery: () => ({ data: mocks.annotations, refetch: mocks.refetchAnnotations }) },
       createAnnotation: { useMutation: () => ({ mutate: mocks.createAnnotation, isPending: false }) },
       deleteAnnotation: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
       createTrade: { useMutation: () => ({ mutate: mocks.createTrade, isPending: false }) },
@@ -30,7 +30,7 @@ vi.mock("@/lib/trpc", () => ({
 vi.mock("lightweight-charts", () => ({
   CandlestickSeries: "Candlestick",
   ColorType: { Solid: "solid" },
-  createChart: () => ({ addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn() }), timeScale: () => ({ fitContent: vi.fn() }), applyOptions: vi.fn(), remove: vi.fn() }),
+  createChart: () => ({ addSeries: () => ({ setData: mocks.setData, createPriceLine: vi.fn(), coordinateToPrice: (coordinate: number) => 2400 + coordinate, priceToCoordinate: (price: number) => 2600 - price }), timeScale: () => ({ fitContent: vi.fn(), timeToCoordinate: (time: number) => time % 1000, subscribeVisibleTimeRangeChange: vi.fn(), unsubscribeVisibleTimeRangeChange: vi.fn() }), subscribeClick: (handler: (param: { time: number; point: { x: number; y: number } }) => void) => { mocks.chartClickHandler = handler; }, applyOptions: vi.fn(), remove: vi.fn() }),
   createSeriesMarkers: (_series: unknown, markers: unknown[]) => { mocks.markers(markers); return {}; },
 }));
 
@@ -40,7 +40,7 @@ vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 import { BacktestReplay } from "./BacktestReplay";
 
 describe("BacktestReplay", () => {
-  afterEach(cleanup);
+  afterEach(() => { cleanup(); mocks.annotations = []; mocks.chartClickHandler = undefined; vi.clearAllMocks(); });
 
   it("labels source-backed crypto replay and creates overlays for simulated trades", () => {
     render(<BacktestReplay session={{ id: 1, symbol: "BTCUSD", timeframe: "1H", trades: [{ id: 1, date: "2026-08-13", entryAt: "2026-08-13T00:00:00.000Z", exitAt: "2026-08-13T01:00:00.000Z", direction: "LONG", entryPrice: 100, exitPrice: 108, pnl: 8, fees: 0 }] }} />);
@@ -96,5 +96,29 @@ describe("BacktestReplay", () => {
     await user.type(screen.getByLabelText("Execution exit price"), "110");
     await user.click(screen.getByRole("button", { name: /save simulated trade/i }));
     expect(mocks.createTrade).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 11, direction: "LONG", entryPrice: "100", exitPrice: "110" }));
+  });
+
+  it("creates a two-click private supply/demand zone for an active strategy", async () => {
+    const user = userEvent.setup();
+    render(<BacktestReplay session={{ id: 12, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await user.click(screen.getByRole("button", { name: /supply \/ demand/i }));
+    await waitFor(() => expect(mocks.chartClickHandler).toBeTypeOf("function"));
+    await act(async () => { mocks.chartClickHandler?.({ time: 1_786_579_200, point: { x: 20, y: 10 } }); });
+    await waitFor(() => expect(screen.getByText(/second click saves a private/i)).toBeTruthy());
+    await act(async () => { mocks.chartClickHandler?.({ time: 1_786_582_800, point: { x: 90, y: 30 } }); });
+    expect(mocks.createAnnotation).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 12, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z" }));
+  });
+
+  it("renders a persisted supply/demand zone as a visible time-bounded rectangle", async () => {
+    mocks.annotations = [{ id: 48, sessionId: 14, kind: "zone", price: 2410, endPrice: 2430, startAt: "2026-08-13T00:00:00.000Z", endAt: "2026-08-13T01:00:00.000Z", label: "London demand", createdAt: "2026-08-13T02:00:00.000Z" }];
+    render(<BacktestReplay session={{ id: 14, symbol: "BTCUSD", timeframe: "1H", status: "active", trades: [] }} />);
+    await waitFor(() => expect(screen.getByTestId("supply-demand-zone")).toBeTruthy());
+    expect(screen.getByTestId("supply-demand-zone").getAttribute("title")).toBe("London demand");
+  });
+
+  it("makes archived Backtest charts visibly read-only instead of accepting drawing clicks", () => {
+    render(<BacktestReplay session={{ id: 13, symbol: "BTCUSD", timeframe: "1H", status: "archived", trades: [] }} />);
+    expect(screen.getByRole("status").textContent).toMatch(/archived/i);
+    expect((screen.getByRole("button", { name: /supply \/ demand/i }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

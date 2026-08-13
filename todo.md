@@ -122,3 +122,6 @@
 - [x] Add point-based simulated execution controls with entry, exit, risk, and P&L calculation.
 - [x] Add owner-scoped trendline and supply/demand-zone drawing tools to Backtest replay.
 - [x] Test and publish the enhanced private Backtest chart workspace.
+- [x] Diagnose and repair Backtest supply/demand-zone drawing so two chart clicks create a visible private zone.
+- [x] Add regression coverage and publish the repaired zone-drawing workflow.
+- [x] Save and publish the repaired Backtest zone-drawing workflow after 85-test validation.
