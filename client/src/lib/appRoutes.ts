@@ -5,4 +5,5 @@ export const appRoutes = {
   community: "/app/room",
   account: "/app/account",
   backtest: "/app/backtest",
+  analytics: "/app/analytics",
 } as const;

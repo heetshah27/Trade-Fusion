@@ -154,3 +154,18 @@
 - [x] Test the free-move Backtest chart update.
 - [x] Save and publish the verified free-move Backtest chart update after 95-test validation.
 - [x] Save a new checkpoint and publish the verified free-move Backtest chart update after 95-test validation.
+- [x] Audit private live-trade fields and define Setup Analytics metrics without mixing Backtest simulations.
+- [x] Add private setup tagging and owner-scoped performance analytics APIs.
+- [x] Build a responsive Setup Analytics dashboard for performance by setup, symbol, direction, weekday, and session.
+- [x] Add optional live market-session tagging and a private performance breakdown by session.
+- [x] Add regression coverage for market-session analytics and re-run complete Setup Analytics validation.
+- [x] Test analytics calculations, privacy isolation, and dashboard behavior.
+- [x] Add direct automated privacy tests proving Setup Analytics excludes other users and Backtest simulations.
+- [x] Add behavioral API tests proving Setup Analytics aggregates only the authenticated member’s live trades and ignores simulated Backtest records.
+- [x] Re-run complete Setup Analytics validation after behavioral privacy coverage.
+- [x] Add protected-procedure privacy tests for `analytics.overview` with mixed member and Backtest data.
+- [x] Re-run complete Setup Analytics validation after protected-procedure privacy coverage.
+- [x] Strengthen protected-procedure tests to assert `analytics.overview` reads the live `trades` table and not `backtestTrades`.
+- [x] Re-run complete Setup Analytics validation after table-level privacy coverage.
+- [x] Publish the first Setup Analytics Dashboard release after 102-test validation.
+- [x] Save a new checkpoint and publish the Setup Analytics Dashboard with private setup and market-session analytics.

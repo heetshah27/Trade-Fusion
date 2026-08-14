@@ -1,0 +1,29 @@
+import { BarChart3, CircleDollarSign, Compass, Target, TrendingUp } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+
+type PerformanceRow = { key: string; tradeCount: number; wins: number; losses: number; winRate: number; pnl: number; averagePnl: number; profitFactor: number | null };
+
+function number(value: number) {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
+}
+
+function Pnl({ value }: { value: number }) {
+  return <span className={value >= 0 ? "text-emerald-300" : "text-rose-300"}>{value >= 0 ? "+" : "-"}${number(Math.abs(value))}</span>;
+}
+
+function Metric({ label, value, detail, icon: Icon }: { label: string; value: React.ReactNode; detail: string; icon: typeof Target }) {
+  return <article className="rounded-2xl border border-blue-200/[0.10] bg-[#0c1830]/80 p-4 shadow-[0_16px_40px_rgba(0,0,0,.16)]"><div className="flex items-center justify-between"><span className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">{label}</span><Icon className="h-4 w-4 text-violet-300" /></div><div className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">{value}</div><p className="mt-1 text-xs text-slate-500">{detail}</p></article>;
+}
+
+function Breakdown({ title, rows, empty }: { title: string; rows: PerformanceRow[]; empty: string }) {
+  const maxMagnitude = Math.max(1, ...rows.map(row => Math.abs(row.pnl)));
+  return <section className="rounded-2xl border border-blue-200/[0.10] bg-[#0c1830]/80 p-5"><div className="mb-4 flex items-center justify-between"><h2 className="text-sm font-semibold text-white">{title}</h2><span className="font-mono text-[9px] uppercase tracking-[0.15em] text-slate-600">Live journal only</span></div>{rows.length === 0 ? <p className="rounded-xl border border-dashed border-blue-200/[0.12] px-4 py-7 text-center text-sm text-slate-500">{empty}</p> : <div className="space-y-3">{rows.slice(0, 6).map(row => <div key={row.key} className="rounded-xl border border-blue-200/[0.07] bg-[#07101f]/55 p-3"><div className="flex items-center justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-medium text-slate-100">{row.key}</p><p className="mt-0.5 text-[11px] text-slate-500">{row.tradeCount} trades · {number(row.winRate)}% win rate · PF {row.profitFactor === null ? "—" : number(row.profitFactor)}</p></div><p className="font-mono text-sm font-semibold"><Pnl value={row.pnl} /></p></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800"><div className={row.pnl >= 0 ? "h-full rounded-full bg-emerald-400" : "h-full rounded-full bg-rose-400"} style={{ width: `${Math.max(5, (Math.abs(row.pnl) / maxMagnitude) * 100)}%` }} /></div></div>)}</div>}</section>;
+}
+
+export default function Analytics() {
+  const { data, isLoading, error, refetch, isFetching } = trpc.analytics.overview.useQuery();
+  if (isLoading) return <div className="grid min-h-[60vh] place-items-center bg-[#07101f] text-sm text-slate-400">Loading your private live-trade analytics…</div>;
+  if (error || !data) return <div className="grid min-h-[60vh] place-items-center bg-[#07101f] px-6 text-center"><div><p className="text-sm text-rose-300">Analytics could not load.</p><button onClick={() => refetch()} className="mt-3 rounded-lg border border-blue-200/[0.16] px-3 py-2 text-xs text-slate-200">{isFetching ? "Retrying…" : "Retry"}</button></div></div>;
+  const { summary } = data;
+  return <div className="min-h-full bg-[#07101f] text-slate-100"><main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9"><section className="mb-7 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-violet-300">Private performance intelligence</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Setup Analytics</h1><p className="mt-2 max-w-2xl text-sm text-slate-500">Compare only your live journal executions. Backtest simulations are deliberately excluded.</p></div><div className="rounded-xl border border-violet-300/15 bg-violet-400/[0.07] px-3 py-2 text-xs text-violet-100">Recorded P&amp;L basis · No shared journal data</div></section><section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Recorded P&L" value={<Pnl value={summary.pnl} />} detail={`${summary.tradeCount} live executions`} icon={CircleDollarSign} /><Metric label="Win rate" value={`${number(summary.winRate)}%`} detail={`${summary.wins} wins · ${summary.losses} losses`} icon={Target} /><Metric label="Profit factor" value={summary.profitFactor === null ? "—" : number(summary.profitFactor)} detail="Gross wins ÷ gross losses" icon={TrendingUp} /><Metric label="Average P&L" value={<Pnl value={summary.averagePnl} />} detail="Recorded P&L per trade" icon={Compass} /></section><section className="mt-5 grid gap-5 xl:grid-cols-2"><Breakdown title="Performance by setup" rows={data.setups} empty="Add a setup tag when logging trades to compare your playbooks." /><Breakdown title="Performance by symbol" rows={data.symbols} empty="Log a live trade to start your symbol breakdown." /><Breakdown title="Long vs short" rows={data.directions} empty="Direction patterns will appear after you log trades." /><Breakdown title="Performance by market session" rows={data.sessions} empty="Choose a market session when logging trades to compare timing patterns." /><Breakdown title="Performance by weekday" rows={data.weekdays} empty="Trading-day patterns will appear after you log trades." /></section><div className="mt-5 rounded-2xl border border-blue-200/[0.10] bg-[#0c1830]/70 p-4 text-xs leading-5 text-slate-500"><BarChart3 className="mr-2 inline h-4 w-4 text-sky-300" />Setup Analytics uses the P&amp;L recorded in your private live journal. It does not use, publish, or combine any simulated Backtest results.</div></main></div>;
+}

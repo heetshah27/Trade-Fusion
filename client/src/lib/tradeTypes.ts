@@ -14,6 +14,8 @@ export interface Trade {
   quantity: number;
   pnl: number;           // Computed or manual override
   fees: number;
+  setupTag?: string;
+  marketSession?: string;
   notes: string;
 }
 

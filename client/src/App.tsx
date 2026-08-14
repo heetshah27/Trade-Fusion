@@ -12,6 +12,7 @@ import Community from "./pages/Community";
 import Landing from "./pages/Landing";
 import Account from "./pages/Account";
 import Backtest from "./pages/Backtest";
+import Analytics from "./pages/Analytics";
 import { appRoutes } from "./lib/appRoutes";
 
 function WorkspaceRouter() {
@@ -24,6 +25,7 @@ function WorkspaceRouter() {
           <Route path={appRoutes.community} component={Community} />
           <Route path={appRoutes.account} component={Account} />
           <Route path={appRoutes.backtest} component={Backtest} />
+          <Route path={appRoutes.analytics} component={Analytics} />
           <Route component={NotFound} />
         </Switch>
       </DashboardLayout>
@@ -38,6 +40,7 @@ function Router() {
       <Route path={appRoutes.community} component={WorkspaceRouter} />
       <Route path={appRoutes.account} component={WorkspaceRouter} />
       <Route path={appRoutes.backtest} component={WorkspaceRouter} />
+      <Route path={appRoutes.analytics} component={WorkspaceRouter} />
       <Route path={appRoutes.journal} component={WorkspaceRouter} />
       <Route path={appRoutes.landing} component={Landing} />
       <Route component={NotFound} />

@@ -27,6 +27,8 @@ const empty = (): Omit<Trade, 'id' | 'pnl'> => ({
   exitPrice: 0,
   quantity: 1,
   fees: 0,
+  setupTag: '',
+  marketSession: '',
   notes: '',
 });
 
@@ -165,6 +167,22 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
               onChange={(e) => set('fees', parseFloat(e.target.value) || 0)}
               className="bg-input border-border font-mono text-sm"
             />
+          </div>
+
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Setup tag <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
+            <Input
+              placeholder="e.g. London breakout, pullback continuation"
+              value={form.setupTag || ''}
+              maxLength={80}
+              onChange={(e) => set('setupTag', e.target.value)}
+              className="bg-input border-border font-mono text-sm"
+            />
+          </div>
+
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Market session <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
+            <select value={form.marketSession || 'none'} onChange={(e) => set('marketSession', (e.target.value === 'none' ? '' : e.target.value) as typeof form.marketSession)} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Not specified</option><option value="Asia">Asia</option><option value="London">London</option><option value="New York">New York</option><option value="Other">Other</option></select>
           </div>
 
           {/* P&L display / override */}

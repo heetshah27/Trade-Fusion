@@ -15,6 +15,7 @@ import AddTradeModal from '@/components/AddTradeModal';
 import type { Trade } from '@/lib/tradeTypes';
 import { groupByDay, loadTrades, saveTrades } from '@/lib/tradeTypes';
 import { SEED_TRADES } from '@/lib/seedData';
+import { appRoutes } from '@/lib/appRoutes';
 
 export default function Home() {
   // The useAuth hook provides authentication state.
@@ -29,6 +30,7 @@ export default function Home() {
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
   const [filterSymbol, setFilterSymbol] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
+  const [, setLocation] = useLocation();
 
   // Fetch trades from cloud API
   const { data: cloudTrades = [], isLoading } = trpc.trades.list.useQuery(undefined, {
@@ -51,10 +53,12 @@ export default function Home() {
   };
 
   const handleSave = (trade: Trade) => {
+    const marketSession = trade.marketSession === 'Asia' || trade.marketSession === 'London' || trade.marketSession === 'New York' || trade.marketSession === 'Other' ? trade.marketSession : '';
     if (trades.some((t) => t.id === trade.id)) {
       // Update existing trade
       updateTradeMutation.mutate({
         ...trade,
+        marketSession,
         id: typeof trade.id === 'string' ? parseInt(trade.id) : trade.id,
       });
     } else {
@@ -68,6 +72,8 @@ export default function Home() {
         quantity: trade.quantity,
         pnl: trade.pnl,
         fees: trade.fees,
+        setupTag: trade.setupTag || '',
+        marketSession,
         notes: trade.notes,
       });
     }
@@ -162,6 +168,15 @@ export default function Home() {
                 Clear All
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation(appRoutes.analytics)}
+              className="h-9 rounded-xl gap-1.5 border-violet-300/20 bg-violet-400/[0.08] text-violet-100 hover:bg-violet-400/[0.16]"
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+              Analytics
+            </Button>
             <Button
               size="sm"
               onClick={() => { setEditTrade(null); setModalOpen(true); }}

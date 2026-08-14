@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LogOut, MessagesSquare, PanelLeft, ShieldCheck, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LogOut, MessagesSquare, PanelLeft, ShieldCheck, UserRound } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -24,6 +24,7 @@ import { NotificationMenu } from "./NotificationMenu";
 
 const menuItems = [
   { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: appRoutes.journal },
+  { icon: BarChart3, label: "Setup Analytics", subtitle: "Live trade patterns", path: appRoutes.analytics },
   { icon: FlaskConical, label: "Backtest", subtitle: "Simulated strategy lab", path: appRoutes.backtest },
   { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
   { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },

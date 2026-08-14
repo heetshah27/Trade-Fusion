@@ -56,21 +56,27 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Trade journal entries — one row per trade logged by a user
  */
-export const trades = pgTable("trades", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
-  symbol: varchar("symbol", { length: 20 }).notNull(),
-  direction: directionEnum("direction").notNull(),
-  entryPrice: decimal("entryPrice", { precision: 12, scale: 4 }).notNull(),
-  exitPrice: decimal("exitPrice", { precision: 12, scale: 4 }).notNull(),
-  quantity: decimal("quantity", { precision: 12, scale: 4 }).notNull(),
-  pnl: decimal("pnl", { precision: 12, scale: 2 }).notNull(),
-  fees: decimal("fees", { precision: 12, scale: 2 }).default("0").notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
-});
+export const trades = pgTable(
+  "trades",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
+    symbol: varchar("symbol", { length: 20 }).notNull(),
+    direction: directionEnum("direction").notNull(),
+    entryPrice: decimal("entryPrice", { precision: 12, scale: 4 }).notNull(),
+    exitPrice: decimal("exitPrice", { precision: 12, scale: 4 }).notNull(),
+    quantity: decimal("quantity", { precision: 12, scale: 4 }).notNull(),
+    pnl: decimal("pnl", { precision: 12, scale: 2 }).notNull(),
+    fees: decimal("fees", { precision: 12, scale: 2 }).default("0").notNull(),
+    setupTag: varchar("setupTag", { length: 80 }),
+    marketSession: varchar("marketSession", { length: 24 }),
+    notes: text("notes"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [index("trades_user_setup_tag_idx").on(table.userId, table.setupTag), index("trades_user_market_session_idx").on(table.userId, table.marketSession)]
+);
 
 export type Trade = typeof trades.$inferSelect;
 export type InsertTrade = typeof trades.$inferInsert;
