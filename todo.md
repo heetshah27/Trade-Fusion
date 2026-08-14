@@ -169,9 +169,9 @@
 - [x] Re-run complete Setup Analytics validation after table-level privacy coverage.
 - [x] Publish the first Setup Analytics Dashboard release after 102-test validation.
 - [x] Save a new checkpoint and publish the Setup Analytics Dashboard with private setup and market-session analytics.
-- [ ] Define how setup tags are selected or created directly within Buy/Sell simulated execution controls.
-- [ ] Design a private setup-performance trend-chart layout with time range, metric, and setup comparison controls.
-- [ ] Create and deliver a detailed Trade Fusion platform mockup for the tagged execution and trend-chart workflow.
+- [x] Define how setup tags are selected or created directly within Buy/Sell simulated execution controls.
+- [x] Design a private setup-performance trend-chart layout with time range, metric, and setup comparison controls.
+- [x] Create and deliver a detailed Trade Fusion platform mockup for the tagged execution and trend-chart workflow.
 - [x] Audit current manual live-trade fields and identify the required tag-schema extensions.
 - [x] Draft and deliver a privacy-safe manual trade-log and tag data model with field definitions, relationships, and ownership rules.
 - [x] Add private setup-library storage with owner-scoped setup definitions and setup-to-trade links.
