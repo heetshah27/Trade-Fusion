@@ -1,4 +1,4 @@
-import { decimal, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, decimal, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
@@ -53,6 +53,25 @@ export const users = pgTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+/** A member-owned setup library used by manual live-trade logging and analytics. */
+export const tradeSetups = pgTable(
+  "trade_setups",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 80 }).notNull(),
+    slug: varchar("slug", { length: 96 }).notNull(),
+    description: text("description"),
+    color: varchar("color", { length: 16 }),
+    isArchived: boolean("isArchived").default(false).notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [uniqueIndex("trade_setups_user_slug_idx").on(table.userId, table.slug), index("trade_setups_user_archived_idx").on(table.userId, table.isArchived)]
+);
+
+export type TradeSetup = typeof tradeSetups.$inferSelect;
+
 /**
  * Trade journal entries — one row per trade logged by a user
  */
@@ -69,13 +88,17 @@ export const trades = pgTable(
     quantity: decimal("quantity", { precision: 12, scale: 4 }).notNull(),
     pnl: decimal("pnl", { precision: 12, scale: 2 }).notNull(),
     fees: decimal("fees", { precision: 12, scale: 2 }).default("0").notNull(),
+    setupId: integer("setupId").references(() => tradeSetups.id, { onDelete: "set null" }),
     setupTag: varchar("setupTag", { length: 80 }),
     marketSession: varchar("marketSession", { length: 24 }),
+    instrumentCategory: varchar("instrumentCategory", { length: 24 }),
+    tradeQuality: varchar("tradeQuality", { length: 16 }),
+    ruleFollowed: boolean("ruleFollowed"),
     notes: text("notes"),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   },
-  table => [index("trades_user_setup_tag_idx").on(table.userId, table.setupTag), index("trades_user_market_session_idx").on(table.userId, table.marketSession)]
+  table => [index("trades_user_setup_tag_idx").on(table.userId, table.setupTag), index("trades_user_setup_id_idx").on(table.userId, table.setupId), index("trades_user_market_session_idx").on(table.userId, table.marketSession)]
 );
 
 export type Trade = typeof trades.$inferSelect;

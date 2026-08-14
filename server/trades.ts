@@ -1,9 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { trades as tradesTable } from "../drizzle/schema";
+import { tradeSetups, trades as tradesTable } from "../drizzle/schema";
 
 const TradeSchema = z.object({
   id: z.number(),
@@ -15,8 +15,12 @@ const TradeSchema = z.object({
   quantity: z.string().or(z.number()),
   pnl: z.string().or(z.number()),
   fees: z.string().or(z.number()).default(0),
+  setupId: z.number().int().positive().nullable().optional().default(null),
   setupTag: z.string().trim().max(80).optional().default(""),
   marketSession: z.enum(["Asia", "London", "New York", "Other", ""]).optional().default(""),
+  instrumentCategory: z.enum(["forex", "metals", "crypto", "indices", "equities", "options", "other", ""]).optional().default(""),
+  tradeQuality: z.enum(["A_PLUS", "VALID", "FORCED", "RULE_BREAK", ""]).optional().default(""),
+  ruleFollowed: z.boolean().nullable().optional().default(null),
   notes: z.string().optional().default(""),
 });
 
@@ -37,14 +41,25 @@ function toClientTrade(trade: typeof tradesTable.$inferSelect) {
     quantity: Number(trade.quantity),
     pnl: Number(trade.pnl),
     fees: Number(trade.fees),
+    setupId: trade.setupId,
     setupTag: trade.setupTag || "",
     marketSession: trade.marketSession || "",
+    instrumentCategory: trade.instrumentCategory || "",
+    tradeQuality: trade.tradeQuality || "",
+    ruleFollowed: trade.ruleFollowed,
     notes: trade.notes || "",
   };
 }
 
 function databaseUnavailable() {
   return new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+}
+
+async function setupNameForOwner(db: NonNullable<Awaited<ReturnType<typeof getDb>>>, userId: number, setupId: number | null) {
+  if (!setupId) return null;
+  const setup = await db.select().from(tradeSetups).where(and(eq(tradeSetups.id, setupId), eq(tradeSetups.userId, userId)));
+  if (!setup.length) throw new TRPCError({ code: "FORBIDDEN", message: "Selected setup is unavailable" });
+  return setup[0].name;
 }
 
 export const tradesRouter = router({
@@ -58,6 +73,7 @@ export const tradesRouter = router({
   create: protectedProcedure.input(TradeSchema.omit({ id: true })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw databaseUnavailable();
+    const setupName = await setupNameForOwner(db, ctx.user.id, input.setupId);
     const result = await db.insert(tradesTable).values({
       userId: ctx.user.id,
       date: input.date,
@@ -68,8 +84,12 @@ export const tradesRouter = router({
       quantity: String(input.quantity),
       pnl: String(input.pnl),
       fees: String(input.fees || 0),
-      setupTag: input.setupTag || null,
+      setupId: input.setupId,
+      setupTag: setupName || input.setupTag || null,
       marketSession: input.marketSession || null,
+      instrumentCategory: input.instrumentCategory || null,
+      tradeQuality: input.tradeQuality || null,
+      ruleFollowed: input.ruleFollowed,
       notes: input.notes,
     }).returning();
     return toClientTrade(result[0]);
@@ -82,6 +102,7 @@ export const tradesRouter = router({
     if (existing.length === 0 || !isTradeOwnedByUser(existing[0].userId, ctx.user.id)) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Trade not found" });
     }
+    const setupName = await setupNameForOwner(db, ctx.user.id, input.setupId);
     const result = await db.update(tradesTable).set({
       date: input.date,
       symbol: input.symbol,
@@ -91,8 +112,12 @@ export const tradesRouter = router({
       quantity: String(input.quantity),
       pnl: String(input.pnl),
       fees: String(input.fees || 0),
-      setupTag: input.setupTag || null,
+      setupId: input.setupId,
+      setupTag: setupName || input.setupTag || null,
       marketSession: input.marketSession || null,
+      instrumentCategory: input.instrumentCategory || null,
+      tradeQuality: input.tradeQuality || null,
+      ruleFollowed: input.ruleFollowed,
       notes: input.notes,
     }).where(eq(tradesTable.id, input.id)).returning();
     return toClientTrade(result[0]);

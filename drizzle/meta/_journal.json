@@ -43,6 +43,13 @@
       "when": 1786729769856,
       "tag": "0005_needy_sally_floyd",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786731481291,
+      "tag": "0006_sticky_hiroim",
+      "breakpoints": true
     }
   ]
 }

@@ -10,10 +10,11 @@ import { backtestTrades, trades } from "../drizzle/schema";
 function mockLiveTradeQuery(rows: Array<Record<string, unknown>>, backtestRows: Array<Record<string, unknown>> = []) {
   const where = vi.fn(async () => rows);
   const backtestWhere = vi.fn(async () => backtestRows);
-  const from = vi.fn((table: unknown) => table === trades ? ({ where }) : ({ where: backtestWhere }));
+  const leftJoin = vi.fn(() => ({ where }));
+  const from = vi.fn((table: unknown) => table === trades ? ({ leftJoin }) : ({ where: backtestWhere }));
   const select = vi.fn(() => ({ from }));
   databaseMocks.getDb.mockResolvedValue({ select });
-  return { select, from, where, backtestWhere };
+  return { select, from, leftJoin, where, backtestWhere };
 }
 
 function overviewFor(userId: number) {

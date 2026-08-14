@@ -28,4 +28,17 @@ describe("buildSetupAnalytics", () => {
     const analytics = buildSetupAnalytics([{ date: "2026-08-10", symbol: "BTCUSD", direction: "LONG", pnl: 40, setupTag: "Momentum", marketSession: "Asia" }]);
     expect(analytics.summary.profitFactor).toBeNull();
   });
+
+  it("prefers a structured owner setup name while retaining legacy text-only setup grouping", () => {
+    const analytics = buildSetupAnalytics([
+      { date: "2026-08-10", symbol: "EURUSD", direction: "LONG", pnl: 100, setupId: 11, setupName: "London Breakout", setupTag: "Old spelling", marketSession: "London" },
+      { date: "2026-08-11", symbol: "EURUSD", direction: "SHORT", pnl: 20, setupTag: "Pullback", marketSession: "London" },
+    ]);
+
+    expect(analytics.setups).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: "London Breakout", pnl: 100 }),
+      expect.objectContaining({ key: "Pullback", pnl: 20 }),
+    ]));
+    expect(analytics.setups.some(setup => setup.key === "Old spelling")).toBe(false);
+  });
 });

@@ -54,11 +54,17 @@ export default function Home() {
 
   const handleSave = (trade: Trade) => {
     const marketSession = trade.marketSession === 'Asia' || trade.marketSession === 'London' || trade.marketSession === 'New York' || trade.marketSession === 'Other' ? trade.marketSession : '';
+    const instrumentCategory = trade.instrumentCategory === 'forex' || trade.instrumentCategory === 'metals' || trade.instrumentCategory === 'crypto' || trade.instrumentCategory === 'indices' || trade.instrumentCategory === 'equities' || trade.instrumentCategory === 'options' || trade.instrumentCategory === 'other' ? trade.instrumentCategory : '';
+    const tradeQuality = trade.tradeQuality === 'A_PLUS' || trade.tradeQuality === 'VALID' || trade.tradeQuality === 'FORCED' || trade.tradeQuality === 'RULE_BREAK' ? trade.tradeQuality : '';
     if (trades.some((t) => t.id === trade.id)) {
       // Update existing trade
       updateTradeMutation.mutate({
         ...trade,
         marketSession,
+        instrumentCategory,
+        tradeQuality,
+        setupId: trade.setupId ?? null,
+        ruleFollowed: trade.ruleFollowed ?? null,
         id: typeof trade.id === 'string' ? parseInt(trade.id) : trade.id,
       });
     } else {
@@ -72,8 +78,12 @@ export default function Home() {
         quantity: trade.quantity,
         pnl: trade.pnl,
         fees: trade.fees,
+        setupId: trade.setupId ?? null,
         setupTag: trade.setupTag || '',
         marketSession,
+        instrumentCategory,
+        tradeQuality,
+        ruleFollowed: trade.ruleFollowed ?? null,
         notes: trade.notes,
       });
     }

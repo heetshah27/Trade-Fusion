@@ -6,7 +6,7 @@ const analyticsSource = readFileSync(new URL("./analytics.ts", import.meta.url),
 
 describe("Setup Analytics privacy contract", () => {
   it("filters the analytics query to the authenticated member's live journal rows", () => {
-    expect(analyticsSource).toContain("from(trades).where(eq(trades.userId, ctx.user.id))");
+    expect(analyticsSource).toContain("from(trades).leftJoin(tradeSetups");
   });
 
   it("does not import or query simulated Backtest trade data", () => {

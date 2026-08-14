@@ -1,9 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { trades } from "../drizzle/schema";
+import { tradeSetups, trades } from "../drizzle/schema";
 
-export type AnalyticsTrade = { date: string; symbol: string; direction: "LONG" | "SHORT"; pnl: number; setupTag: string | null; marketSession: string | null };
+export type AnalyticsTrade = { date: string; symbol: string; direction: "LONG" | "SHORT"; pnl: number; setupTag: string | null; marketSession: string | null; setupId?: number | null; setupName?: string | null };
 export type ScopedAnalyticsTrade = AnalyticsTrade & { userId: number; source: "live" | "backtest" };
 
 type PerformanceRow = {
@@ -47,7 +47,7 @@ export function buildSetupAnalytics(records: AnalyticsTrade[]) {
   const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   return {
     summary: performance("All live journal trades", records),
-    setups: by(trade => trade.setupTag?.trim() || "Untagged"),
+    setups: by(trade => trade.setupName?.trim() || trade.setupTag?.trim() || "Untagged"),
     symbols: by(trade => trade.symbol),
     directions: by(trade => trade.direction === "LONG" ? "Long" : "Short"),
     sessions: by(trade => trade.marketSession?.trim() || "Unspecified"),
@@ -63,7 +63,7 @@ export const analyticsRouter = router({
   overview: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    const rows = await db.select({ userId: trades.userId, date: trades.date, symbol: trades.symbol, direction: trades.direction, pnl: trades.pnl, setupTag: trades.setupTag, marketSession: trades.marketSession }).from(trades).where(eq(trades.userId, ctx.user.id));
+    const rows = await db.select({ userId: trades.userId, date: trades.date, symbol: trades.symbol, direction: trades.direction, pnl: trades.pnl, setupId: trades.setupId, setupTag: trades.setupTag, setupName: tradeSetups.name, marketSession: trades.marketSession }).from(trades).leftJoin(tradeSetups, and(eq(tradeSetups.id, trades.setupId), eq(tradeSetups.userId, ctx.user.id))).where(eq(trades.userId, ctx.user.id));
     return buildMemberLiveAnalytics(rows.map(row => ({ ...row, pnl: Number(row.pnl), source: "live" })), ctx.user.id);
   }),
 });

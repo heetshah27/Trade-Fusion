@@ -11,6 +11,7 @@ import { tickerRouter } from "./ticker";
 import { backtestRouter } from "./backtest";
 import { replayRouter } from "./replay";
 import { analyticsRouter } from "./analytics";
+import { setupsRouter } from "./setups";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -36,6 +37,7 @@ export const appRouter = router({
   backtest: backtestRouter,
   replay: replayRouter,
   analytics: analyticsRouter,
+  setups: setupsRouter,
 
   // TODO: add more feature routers here, e.g.
   // todo: router({

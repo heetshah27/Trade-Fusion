@@ -169,3 +169,19 @@
 - [x] Re-run complete Setup Analytics validation after table-level privacy coverage.
 - [x] Publish the first Setup Analytics Dashboard release after 102-test validation.
 - [x] Save a new checkpoint and publish the Setup Analytics Dashboard with private setup and market-session analytics.
+- [ ] Define how setup tags are selected or created directly within Buy/Sell simulated execution controls.
+- [ ] Design a private setup-performance trend-chart layout with time range, metric, and setup comparison controls.
+- [ ] Create and deliver a detailed Trade Fusion platform mockup for the tagged execution and trend-chart workflow.
+- [x] Audit current manual live-trade fields and identify the required tag-schema extensions.
+- [x] Draft and deliver a privacy-safe manual trade-log and tag data model with field definitions, relationships, and ownership rules.
+- [x] Add private setup-library storage with owner-scoped setup definitions and setup-to-trade links.
+- [x] Add Phase 1 contextual manual-trade fields for instrument category, trade quality, and rule-followed status.
+- [x] Implement protected setup-library APIs and validate linked setups belong to the trade owner.
+- [x] Add setup selection/creation and contextual tags to the manual Journal trade form.
+- [x] Extend analytics to prefer structured setups while keeping existing historical setup text valid.
+- [x] Test the structured manual trade-logging release.
+- [x] Save and publish the structured manual trade-logging release after 108-test validation.
+- [x] Resolve analytics setup grouping from a member-owned structured setup when `setupId` exists, with legacy text fallback.
+- [x] Add regression coverage for mixed structured and legacy setup analytics grouping.
+- [x] Re-run complete validation before publishing the structured manual trade-logging release.
+- [x] Save and publish the fully validated structured manual trade-logging release.
