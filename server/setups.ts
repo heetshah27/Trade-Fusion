@@ -37,6 +37,19 @@ export const setupsRouter = router({
     return created[0];
   }),
 
+  update: protectedProcedure.input(SetupInput.extend({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw unavailable();
+    const existing = await db.select().from(tradeSetups).where(and(eq(tradeSetups.id, input.id), eq(tradeSetups.userId, ctx.user.id)));
+    if (!existing.length) throw new TRPCError({ code: "NOT_FOUND", message: "Setup not found" });
+    const slug = setupSlug(input.name);
+    if (!slug) throw new TRPCError({ code: "BAD_REQUEST", message: "Setup name must include letters or numbers" });
+    const duplicate = await db.select().from(tradeSetups).where(and(eq(tradeSetups.userId, ctx.user.id), eq(tradeSetups.slug, slug)));
+    if (duplicate.some(setup => setup.id !== input.id)) throw new TRPCError({ code: "CONFLICT", message: "You already have a setup with this name" });
+    const updated = await db.update(tradeSetups).set({ name: input.name, slug, description: input.description || null, color: input.color, updatedAt: new Date() }).where(eq(tradeSetups.id, input.id)).returning();
+    return updated[0];
+  }),
+
   archive: protectedProcedure.input(z.object({ id: z.number(), isArchived: z.boolean() })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw unavailable();

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { BadgeCheck, Check, CircleUserRound, ImagePlus, LoaderCircle, Mail, Pencil, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
+import { Archive, ArchiveRestore, BadgeCheck, Check, CircleUserRound, ImagePlus, Layers3, LoaderCircle, Mail, Pencil, Plus, Save, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
 
 const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -17,7 +17,15 @@ export default function Account() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [showSetupForm, setShowSetupForm] = useState(false);
+  const [setupName, setSetupName] = useState("");
+  const [setupDescription, setSetupDescription] = useState("");
+  const [editingSetupId, setEditingSetupId] = useState<number | null>(null);
+  const [editingSetupName, setEditingSetupName] = useState("");
+  const [editingSetupDescription, setEditingSetupDescription] = useState("");
+  const [setupError, setSetupError] = useState<string | null>(null);
   const initial = (profile?.name || user?.name || "T").charAt(0).toUpperCase();
+  const { data: setups = [], isLoading: setupsLoading } = trpc.setups.list.useQuery();
 
   const uploadPhoto = trpc.account.uploadProfilePhoto.useMutation({
     onSuccess: async () => {
@@ -40,6 +48,24 @@ export default function Account() {
       await utils.account.profile.invalidate();
     },
     onError: error => setUploadError(error.message),
+  });
+  const createSetup = trpc.setups.create.useMutation({
+    onSuccess: async () => {
+      setSetupName(""); setSetupDescription(""); setShowSetupForm(false); setSetupError(null);
+      await utils.setups.list.invalidate();
+    },
+    onError: error => setSetupError(error.message),
+  });
+  const updateSetup = trpc.setups.update.useMutation({
+    onSuccess: async () => {
+      setEditingSetupId(null); setSetupError(null);
+      await utils.setups.list.invalidate();
+    },
+    onError: error => setSetupError(error.message),
+  });
+  const archiveSetup = trpc.setups.archive.useMutation({
+    onSuccess: async () => { setSetupError(null); await utils.setups.list.invalidate(); },
+    onError: error => setSetupError(error.message),
   });
 
   useEffect(() => setDisplayName(profile?.name || user?.name || "Trader"), [profile?.name, user?.name]);
@@ -68,6 +94,15 @@ export default function Account() {
     const nextName = displayName.trim();
     if (!nextName) return setUploadError("Enter a display name before saving.");
     updateDisplayName.mutate({ displayName: nextName });
+  };
+  const setupWorking = createSetup.isPending || updateSetup.isPending || archiveSetup.isPending;
+  const activeSetups = setups.filter(setup => !setup.isArchived);
+  const archivedSetups = setups.filter(setup => setup.isArchived);
+  const startSetupEdit = (setup: typeof setups[number]) => {
+    setEditingSetupId(setup.id);
+    setEditingSetupName(setup.name);
+    setEditingSetupDescription(setup.description || "");
+    setSetupError(null);
   };
 
   return (
@@ -122,6 +157,21 @@ export default function Account() {
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-blue-200/[0.12] bg-blue-400/[0.08] text-blue-200"><UserRound className="h-4 w-4" /></span>
             <div><p className="text-sm font-medium text-white">Profile photo fallback</p><p className="mt-1 text-xs leading-5 text-slate-500">If you remove a custom photo, Trade Fusion returns to the email-linked avatar when available, then uses your private initials fallback.</p></div>
+          </div>
+        </Card>
+
+        <Card className="mt-5 border-blue-200/[0.10] bg-[#101c33] p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl border border-blue-200/[0.12] bg-blue-400/[0.08] text-blue-200"><Layers3 className="h-4 w-4" /></span><div><p className="text-sm font-medium text-white">Saved setups</p><p className="mt-1 max-w-xl text-xs leading-5 text-slate-500">Private setup labels used by your manual journal and Setup Analytics. Archiving keeps historical performance intact while removing a setup from new-trade selection.</p></div></div>
+            <Button type="button" onClick={() => { setShowSetupForm(value => !value); setSetupError(null); }} className="bg-blue-500 text-white hover:bg-blue-400"><Plus className="mr-2 h-4 w-4" />New setup</Button>
+          </div>
+
+          {showSetupForm && <div className="mt-5 grid gap-3 rounded-xl border border-blue-300/[0.14] bg-[#0a1427] p-4 sm:grid-cols-[1fr_1.4fr_auto]"><input aria-label="New saved setup name" value={setupName} onChange={event => setSetupName(event.target.value)} maxLength={80} placeholder="e.g. London Breakout" className="h-10 rounded-lg border border-white/[0.10] bg-[#07101f] px-3 text-sm text-white outline-none focus:ring-1 focus:ring-blue-300/60" /><input aria-label="New saved setup description" value={setupDescription} onChange={event => setSetupDescription(event.target.value)} maxLength={500} placeholder="Optional rule reminder" className="h-10 rounded-lg border border-white/[0.10] bg-[#07101f] px-3 text-sm text-white outline-none focus:ring-1 focus:ring-blue-300/60" /><Button type="button" disabled={!setupName.trim() || setupWorking} onClick={() => createSetup.mutate({ name: setupName, description: setupDescription })} className="bg-emerald-500 text-white hover:bg-emerald-400"><Save className="mr-2 h-4 w-4" />Save</Button></div>}
+          {setupError && <p role="alert" className="mt-3 text-xs text-red-300">{setupError}</p>}
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
+            <div><div className="mb-3 flex items-center justify-between"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Active setups</p><span className="text-xs text-slate-500">{activeSetups.length}</span></div><div className="space-y-2">{setupsLoading ? <p className="py-4 text-sm text-slate-500">Loading your private setup library…</p> : activeSetups.length ? activeSetups.map(setup => <div key={setup.id} className="rounded-xl border border-white/[0.08] bg-[#0a1427] p-3"><div className="flex flex-wrap items-start justify-between gap-3">{editingSetupId === setup.id ? <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[1fr_1.4fr]"><input aria-label="Edit setup name" value={editingSetupName} onChange={event => setEditingSetupName(event.target.value)} className="h-9 min-w-0 rounded-lg border border-blue-300/[0.22] bg-[#07101f] px-3 text-sm text-white outline-none focus:ring-1 focus:ring-blue-300/60" /><input aria-label="Edit setup description" value={editingSetupDescription} onChange={event => setEditingSetupDescription(event.target.value)} className="h-9 min-w-0 rounded-lg border border-blue-300/[0.22] bg-[#07101f] px-3 text-sm text-white outline-none focus:ring-1 focus:ring-blue-300/60" /></div> : <div className="min-w-0"><p className="truncate text-sm font-medium text-white">{setup.name}</p><p className="mt-1 text-xs text-slate-500">{setup.description || "No rule reminder added."}</p></div>}<div className="flex shrink-0 gap-2">{editingSetupId === setup.id ? <><Button type="button" size="sm" disabled={!editingSetupName.trim() || setupWorking} onClick={() => updateSetup.mutate({ id: setup.id, name: editingSetupName, description: editingSetupDescription })} className="h-8 bg-blue-500 text-white hover:bg-blue-400" aria-label="Save setup edits"><Check className="h-3.5 w-3.5" /></Button><Button type="button" size="sm" variant="outline" disabled={setupWorking} onClick={() => setEditingSetupId(null)} className="h-8 border-white/[0.12] text-slate-300" aria-label="Cancel setup edits"><X className="h-3.5 w-3.5" /></Button></> : <><Button type="button" size="sm" variant="outline" disabled={setupWorking} onClick={() => startSetupEdit(setup)} className="h-8 border-white/[0.12] text-slate-300 hover:bg-white/[0.06]" aria-label={`Edit ${setup.name}`}><Pencil className="h-3.5 w-3.5" /></Button><Button type="button" size="sm" variant="outline" disabled={setupWorking} onClick={() => archiveSetup.mutate({ id: setup.id, isArchived: true })} className="h-8 border-white/[0.12] text-slate-300 hover:bg-white/[0.06]" aria-label={`Archive ${setup.name}`}><Archive className="h-3.5 w-3.5" /></Button></>}</div></div></div>) : <div className="rounded-xl border border-dashed border-white/[0.10] p-4 text-sm text-slate-500">No saved setups yet. Create one here or from the Journal trade form.</div>}</div></div>
+            <div><div className="mb-3 flex items-center justify-between"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Archived</p><span className="text-xs text-slate-500">{archivedSetups.length}</span></div><div className="space-y-2">{archivedSetups.length ? archivedSetups.map(setup => <div key={setup.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#0a1427] p-3"><div className="min-w-0"><p className="truncate text-sm font-medium text-slate-300">{setup.name}</p><p className="mt-1 text-xs text-slate-500">Hidden from new journal entries.</p></div><Button type="button" size="sm" variant="outline" disabled={setupWorking} onClick={() => archiveSetup.mutate({ id: setup.id, isArchived: false })} className="h-8 shrink-0 border-white/[0.12] text-blue-200 hover:bg-blue-400/[0.08]" aria-label={`Restore ${setup.name}`}><ArchiveRestore className="mr-1.5 h-3.5 w-3.5" />Restore</Button></div>) : <div className="rounded-xl border border-dashed border-white/[0.10] p-4 text-sm text-slate-500">Archived setups remain visible here and can be restored at any time.</div>}</div></div>
           </div>
         </Card>
       </div>

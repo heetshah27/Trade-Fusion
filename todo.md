@@ -185,3 +185,7 @@
 - [x] Add regression coverage for mixed structured and legacy setup analytics grouping.
 - [x] Re-run complete validation before publishing the structured manual trade-logging release.
 - [x] Save and publish the fully validated structured manual trade-logging release.
+- [x] Add owner-scoped edit and restore operations for saved live-trade setups.
+- [x] Add a private Saved Setups manager to Account with active and archived setup views.
+- [x] Test setup editing, archive/restore ownership, and responsive Account settings behavior.
+- [x] Publish the Saved Setups manager release after 114-test validation.
