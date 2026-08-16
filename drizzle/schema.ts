@@ -132,6 +132,28 @@ export const tradeJournalEntries = pgTable(
 
 export type TradeJournalEntry = typeof tradeJournalEntries.$inferSelect;
 
+/** Owner-only chart screenshots associated with a private live-trade Journal entry. */
+export const tradeJournalAttachments = pgTable(
+  "trade_journal_attachments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    journalEntryId: integer("journalEntryId").notNull().references(() => tradeJournalEntries.id, { onDelete: "cascade" }),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    storageKey: varchar("storageKey", { length: 512 }).notNull(),
+    url: varchar("url", { length: 640 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    mimeType: varchar("mimeType", { length: 100 }).notNull(),
+    byteSize: integer("byteSize").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("trade_journal_attachments_entry_created_idx").on(table.journalEntryId, table.createdAt),
+    index("trade_journal_attachments_user_idx").on(table.userId),
+  ]
+);
+
+export type TradeJournalAttachment = typeof tradeJournalAttachments.$inferSelect;
+
 /**
  * Private strategy-testing sessions. These simulated records never feed live
  * journal statistics or are shared with the Trader’s Room automatically.

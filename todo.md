@@ -250,3 +250,7 @@
 - [x] Build protected private Journal entry storage and APIs linked to a member-owned live trade.
 - [x] Split the workspace into Dashboard, Trades, and Journal interfaces with clear navigation while retaining Analytics, Backtest, Calendar, Trader’s Room, and Account.
 - [x] Test ownership, Backtest isolation, existing trade preservation, desktop/mobile flows, and publish the workspace restructure.
+- [x] Review existing private upload patterns and define owner-only chart-screenshot attachment limits for Journal entries.
+- [x] Add secure owner-scoped Journal attachment schema, storage, validation, and protected upload/removal procedures.
+- [x] Add screenshot upload, preview, and removal controls to the private Journal entry workflow.
+- [x] Test attachment privacy, invalid-file handling, desktop/mobile rendering, and publish the Journal screenshot feature.
