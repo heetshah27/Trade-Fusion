@@ -8,10 +8,10 @@ afterEach(cleanup);
 
 describe("InstrumentBadge", () => {
   it("renders accessible original paired currency tokens for forex", () => {
-    render(<InstrumentBadge symbol="GBPUSD" category="forex" />);
-    const badge = screen.getByRole("img", { name: /British pound.*US dollar forex pair/i });
+    render(<InstrumentBadge symbol="AUDUSD" category="forex" />);
+    const badge = screen.getByRole("img", { name: /Australian dollar.*US dollar forex pair/i });
     expect(badge).toBeTruthy();
-    expect(badge.textContent).toContain("🇬🇧");
+    expect(badge.textContent).toContain("🇦🇺");
     expect(badge.textContent).toContain("🇺🇸");
   });
 
@@ -49,5 +49,11 @@ describe("InstrumentBadge", () => {
     render(<InstrumentBadge symbol="EURUSD" category="forex" />);
     expect(screen.getByRole("img", { name: /Euro.*US dollar forex pair/i })).toBeTruthy();
     expect(document.querySelector('img[src*="trade-fusion-eurusd-paired-flags"]')).toBeTruthy();
+  });
+
+  it("renders the supplied paired-flag asset for GBP/USD", () => {
+    render(<InstrumentBadge symbol="GBPUSD" category="forex" />);
+    expect(screen.getByRole("img", { name: /British pound.*US dollar forex pair/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-gbpusd-paired-flags"]')).toBeTruthy();
   });
 });

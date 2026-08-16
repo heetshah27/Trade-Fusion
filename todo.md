@@ -296,3 +296,6 @@
 - [x] Prepare the supplied EUR/USD paired-flag asset and confirm its shared badge integration point.
 - [x] Replace the generic EUR/USD pair token with the supplied compact paired-flag marker while retaining accessible text.
 - [x] Verify the EUR/USD marker across Trade Fusion and publish the update.
+- [x] Prepare the supplied GBP/USD paired-flag asset and confirm its shared badge integration point.
+- [x] Replace the generic GBP/USD pair token with the supplied compact paired-flag marker while retaining accessible text.
+- [x] Verify the GBP/USD marker across Trade Fusion and publish the update.

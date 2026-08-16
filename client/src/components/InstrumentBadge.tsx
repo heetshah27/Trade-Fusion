@@ -31,6 +31,7 @@ const XAG_SILVER_BARS_ASSET = "/manus-storage/trade-fusion-xagusd-silver-bars_e5
 const USOIL_OIL_DROP_ASSET = "/manus-storage/trade-fusion-usoil-oil-drop_edafd4d9.png";
 const NZDUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-nzdusd-paired-flags_11e08f52.png";
 const EURUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-eurusd-paired-flags_ef04281a.png";
+const GBPUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-gbpusd-paired-flags_a33e0b04.png";
 
 function normalized(symbol: string) {
   return symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -52,7 +53,11 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
   const scale = SIZE[size];
   const metalSize = METAL_BADGE_SIZE[size];
   const pair = profile.category === "forex" && value.length === 6 ? [value.slice(0, 3), value.slice(3)] : null;
-  const label = value === "USOIL" ? "US Oil instrument" : value === "NZDUSD" ? "New Zealand dollar / US dollar forex pair" : value === "EURUSD" ? "Euro / US dollar forex pair" : pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
+  const label = value === "USOIL" ? "US Oil instrument" : value === "NZDUSD" ? "New Zealand dollar / US dollar forex pair" : value === "EURUSD" ? "Euro / US dollar forex pair" : value === "GBPUSD" ? "British pound / US dollar forex pair" : pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
+
+  if (value === "GBPUSD") {
+    return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-white/[0.16] bg-white shadow-[0_5px_14px_rgb(15_23_42_/_0.28)] ${className}`}><img src={GBPUSD_PAIRED_FLAGS_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
+  }
 
   if (value === "EURUSD") {
     return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-white/[0.16] bg-white shadow-[0_5px_14px_rgb(15_23_42_/_0.28)] ${className}`}><img src={EURUSD_PAIRED_FLAGS_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
