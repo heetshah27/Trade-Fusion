@@ -9,6 +9,7 @@ import { getLaunchState, INTRO_DURATION_MS } from "@/lib/launchState";
 
 type LaunchGateProps = {
   children: ReactNode;
+  mode?: "workspace" | "public";
 };
 
 function LaunchBackground() {
@@ -103,7 +104,7 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
   );
 }
 
-export default function LaunchGate({ children }: LaunchGateProps) {
+export default function LaunchGate({ children, mode = "workspace" }: LaunchGateProps) {
   const [introComplete, setIntroComplete] = useState(false);
   const { loading, isAuthenticated } = useAuth();
   const reduceMotion = useReducedMotion();
@@ -113,7 +114,9 @@ export default function LaunchGate({ children }: LaunchGateProps) {
     return () => window.clearTimeout(timeout);
   }, [reduceMotion]);
 
-  const state = getLaunchState(introComplete, loading, isAuthenticated);
+  const state = mode === "public"
+    ? (introComplete ? "app" : "intro")
+    : getLaunchState(introComplete, loading, isAuthenticated);
 
   return (
     <AnimatePresence mode="wait">

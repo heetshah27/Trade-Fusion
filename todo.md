@@ -232,3 +232,6 @@
 - [x] Add Backtest to the landing-page workspace preview navigation and active module states.
 - [x] Render an original simulated Backtest replay preview that remains clearly separate from live journal performance.
 - [x] Test and publish the updated Trade Fusion workspace preview across desktop and mobile.
+- [x] Diagnose why the Trade Fusion startup animation is not visibly appearing during website loading.
+- [x] Restore a reliably visible, accessible launch animation without disrupting sign-in or public landing access.
+- [x] Test and publish the repaired Trade Fusion startup animation flow.

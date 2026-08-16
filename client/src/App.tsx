@@ -33,6 +33,14 @@ function WorkspaceRouter() {
   );
 }
 
+function LandingRouter() {
+  return (
+    <LaunchGate mode="public">
+      <Landing />
+    </LaunchGate>
+  );
+}
+
 function Router() {
   return (
     <Switch>
@@ -42,7 +50,7 @@ function Router() {
       <Route path={appRoutes.backtest} component={WorkspaceRouter} />
       <Route path={appRoutes.analytics} component={WorkspaceRouter} />
       <Route path={appRoutes.journal} component={WorkspaceRouter} />
-      <Route path={appRoutes.landing} component={Landing} />
+      <Route path={appRoutes.landing} component={LandingRouter} />
       <Route component={NotFound} />
     </Switch>
   );
