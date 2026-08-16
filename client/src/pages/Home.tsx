@@ -4,7 +4,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { trpc } from '@/lib/trpc';
-import { ArrowUpRight, BarChart2, CalendarDays, Download, FlaskConical, ListFilter, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, BarChart2, CalendarDays, ChartNoAxesCombined, Download, FlaskConical, Gauge, ListFilter, Plus, ShieldCheck, Sparkles, Target, Trash2, TrendingUp } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -16,6 +16,49 @@ import type { Trade } from '@/lib/tradeTypes';
 import { groupByDay, loadTrades, saveTrades } from '@/lib/tradeTypes';
 import { SEED_TRADES } from '@/lib/seedData';
 import { appRoutes } from '@/lib/appRoutes';
+
+function asCurrency(value: number) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
+}
+
+function buildEquityPath(trades: Trade[]) {
+  const sorted = [...trades].sort((left, right) => left.date.localeCompare(right.date));
+  if (!sorted.length) return '';
+
+  let running = 0;
+  const points = sorted.map((trade) => {
+    running += trade.pnl;
+    return running;
+  });
+  const min = Math.min(0, ...points);
+  const max = Math.max(0, ...points);
+  const range = Math.max(1, max - min);
+
+  return points.map((point, index) => {
+    const x = points.length === 1 ? 300 : 18 + (index / (points.length - 1)) * 564;
+    const y = 178 - ((point - min) / range) * 142;
+    return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function MetricCard({ label, value, detail, tone, icon: Icon }: { label: string; value: string; detail: string; tone: 'blue' | 'emerald' | 'amber' | 'violet'; icon: React.ElementType }) {
+  const toneClasses = {
+    blue: 'border-blue-400/15 bg-blue-500/[0.055] text-blue-300',
+    emerald: 'border-emerald-400/15 bg-emerald-500/[0.055] text-emerald-300',
+    amber: 'border-amber-400/15 bg-amber-500/[0.055] text-amber-200',
+    violet: 'border-violet-400/15 bg-violet-500/[0.055] text-violet-300',
+  }[tone];
+
+  return (
+    <section className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 shadow-[0_16px_32px_rgba(0,0,0,0.18)] sm:p-5">
+      <div className={`absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-lg border ${toneClasses}`}><Icon className="h-4 w-4" /></div>
+      <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-3 pr-9 font-mono text-2xl font-semibold tracking-[-0.05em] text-white sm:text-[1.65rem]">{value}</p>
+      <p className="mt-1.5 text-[11px] text-slate-500">{detail}</p>
+      <div className="absolute bottom-0 left-5 right-5 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+    </section>
+  );
+}
 
 export default function Home() {
   // The useAuth hook provides authentication state.
@@ -152,15 +195,47 @@ export default function Home() {
   const todayKey = new Date().toISOString().slice(0, 10);
   const todayTrades = useMemo(() => cloudTrades.filter((trade) => trade.date === todayKey), [cloudTrades, todayKey]);
   const todayPnl = useMemo(() => todayTrades.reduce((total, trade) => total + trade.pnl, 0), [todayTrades]);
+  const commandCenter = useMemo(() => {
+    const totalPnl = cloudTrades.reduce((total, trade) => total + trade.pnl, 0);
+    const wins = cloudTrades.filter((trade) => trade.pnl > 0);
+    const losses = cloudTrades.filter((trade) => trade.pnl < 0);
+    const winRate = cloudTrades.length ? (wins.length / cloudTrades.length) * 100 : 0;
+    const avgWin = wins.length ? wins.reduce((total, trade) => total + trade.pnl, 0) / wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((total, trade) => total + trade.pnl, 0) / losses.length : 0;
+    const profitFactor = avgLoss < 0 ? Math.abs(avgWin / avgLoss) : avgWin > 0 ? Infinity : 0;
+    const now = new Date();
+    const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthTrades = cloudTrades.filter((trade) => trade.date.startsWith(monthKey));
+    const monthlyPnl = monthTrades.reduce((total, trade) => total + trade.pnl, 0);
+    const calendarByDay = monthTrades.reduce<Record<number, { pnl: number; count: number }>>((days, trade) => {
+      const day = Number(trade.date.slice(-2));
+      const previous = days[day] ?? { pnl: 0, count: 0 };
+      days[day] = { pnl: previous.pnl + trade.pnl, count: previous.count + 1 };
+      return days;
+    }, {});
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const dayCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const calendarCells = Array.from({ length: firstDay + dayCount }, (_, index) => {
+      if (index < firstDay) return null;
+      const day = index - firstDay + 1;
+      return { day, ...calendarByDay[day] };
+    });
+    const recentTrades = [...cloudTrades].sort((left, right) => right.date.localeCompare(left.date)).slice(0, 4);
+    return {
+      totalPnl, wins: wins.length, losses: losses.length, winRate, avgWin, avgLoss, profitFactor, monthlyPnl,
+      monthLabel: now.toLocaleString('en-US', { month: 'long', year: 'numeric' }), calendarCells, recentTrades,
+    };
+  }, [cloudTrades]);
+  const equityPath = useMemo(() => buildEquityPath(cloudTrades), [cloudTrades]);
 
   return (
-    <div className="min-h-full bg-[#07101f] text-foreground">
-      <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
-        <section className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div className="min-h-full bg-[#06090f] text-foreground">
+      <main className="mx-auto w-full max-w-[1720px] px-4 py-5 sm:px-5 lg:px-7 lg:py-6">
+        <section className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300">Execution review</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Trade Journal</h1>
-            <p className="mt-2 text-sm text-slate-500">Log every execution. Measure the pattern. Improve the process.</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-blue-300">Private command center</p>
+            <h1 className="mt-1.5 text-2xl font-semibold tracking-[-0.04em] text-white sm:text-3xl">Journal Dashboard</h1>
+            <p className="mt-1.5 text-xs text-slate-500">Recorded trade performance · private to your account</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input
@@ -168,15 +243,15 @@ export default function Home() {
               placeholder="Filter by symbol..."
               value={filterSymbol}
               onChange={(e) => setFilterSymbol(e.target.value)}
-              className="h-9 w-44 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-300"
+              className="h-9 w-44 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300"
             />
-            <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 text-xs text-slate-400 transition-colors hover:bg-blue-400/[0.10] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
+            <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 text-xs text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
               disabled={trades.length === 0}
-              className="h-9 rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-blue-400/[0.10] hover:text-white gap-1.5"
+              className="h-9 rounded-xl border-white/[0.08] bg-white/[0.025] text-slate-400 hover:bg-white/[0.06] hover:text-white gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
@@ -186,20 +261,20 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 onClick={handleClearAll}
-                className="h-9 rounded-xl border-blue-200/[0.10] bg-blue-400/[0.04] text-slate-400 hover:bg-red-500/10 hover:text-red-300 gap-1.5"
+                className="h-9 rounded-xl border-white/[0.08] bg-white/[0.025] text-slate-400 hover:bg-red-500/10 hover:text-red-300 gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Clear All
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => setLocation(appRoutes.analytics)} className="h-9 rounded-xl gap-1.5 border-emerald-300/20 bg-emerald-400/[0.07] text-emerald-100 hover:bg-emerald-400/[0.14]">
+            <Button variant="outline" size="sm" onClick={() => setLocation(appRoutes.analytics)} className="h-9 rounded-xl gap-1.5 border-blue-300/20 bg-blue-400/[0.07] text-blue-100 hover:bg-blue-400/[0.14]">
               <BarChart2 className="w-3.5 h-3.5" />
               Analytics
             </Button>
             <Button
               size="sm"
               onClick={() => { setEditTrade(null); setModalOpen(true); }}
-              className="tf-press h-9 rounded-xl gap-1.5 bg-gradient-to-br from-emerald-300 to-emerald-400 text-[#092117] shadow-[0_10px_24px_oklch(0.36_0.15_145_/_0.32)] hover:from-emerald-200 hover:to-emerald-300"
+              className="tf-press h-9 rounded-xl gap-1.5 bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-[0_10px_24px_oklch(0.38_0.16_250_/_0.28)] hover:from-blue-300 hover:to-blue-400"
             >
               <Plus className="w-4 h-4" />
               Log Trade
@@ -207,23 +282,41 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="tf-workspace-surface mb-5 overflow-hidden rounded-2xl p-4 sm:p-5">
-          <div className="grid gap-4 xl:grid-cols-[1.25fr_.85fr_.85fr] xl:items-stretch">
-            <div className="rounded-xl border border-emerald-300/[0.12] bg-gradient-to-br from-emerald-400/[0.10] via-transparent to-transparent p-4">
-              <div className="flex items-start justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-300">Daily command center</p><h2 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">Keep the next decision simple.</h2><p className="mt-1.5 max-w-lg text-sm leading-5 text-slate-400">Record the execution, protect the review process, and use your live data to improve the next setup.</p></div><Sparkles className="h-5 w-5 shrink-0 text-emerald-300" /></div>
-              <div className="mt-4 flex flex-wrap gap-2"><Button onClick={() => { setEditTrade(null); setModalOpen(true); }} className="tf-press bg-emerald-300 text-[#092117] hover:bg-emerald-200"><Plus className="mr-1.5 h-4 w-4" />Log execution</Button><Button variant="outline" onClick={() => setLocation(appRoutes.analytics)} className="tf-press border-white/[0.12] bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]"><BarChart2 className="mr-1.5 h-4 w-4" />Review patterns</Button></div>
-            </div>
-            <div className="tf-kpi-card rounded-xl p-4"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Today’s executions</p><p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">{todayTrades.length}</p><p className={`mt-1 text-sm font-medium ${todayPnl >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>{todayTrades.length === 0 ? 'No trades logged yet' : `${todayPnl >= 0 ? '+' : '-'}$${Math.abs(todayPnl).toFixed(2)} recorded P&L`}</p></div>
-            <div className="tf-kpi-card rounded-xl p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Market preparation</p><p className="mt-3 text-sm font-medium text-slate-200">Check macro risk before the next setup.</p></div><CalendarDays className="h-4 w-4 text-sky-300" /></div><button onClick={() => setLocation(appRoutes.calendar)} className="tf-press mt-4 inline-flex items-center gap-1 text-xs font-medium text-sky-200 hover:text-sky-100">Open calendar <ArrowUpRight className="h-3.5 w-3.5" /></button></div>
-          </div>
+        <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Recorded P&L" value={asCurrency(commandCenter.totalPnl)} detail={`${cloudTrades.length} closed trade${cloudTrades.length === 1 ? '' : 's'} in journal`} tone="blue" icon={ChartNoAxesCombined} />
+          <MetricCard label="This month" value={asCurrency(commandCenter.monthlyPnl)} detail={commandCenter.monthLabel} tone={commandCenter.monthlyPnl >= 0 ? 'emerald' : 'amber'} icon={TrendingUp} />
+          <MetricCard label="Win rate" value={`${commandCenter.winRate.toFixed(1)}%`} detail={`${commandCenter.wins} wins · ${commandCenter.losses} losses`} tone="violet" icon={Target} />
+          <MetricCard label="Today" value={todayTrades.length.toString()} detail={todayTrades.length ? `${asCurrency(todayPnl)} recorded P&L` : 'No executions logged today'} tone="amber" icon={Activity} />
         </section>
 
-        <section className="mb-5 flex flex-col gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className="mb-5 grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,.85fr)]">
+          <section className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 shadow-[0_18px_38px_rgba(0,0,0,.2)] sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Private performance</p><p className={`mt-2 font-mono text-3xl font-semibold tracking-[-0.06em] ${commandCenter.totalPnl > 0 ? 'text-emerald-300' : commandCenter.totalPnl < 0 ? 'text-rose-300' : 'text-white'}`}>{asCurrency(commandCenter.totalPnl)}</p></div><div className="flex gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] p-1 font-mono text-[9px] text-slate-500"><span className="rounded-md bg-blue-500/20 px-2.5 py-1 text-blue-200">ALL</span><span className="px-2.5 py-1">JOURNAL</span></div></div>
+            <div className="relative mt-5 h-52 overflow-hidden rounded-xl border border-white/[0.06] bg-[#070d18] sm:h-60">
+              <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#31415b_1px,transparent_1px),linear-gradient(90deg,#31415b_1px,transparent_1px)] [background-size:72px_48px]" />
+              {equityPath ? <svg viewBox="0 0 600 200" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-label="Recorded journal P and L trend"><defs><linearGradient id="tf-equity-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#60a5fa" stopOpacity=".30" /><stop offset="100%" stopColor="#60a5fa" stopOpacity="0" /></linearGradient></defs><path d={`${equityPath} L 582 196 L 18 196 Z`} fill="url(#tf-equity-fill)" /><path d={equityPath} fill="none" stroke={commandCenter.totalPnl >= 0 ? '#34d399' : '#fb7185'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg> : <div className="relative grid h-full place-items-center text-center"><div><Gauge className="mx-auto h-6 w-6 text-slate-700" /><p className="mt-3 text-sm text-slate-500">Your recorded performance trend will appear here.</p><button type="button" onClick={() => { setEditTrade(null); setModalOpen(true); }} className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-300 hover:text-blue-100">Log first execution <ArrowRight className="inline h-3.5 w-3.5" /></button></div></div>}
+              {equityPath && <div className="absolute bottom-3 left-3 rounded-md border border-white/[0.08] bg-[#070d18]/90 px-2 py-1 font-mono text-[9px] text-slate-400">Closed trades only</div>}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 shadow-[0_18px_38px_rgba(0,0,0,.2)] sm:p-5">
+            <div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Monthly P&L</p><p className="mt-1 text-sm font-medium text-white">{commandCenter.monthLabel}</p></div><button type="button" onClick={() => setLocation(appRoutes.calendar)} className="tf-press rounded-lg border border-blue-400/15 bg-blue-500/[0.06] p-2 text-blue-200 hover:bg-blue-500/[0.13]" aria-label="Open market calendar"><CalendarDays className="h-4 w-4" /></button></div>
+            <div className="mt-4 grid grid-cols-7 gap-1 font-mono text-[8px] uppercase tracking-[0.08em] text-slate-600">{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => <span key={`${day}-${index}`} className="pb-1 text-center">{day}</span>)}{commandCenter.calendarCells.map((cell, index) => !cell ? <span key={`blank-${index}`} className="min-h-11" /> : <div key={cell.day} className={`min-h-11 rounded-md border p-1.5 ${cell.count ? cell.pnl > 0 ? 'border-emerald-400/20 bg-emerald-500/[0.10]' : cell.pnl < 0 ? 'border-rose-400/20 bg-rose-500/[0.10]' : 'border-white/[0.07] bg-white/[0.025]' : 'border-white/[0.04] bg-white/[0.015]'}`}><span className="text-slate-500">{cell.day}</span>{cell.count ? <span className={`mt-1 block text-[8px] ${cell.pnl > 0 ? 'text-emerald-300' : cell.pnl < 0 ? 'text-rose-300' : 'text-slate-400'}`}>{cell.pnl >= 0 ? '+' : '-'}{Math.abs(cell.pnl).toFixed(0)}</span> : null}</div>)}</div>
+            <div className="mt-4 flex items-center gap-4 font-mono text-[9px] text-slate-500"><span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Profit day</span><span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-1.5 rounded-full bg-rose-400" /> Loss day</span></div>
+          </section>
+        </section>
+
+        <section className="mb-5 grid gap-4 xl:grid-cols-[.9fr_.9fr_1.2fr]">
+          <section className="rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 sm:p-5"><div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Recent activity</p><p className="mt-1 text-sm font-medium text-white">Latest executions</p></div><Activity className="h-4 w-4 text-blue-300" /></div><div className="mt-4 space-y-2.5">{commandCenter.recentTrades.length ? commandCenter.recentTrades.map((trade) => <button type="button" onClick={() => handleEdit(trade)} key={trade.id} className="group flex w-full items-center justify-between rounded-lg border border-white/[0.055] bg-white/[0.018] px-3 py-2.5 text-left transition hover:border-blue-300/20 hover:bg-blue-500/[0.04]"><div><p className="font-mono text-[10px] font-semibold text-slate-200">{trade.symbol} <span className="font-normal text-slate-600">· {trade.direction}</span></p><p className="mt-0.5 text-[10px] text-slate-600">{trade.date}</p></div><span className={`font-mono text-xs ${trade.pnl > 0 ? 'text-emerald-300' : trade.pnl < 0 ? 'text-rose-300' : 'text-slate-400'}`}>{asCurrency(trade.pnl)}</span></button>) : <p className="rounded-lg border border-dashed border-white/[0.07] px-3 py-7 text-center text-xs text-slate-600">No executions recorded yet.</p>}</div></section>
+          <section className="rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 sm:p-5"><div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Practice & prepare</p><p className="mt-1 text-sm font-medium text-white">Next decision desk</p></div><FlaskConical className="h-4 w-4 text-violet-300" /></div><div className="mt-4 rounded-xl border border-violet-400/10 bg-violet-500/[0.045] p-3.5"><p className="text-sm font-medium text-slate-200">Keep live performance separate.</p><p className="mt-1.5 text-xs leading-5 text-slate-500">Replay markets and simulate risk in Backtest. Journal and Analytics remain live-trade only.</p><button type="button" onClick={() => setLocation(appRoutes.backtest)} className="tf-press mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-violet-200 hover:text-violet-100">Open Backtest <ArrowUpRight className="h-3.5 w-3.5" /></button></div><button type="button" onClick={() => setLocation(appRoutes.calendar)} className="tf-press mt-3 flex w-full items-center justify-between rounded-xl border border-blue-400/10 bg-blue-500/[0.04] px-3.5 py-3 text-left hover:bg-blue-500/[0.08]"><span><span className="block text-xs font-medium text-slate-200">Macro risk check</span><span className="mt-0.5 block text-[10px] text-slate-600">Review the live economic calendar.</span></span><CalendarDays className="h-4 w-4 text-blue-300" /></button></section>
+          <section className="rounded-2xl border border-white/[0.07] bg-[#0a111f] p-4 sm:p-5"><div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Quick statistics</p><p className="mt-1 text-sm font-medium text-white">Recorded journal only</p></div><ShieldCheck className="h-4 w-4 text-emerald-300" /></div><div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4"><div><p className="font-mono text-[8px] uppercase tracking-[0.13em] text-slate-600">Profit factor</p><p className="mt-1.5 font-mono text-lg font-semibold text-white">{Number.isFinite(commandCenter.profitFactor) ? commandCenter.profitFactor.toFixed(2) : '∞'}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[0.13em] text-slate-600">Avg win</p><p className="mt-1.5 font-mono text-lg font-semibold text-emerald-300">{asCurrency(commandCenter.avgWin)}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[0.13em] text-slate-600">Avg loss</p><p className="mt-1.5 font-mono text-lg font-semibold text-rose-300">{asCurrency(commandCenter.avgLoss)}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[0.13em] text-slate-600">Symbols</p><p className="mt-1.5 font-mono text-lg font-semibold text-white">{symbolChips.length}</p></div></div><button type="button" onClick={() => setLocation(appRoutes.analytics)} className="tf-press mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-blue-200 hover:text-white">Open setup analytics <ArrowRight className="h-3.5 w-3.5" /></button></section>
+        </section>
+
+        <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#0a111f] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0"><ListFilter className="h-4 w-4 shrink-0 text-slate-500" /><button onClick={() => setFilterSymbol('')} className={`tf-press shrink-0 rounded-full border px-3 py-1.5 text-xs ${!filterSymbol ? 'border-emerald-300/30 bg-emerald-400/[0.10] text-emerald-200' : 'border-white/[0.09] text-slate-500 hover:text-slate-200'}`}>All symbols</button>{symbolChips.map((symbol) => <button key={symbol} onClick={() => setFilterSymbol(symbol)} className={`tf-press shrink-0 rounded-full border px-3 py-1.5 font-mono text-[11px] ${filterSymbol === symbol ? 'border-emerald-300/30 bg-emerald-400/[0.10] text-emerald-200' : 'border-white/[0.09] text-slate-500 hover:text-slate-200'}`}>{symbol}</button>)}</div>
           <button onClick={() => setLocation(appRoutes.backtest)} className="tf-press inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-violet-200"><FlaskConical className="h-3.5 w-3.5 text-violet-300" />Open Backtest lab <ArrowUpRight className="h-3.5 w-3.5" /></button>
         </section>
-        {/* Stats bar */}
-        <TradeStats trades={filtered} />
+        <section className="mb-3 flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600">Execution ledger</p><p className="mt-1 text-sm font-medium text-white">Daily trade review</p></div><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">{filtered.length} filtered records</span></section>
 
         {/* Table header */}
         {dayGroups.length > 0 && (

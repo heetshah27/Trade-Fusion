@@ -27,19 +27,20 @@ import Home from "./Home";
 describe("Journal command center", () => {
   afterEach(() => { cleanup(); Object.values(mocks).forEach(mock => mock.mockReset()); });
 
-  it("renders daily review actions and opens the manual log flow", () => {
+  it("renders the private command-center modules and opens the manual log flow", () => {
     render(<Home />);
-    expect(screen.getByText("Daily command center")).toBeTruthy();
-    expect(screen.getByText("Today’s executions")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /open calendar/i })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /log execution/i }));
+    expect(screen.getByText("Private command center")).toBeTruthy();
+    expect(screen.getByText("Monthly P&L")).toBeTruthy();
+    expect(screen.getByText("Recent activity")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /open market calendar/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /log trade/i }));
     expect(screen.getByRole("dialog").textContent).toContain("Trade entry open");
   });
 
-  it("keeps symbol filter chips and Backtest access within the daily workflow", () => {
+  it("keeps symbol filter chips and Backtest access within the command center", () => {
     render(<Home />);
     expect(screen.getByRole("button", { name: "XAUUSD" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /open backtest lab/i }));
+    fireEvent.click(screen.getAllByRole("button", { name: /open backtest/i })[0]!);
     expect(mocks.setLocation).toHaveBeenCalled();
   });
 });

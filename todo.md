@@ -238,3 +238,7 @@
 - [x] Review the supplied reference site’s scroll behavior and identify original Trade Fusion motion opportunities.
 - [x] Add smooth, original scroll-linked reveal and workstation-depth motion to the Trade Fusion landing page.
 - [x] Verify reduced-motion support, responsive performance, and publish the enhanced landing-page animation.
+- [x] Review the supplied reference dashboard and map relevant high-density trading-workspace patterns to Trade Fusion.
+- [x] Define an original Trade Fusion command-center dashboard layout with compact metrics, performance review, calendar risk, and private activity modules.
+- [x] Implement the desktop and mobile command-center redesign while preserving existing private Journal, Analytics, Calendar, Backtest, and Trader’s Room workflows.
+- [x] Test privacy, data states, desktop/mobile rendering, and publish the redesigned workspace.
