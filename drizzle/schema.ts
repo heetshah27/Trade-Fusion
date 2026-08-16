@@ -29,6 +29,7 @@ export const tradingStyleEnum = pgEnum("trading_style", [
   "forex_trader",
 ]);
 export const backtestSessionStatusEnum = pgEnum("backtest_session_status", ["active", "archived"]);
+export const contactInquiryStatusEnum = pgEnum("contact_inquiry_status", ["new", "read", "resolved"]);
 
 export const users = pgTable("users", {
   /**
@@ -52,6 +53,26 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+/** Public website inquiries; only the project owner can read these records. */
+export const contactInquiries = pgTable(
+  "contact_inquiries",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    name: varchar("name", { length: 80 }).notNull(),
+    email: varchar("email", { length: 320 }).notNull(),
+    message: text("message").notNull(),
+    status: contactInquiryStatusEnum("status").default("new").notNull(),
+    readAt: timestamp("readAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("contact_inquiries_status_created_idx").on(table.status, table.createdAt),
+    index("contact_inquiries_created_idx").on(table.createdAt),
+  ]
+);
+
+export type ContactInquiry = typeof contactInquiries.$inferSelect;
 
 /** A member-owned setup library used by manual live-trade logging and analytics. */
 export const tradeSetups = pgTable(

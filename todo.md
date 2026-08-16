@@ -327,3 +327,9 @@
 - [x] Define accurate Trade Fusion FAQ topics and answers covering privacy, journals, trade logging, Backtest, Calendar, supported markets, and future broker sync.
 - [x] Build an original accessible responsive FAQ section with landing-page navigation access.
 - [x] Test FAQ content, accordion interaction, desktop/mobile layout, and publish the landing-page update.
+- [x] Define the private public-contact inquiry flow, owner-notification boundary, and WhatsApp privacy constraint.
+- [x] Add secure inquiry storage, validation, owner alerting, and abuse safeguards without exposing the owner’s WhatsApp number.
+- [x] Build an original responsive Contact section and inquiry form on the public landing page.
+- [ ] Configure optional server-side WhatsApp delivery after the owner selects a supported provider and submits credentials securely.
+- [x] Test private delivery, abuse handling, desktop/mobile form UX, and publish the contact experience.
+- [x] Confirm no owner WhatsApp number is rendered, embedded, or committed while server-side provider delivery remains deferred.

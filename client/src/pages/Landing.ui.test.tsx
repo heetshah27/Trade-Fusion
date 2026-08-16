@@ -3,7 +3,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } } } }));
+vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } }, contact: { submit: { useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false, error: null }) } } } }));
 vi.mock("wouter", () => ({ Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a> }));
 vi.mock("framer-motion", () => {
   const Motion = ({ children, initial: _initial, animate: _animate, transition: _transition, style: _style, ...props }: React.HTMLAttributes<HTMLElement> & { initial?: unknown; animate?: unknown; transition?: unknown }) => <div {...props}>{children}</div>;
@@ -50,6 +50,17 @@ describe("Expanded Trade Fusion landing page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Is my data private?" }));
     expect(screen.getByText(/nothing from your private journal is shared there automatically/i)).toBeTruthy();
+  });
+
+  it("adds a private landing contact form without exposing a phone number", () => {
+    render(<Landing />);
+
+    expect(screen.getByRole("heading", { name: "Start a focused conversation." })).toBeTruthy();
+    expect(screen.getByLabelText("Name")).toBeTruthy();
+    expect(screen.getByLabelText("Email")).toBeTruthy();
+    expect(screen.getByLabelText("Message")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /send message/i })).toBeTruthy();
+    expect(screen.getByText("No WhatsApp number is displayed or embedded in this site.")).toBeTruthy();
   });
 
   it("adds Backtest as an interactive first-class workspace-preview module", () => {
