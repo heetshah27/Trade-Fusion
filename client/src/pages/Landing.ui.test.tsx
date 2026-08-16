@@ -20,10 +20,19 @@ describe("Expanded Trade Fusion landing page", () => {
     render(<Landing />);
     expect(screen.getByText("Private replay lab")).toBeTruthy();
     expect(screen.getByText("Execution journal")).toBeTruthy();
-    expect(screen.getByText("Setup Analytics")).toBeTruthy();
+    expect(screen.getAllByText("Setup Analytics").length).toBeGreaterThan(1);
     expect(screen.getByText("Open Backtest lab")).toBeTruthy();
     expect(screen.getAllByText("Trader’s Room").length).toBeGreaterThan(0);
     expect(screen.getByText("Capture the execution. Review the pattern. Prepare the next decision.")).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /platform/i }).length).toBeGreaterThan(0);
+  });
+
+  it("includes the structured marketing footer with workspace routes and declared social placeholders", () => {
+    render(<Landing />);
+    expect(screen.getByText("Start reviewing")).toBeTruthy();
+    expect(screen.getAllByText("Performance Journal").length).toBeGreaterThan(1);
+    expect(screen.getByText("Account Settings")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Trade Fusion X channel coming soon" })).toBeTruthy();
+    expect(screen.getByText("Built for review, not signals")).toBeTruthy();
   });
 });

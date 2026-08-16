@@ -521,10 +521,50 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-white/[0.08] px-5 py-10 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-xs text-slate-500 sm:flex-row sm:items-center">
-          <Brand />
-          <p>© {new Date().getFullYear()} Trade Fusion. Professional trading review architecture.</p>
+      <footer className="relative z-10 border-t border-white/[0.08] bg-[#030914] px-5 pt-16 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-12 pb-14 md:grid-cols-[1.45fr_0.7fr_0.7fr_1fr] md:gap-8">
+          <div className="max-w-xs">
+            <Brand />
+            <p className="mt-5 text-sm leading-6 text-slate-400">A private performance workspace for documenting executions, reviewing setups, rehearsing decisions, and building a more deliberate trading process.</p>
+            <div className="mt-6 flex items-center gap-2">
+              {[
+                ["X", "Trade Fusion X channel coming soon"],
+                ["in", "Trade Fusion LinkedIn channel coming soon"],
+                ["◎", "Trade Fusion Instagram channel coming soon"],
+              ].map(([label, description]) => <button key={label} type="button" title={description} aria-label={description} className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.09] bg-white/[0.03] font-mono text-xs text-slate-400 transition hover:border-blue-300/35 hover:text-blue-200">{label}</button>)}
+            </div>
+          </div>
+
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-blue-300">Platform</p>
+            <nav className="mt-5 grid gap-3 text-sm text-slate-400">
+              <Link href={appRoutes.journal} className="transition hover:text-white">Performance Journal</Link>
+              <Link href={appRoutes.analytics} className="transition hover:text-white">Setup Analytics</Link>
+              <Link href={appRoutes.backtest} className="transition hover:text-white">Backtest Lab</Link>
+              <Link href={appRoutes.calendar} className="transition hover:text-white">Market Calendar</Link>
+              <Link href={appRoutes.community} className="transition hover:text-white">Trader’s Room</Link>
+            </nav>
+          </div>
+
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-blue-300">Workspace</p>
+            <nav className="mt-5 grid gap-3 text-sm text-slate-400">
+              <Link href={appRoutes.account} className="transition hover:text-white">Saved Setups</Link>
+              <Link href={appRoutes.account} className="transition hover:text-white">Account Settings</Link>
+              <a href="#workflow" className="transition hover:text-white">How it works</a>
+              <a href="#security" className="transition hover:text-white">Privacy by design</a>
+            </nav>
+          </div>
+
+          <div className="rounded-2xl border border-blue-300/[0.14] bg-[linear-gradient(145deg,rgba(31,82,157,0.17),rgba(5,16,32,0.52))] p-5">
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-blue-300">Start reviewing</p>
+            <p className="mt-3 text-sm leading-6 text-slate-300">Open a private workspace, log the next execution, and begin building setup-level insight.</p>
+            <Link href={appRoutes.journal} className="mt-5 inline-flex h-10 items-center rounded-lg bg-[oklch(0.66_0.18_250)] px-4 text-sm font-semibold text-white transition hover:bg-[oklch(0.72_0.15_250)]">Open workspace <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </div>
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 border-t border-white/[0.07] py-6 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Trade Fusion. Private trading performance workspace.</p>
+          <div className="flex gap-4"><a href="#security" className="transition hover:text-slate-300">Privacy</a><a href="#workflow" className="transition hover:text-slate-300">Workflow</a><span>Built for review, not signals</span></div>
         </div>
       </footer>
     </main>
