@@ -266,3 +266,7 @@
 - [x] Define an original accessible badge taxonomy for forex, metals, crypto, indices, equities, and options without copying proprietary artwork.
 - [x] Build and apply reusable instrument badges across Trades, Dashboard, Journal, Analytics, and Backtest.
 - [x] Test responsive badge presentation, accessible labels, and publish the instrument-badge system.
+- [x] Audit current Long and Short direction labels across live Trades, private Journal, Analytics, and Backtest surfaces.
+- [x] Create an original accessible Long/Short direction badge component with clear visual semantics.
+- [x] Apply the shared direction badges to key live and simulated trade presentation surfaces.
+- [x] Test responsive rendering, accessibility, and publish the direction-badge system.

@@ -1,5 +1,6 @@
 import React from "react";
 import { Clock3, History, Trash2 } from "lucide-react";
+import { DirectionBadge } from "@/components/DirectionBadge";
 
 export type SimulatedHistoryTrade = {
   id: number;
@@ -31,7 +32,7 @@ export function SimulatedTradeHistory({ trades, onDelete }: { trades: SimulatedH
       const netPnl = trade.pnl - trade.fees;
       const profitable = netPnl >= 0;
       return <article key={trade.id} className="grid gap-3 px-5 py-4 transition hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-center">
-        <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className={`rounded px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.12em] ${trade.direction === "LONG" ? "bg-emerald-400/10 text-emerald-200" : "bg-rose-400/10 text-rose-200"}`}>{trade.direction}</span><span className="truncate text-xs font-medium text-slate-200">{trade.setupTag || "Replay execution"}</span></div><p className="mt-2 truncate font-mono text-[10px] text-slate-500">{displayTime(trade.entryAt, trade.date)} → {displayTime(trade.exitAt, trade.date)}</p></div>
+        <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><DirectionBadge direction={trade.direction} size="sm" /><span className="truncate text-xs font-medium text-slate-200">{trade.setupTag || "Replay execution"}</span></div><p className="mt-2 truncate font-mono text-[10px] text-slate-500">{displayTime(trade.entryAt, trade.date)} → {displayTime(trade.exitAt, trade.date)}</p></div>
         <div className="flex items-center justify-between gap-3 sm:block"><div><p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">Entry → Exit</p><p className="mt-1 font-mono text-xs text-slate-300">{trade.entryPrice} → {trade.exitPrice}</p></div><p className="font-mono text-[10px] text-slate-500 sm:mt-1">{trade.rMultiple === null ? "No R" : `${trade.rMultiple.toFixed(2)}R`} · fees {currency.format(trade.fees)}</p></div>
         <div className="flex items-center justify-between gap-3 sm:justify-end"><div className="text-right"><p className="font-mono text-[9px] uppercase tracking-[0.14em] text-slate-600">Net P&amp;L</p><p className={`mt-1 font-mono text-sm font-semibold ${profitable ? "text-emerald-300" : "text-rose-300"}`}>{profitable ? "+" : ""}{currency.format(netPnl)}</p></div><button type="button" aria-label="Delete simulated trade" onClick={() => onDelete(trade.id)} className="rounded-lg p-2 text-slate-600 transition hover:bg-rose-500/10 hover:text-rose-300"><Trash2 className="h-4 w-4" /></button></div>
       </article>;
