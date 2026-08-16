@@ -1,15 +1,17 @@
 // @vitest-environment jsdom
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { InstrumentBadge } from "./InstrumentBadge";
+
+afterEach(cleanup);
 
 describe("InstrumentBadge", () => {
   it("renders accessible original paired currency tokens for forex", () => {
-    render(<InstrumentBadge symbol="EURUSD" category="forex" />);
-    const badge = screen.getByRole("img", { name: /euro.*US dollar forex pair/i });
+    render(<InstrumentBadge symbol="GBPUSD" category="forex" />);
+    const badge = screen.getByRole("img", { name: /British pound.*US dollar forex pair/i });
     expect(badge).toBeTruthy();
-    expect(badge.textContent).toContain("🇪🇺");
+    expect(badge.textContent).toContain("🇬🇧");
     expect(badge.textContent).toContain("🇺🇸");
   });
 
@@ -41,5 +43,11 @@ describe("InstrumentBadge", () => {
     render(<InstrumentBadge symbol="NZDUSD" category="forex" />);
     expect(screen.getByRole("img", { name: /New Zealand dollar.*US dollar forex pair/i })).toBeTruthy();
     expect(document.querySelector('img[src*="trade-fusion-nzdusd-paired-flags"]')).toBeTruthy();
+  });
+
+  it("renders the supplied paired-flag asset for EUR/USD", () => {
+    render(<InstrumentBadge symbol="EURUSD" category="forex" />);
+    expect(screen.getByRole("img", { name: /Euro.*US dollar forex pair/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-eurusd-paired-flags"]')).toBeTruthy();
   });
 });

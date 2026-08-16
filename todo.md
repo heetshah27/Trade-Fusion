@@ -293,3 +293,6 @@
 - [x] Verify the oil-drop USOIL badge across Trade Fusion and publish the update.
 - [x] Prepare the supplied NZD/USD paired-flag asset and integrate it into the shared forex badge without losing its accessible pair label.
 - [x] Verify the custom USOIL and NZD/USD markers across Trade Fusion and publish the combined update.
+- [x] Prepare the supplied EUR/USD paired-flag asset and confirm its shared badge integration point.
+- [x] Replace the generic EUR/USD pair token with the supplied compact paired-flag marker while retaining accessible text.
+- [x] Verify the EUR/USD marker across Trade Fusion and publish the update.
