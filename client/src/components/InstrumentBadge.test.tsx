@@ -10,9 +10,10 @@ describe("InstrumentBadge", () => {
     expect(screen.getByRole("img", { name: /euro.*US dollar forex pair/i })).toBeTruthy();
   });
 
-  it("renders recognizable original gold and crypto market marks", () => {
+  it("renders the supplied gold-bars asset for XAU/USD and the original crypto mark", () => {
     const { rerender } = render(<InstrumentBadge symbol="XAUUSD" category="metals" />);
-    expect(screen.getByRole("img", { name: /gold/i }).textContent).toContain("Au");
+    expect(screen.getByRole("img", { name: /gold/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-xauusd-gold-bars"]')).toBeTruthy();
     rerender(<InstrumentBadge symbol="BTCUSD" category="crypto" />);
     expect(screen.getByRole("img", { name: /btc crypto/i }).textContent).toContain("₿");
   });

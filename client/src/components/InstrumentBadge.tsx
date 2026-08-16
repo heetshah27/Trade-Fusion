@@ -20,6 +20,8 @@ const SIZE: Record<BadgeSize, { root: string; token: string; stacked: string }> 
   lg: { root: "h-10 min-w-10", token: "h-6 w-6 text-[10px]", stacked: "-ml-2.5" },
 };
 
+const XAU_GOLD_BARS_ASSET = "/manus-storage/trade-fusion-xauusd-gold-bars_1b1d3759.png";
+
 function normalized(symbol: string) {
   return symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
@@ -45,6 +47,10 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
     const first = CURRENCY_TOKENS[pair[0]] ?? { glyph: pair[0].slice(0, 1), label: pair[0], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
     const second = CURRENCY_TOKENS[pair[1]] ?? { glyph: pair[1].slice(0, 1), label: pair[1], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
     return <span role="img" aria-label={label} title={label} className={`inline-flex ${scale.root} items-center justify-center ${className}`}><span className={`grid ${scale.token} place-items-center rounded-full border font-mono font-bold ${first.tone}`}>{first.glyph}</span><span className={`grid ${scale.token} ${scale.stacked} place-items-center rounded-full border font-mono font-bold ${second.tone}`}>{second.glyph}</span></span>;
+  }
+
+  if (profile.category === "metals" && value.startsWith("XAU")) {
+    return <span role="img" aria-label={label} title={label} className={`inline-grid ${scale.root} overflow-hidden rounded-lg border border-amber-300/25 bg-[#d89f00] shadow-[0_5px_14px_rgb(180_120_0_/_0.2)] ${className}`}><img src={XAU_GOLD_BARS_ASSET} alt="" className="h-full w-full object-cover" /></span>;
   }
 
   const style = profile.category === "metals" ? "border-amber-300/25 bg-amber-400/[.12] text-amber-100" : profile.category === "crypto" ? "border-orange-300/25 bg-orange-400/[.12] text-orange-100" : profile.category === "indices" ? "border-sky-300/25 bg-sky-400/[.12] text-sky-100" : profile.category === "options" ? "border-violet-300/25 bg-violet-400/[.12] text-violet-100" : profile.category === "equities" ? "border-slate-300/20 bg-slate-300/[.09] text-slate-100" : "border-blue-300/20 bg-blue-400/[.10] text-blue-100";

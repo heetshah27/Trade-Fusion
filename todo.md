@@ -272,3 +272,6 @@
 - [x] Test responsive rendering, accessibility, and publish the direction-badge system.
 - [x] Replace the still-visible legacy Type pills in the desktop and mobile Trades ledger with the shared Long/Short badge.
 - [x] Verify the visible Trades direction badges on desktop and mobile, then publish the repair.
+- [x] Prepare the supplied gold-bars asset and confirm its XAU/USD badge integration points.
+- [x] Replace the XAU/USD text token with the supplied gold-bars symbol in the reusable instrument badge while retaining accessible text.
+- [x] Verify the gold-bars XAU/USD badge across all Trade Fusion surfaces and publish the update.
