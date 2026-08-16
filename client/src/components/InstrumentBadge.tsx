@@ -33,6 +33,7 @@ const NZDUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-nzdusd-paired-fla
 const EURUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-eurusd-paired-flags_ef04281a.png";
 const GBPUSD_PAIRED_FLAGS_ASSET = "/manus-storage/trade-fusion-gbpusd-paired-flags_a33e0b04.png";
 const DXY_DOLLAR_INDEX_ASSET = "/manus-storage/trade-fusion-dxy-dollar-index_82aee8bd.png";
+const BTCUSD_BITCOIN_ASSET = "/manus-storage/trade-fusion-btcusd-bitcoin_a3ee8cee.png";
 
 function normalized(symbol: string) {
   return symbol.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -54,7 +55,11 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
   const scale = SIZE[size];
   const metalSize = METAL_BADGE_SIZE[size];
   const pair = profile.category === "forex" && value.length === 6 ? [value.slice(0, 3), value.slice(3)] : null;
-  const label = value === "USOIL" ? "US Oil instrument" : value === "DXY" ? "U.S. Dollar Index" : value === "NZDUSD" ? "New Zealand dollar / US dollar forex pair" : value === "EURUSD" ? "Euro / US dollar forex pair" : value === "GBPUSD" ? "British pound / US dollar forex pair" : pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
+  const label = value === "USOIL" ? "US Oil instrument" : value === "DXY" ? "U.S. Dollar Index" : value === "BTCUSD" ? "Bitcoin / U.S. Dollar cryptocurrency pair" : value === "NZDUSD" ? "New Zealand dollar / US dollar forex pair" : value === "EURUSD" ? "Euro / US dollar forex pair" : value === "GBPUSD" ? "British pound / US dollar forex pair" : pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
+
+  if (value === "BTCUSD") {
+    return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-orange-200/35 bg-[#ff9d1a] shadow-[0_5px_14px_rgb(234_88_12_/_0.28)] ${className}`}><img src={BTCUSD_BITCOIN_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
+  }
 
   if (value === "DXY") {
     return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-emerald-300/20 bg-[#0b8975] shadow-[0_5px_14px_rgb(6_78_59_/_0.30)] ${className}`}><img src={DXY_DOLLAR_INDEX_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
