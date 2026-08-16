@@ -16,13 +16,14 @@ import Landing from "./Landing";
 describe("Expanded Trade Fusion landing page", () => {
   afterEach(cleanup);
 
-  it("explains saved setups, setup analytics, Backtest, and the private workflow", () => {
+  it("explains Backtest, journaling, setup analytics, community, and the private workflow", () => {
     render(<Landing />);
-    expect(screen.getByText("Saved Setups")).toBeTruthy();
+    expect(screen.getByText("Private replay lab")).toBeTruthy();
+    expect(screen.getByText("Execution journal")).toBeTruthy();
     expect(screen.getByText("Setup Analytics")).toBeTruthy();
-    expect(screen.getByText("Backtest Lab")).toBeTruthy();
-    expect(screen.getByText("The Trade Fusion loop")).toBeTruthy();
-    expect(screen.getByText("One private system for the work before, during, and after a trade.")).toBeTruthy();
+    expect(screen.getByText("Open Backtest lab")).toBeTruthy();
+    expect(screen.getAllByText("Trader’s Room").length).toBeGreaterThan(0);
+    expect(screen.getByText("Capture the execution. Review the pattern. Prepare the next decision.")).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /platform/i }).length).toBeGreaterThan(0);
   });
 });

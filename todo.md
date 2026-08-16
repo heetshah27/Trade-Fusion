@@ -215,3 +215,8 @@
 - [x] Preserve reduced-motion support, readable loading context, and consistent TF brand treatment across startup and sign-in.
 - [x] Test the refreshed Trade Fusion startup logo experience.
 - [x] Save and publish the refreshed Trade Fusion startup logo experience after 121-test validation.
+- [x] Reframe the public landing page around original Trade Fusion product spotlights for Backtest, Journal, Analytics, and Trader’s Room.
+- [x] Add alternating workstation previews, benefit checklists, and feature-specific conversion actions.
+- [x] Preserve a terminal-like product system with original Trade Fusion content, colors, and privacy positioning.
+- [x] Test the refined premium marketing landing page across desktop and mobile.
+- [x] Save and publish the refined premium marketing landing page after 121-test validation.

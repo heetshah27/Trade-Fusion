@@ -71,6 +71,53 @@ const productInsights = [
   { icon: Target, step: "04", title: "Practice the plan before live exposure", text: "Use the private Backtest workspace to replay markets, annotate a thesis, and assess a simulated execution separately from your journal.", accent: "text-amber-200" },
 ];
 
+const productSpotlights = [
+  {
+    key: "backtest",
+    icon: Crosshair,
+    eyebrow: "Private replay lab",
+    title: <>Test a decision before it becomes a live position.</>,
+    description: "Step through source-backed historical markets, mark the thesis, rehearse execution, and measure a simulated outcome without changing live journal metrics.",
+    bullets: ["Replay crypto, FX, and gold source data", "Draw private zones, levels, and trendlines", "Separate simulated P&L from live performance"],
+    action: "Open Backtest lab",
+    href: appRoutes.backtest,
+    accent: "blue",
+  },
+  {
+    key: "journal",
+    icon: BookOpenCheck,
+    eyebrow: "Execution journal",
+    title: <>Give every execution its <span className="text-[oklch(0.70_0.16_250)]">full context.</span></>,
+    description: "Record live trades with a saved setup, market session, quality, plan-adherence, notes, and P&L—then return to the decision with context intact.",
+    bullets: ["Private manual entries with cloud sync", "Saved setup and quality context", "Clear day-by-day profit and loss review"],
+    action: "Start your journal",
+    href: appRoutes.journal,
+    accent: "emerald",
+  },
+  {
+    key: "analytics",
+    icon: BarChart3,
+    eyebrow: "Setup intelligence",
+    title: <>See the <span className="text-[oklch(0.70_0.16_250)]">process</span> behind the P&L.</>,
+    description: "Compare recorded results by setup, symbol, direction, weekday, and session. The dashboard focuses on your private live journal, never Backtest simulations.",
+    bullets: ["Win rate, profit factor, and recorded P&L", "Saved-setup and session comparisons", "Live-trade analytics with private ownership"],
+    action: "Review setup analytics",
+    href: appRoutes.analytics,
+    accent: "violet",
+  },
+  {
+    key: "room",
+    icon: MessageSquare,
+    eyebrow: "Trader’s Room",
+    title: <>Build conviction with a <span className="text-[oklch(0.70_0.16_250)]">private community.</span></>,
+    description: "Discuss execution, share chart attachments, and learn from focused trading conversations while keeping every journal and metric private by default.",
+    bullets: ["Member discussions and chart attachments", "Reactions, badges, and moderator controls", "No automatic sharing of journal data"],
+    action: "Enter Trader’s Room",
+    href: appRoutes.community,
+    accent: "sky",
+  },
+] as const;
+
 function TFMonogram({ size = "regular" }: { size?: "regular" | "small" }) {
   return (
     <div className={`tf-monogram ${size === "small" ? "tf-monogram-small" : ""}`} aria-label="Trade Fusion TF monogram" role="img">
@@ -303,6 +350,38 @@ function WorkspacePreview() {
   );
 }
 
+function SpotlightPreview({ kind }: { kind: "backtest" | "journal" | "analytics" | "room" }) {
+  const navLabel = { backtest: "Backtest Lab", journal: "Performance Journal", analytics: "Setup Analytics", room: "Trader’s Room" }[kind];
+
+  return (
+    <div className="relative mx-auto w-full max-w-[670px]">
+      <div className="pointer-events-none absolute inset-x-16 -top-8 h-32 rounded-full bg-blue-500/15 blur-[90px]" />
+      <div className="relative overflow-hidden rounded-[1.65rem] border border-blue-200/[0.18] bg-[#050c18] p-2 shadow-[0_30px_90px_rgba(0,0,0,0.58)]">
+        <div className="overflow-hidden rounded-[1.2rem] border border-white/[0.08] bg-[#08152a]">
+          <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+            <div className="flex items-center gap-2.5"><TFMonogram size="small" /><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400">Trade Fusion / {navLabel}</span></div>
+            <div className="flex gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /><span className="h-1.5 w-1.5 rounded-full bg-blue-400" /><span className="h-1.5 w-1.5 rounded-full bg-slate-500" /></div>
+          </div>
+          <div className="grid min-h-[285px] grid-cols-[90px_1fr] sm:min-h-[330px] sm:grid-cols-[122px_1fr]">
+            <aside className="border-r border-white/[0.07] bg-[#061022] p-3 sm:p-4">
+              <p className="font-mono text-[7px] uppercase tracking-[0.16em] text-slate-600">Workspace</p>
+              <div className="mt-5 space-y-2 font-mono text-[8px] text-slate-500 sm:text-[9px]">
+                {['Journal', 'Setups', 'Analytics', 'Backtest', 'Calendar'].map((item) => <div key={item} className={`${item === navLabel.replace(' Lab', '').replace('Performance ', '').replace('Setup ', '').replace('Trader’s ', '') ? 'rounded-md bg-blue-500/15 px-2 py-1.5 text-blue-200' : 'px-2 py-1.5'}`}>{item}</div>)}
+              </div>
+            </aside>
+            <div className="min-w-0 p-4 sm:p-5">
+              {kind === "backtest" && <div className="space-y-4"><div className="flex items-center justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.18em] text-blue-300">Historical replay</p><h4 className="mt-1 text-base font-semibold text-white">XAU/USD · 15m</h4></div><span className="rounded-full border border-blue-400/25 bg-blue-500/10 px-2 py-1 font-mono text-[8px] text-blue-200">SIMULATED</span></div><div className="relative h-40 overflow-hidden rounded-xl border border-white/[0.08] bg-[#050b16] sm:h-48"><div className="absolute inset-0 opacity-20 [background-image:linear-gradient(#3b82f6_1px,transparent_1px),linear-gradient(90deg,#3b82f6_1px,transparent_1px)] [background-size:32px_32px]" /><svg viewBox="0 0 500 180" className="absolute inset-0 h-full w-full" preserveAspectRatio="none"><polyline fill="none" stroke="#60a5fa" strokeWidth="2.5" points="0,115 25,90 50,106 75,70 100,78 125,42 150,60 175,92 200,80 225,110 250,98 275,125 300,85 325,102 350,75 375,110 400,95 425,132 450,115 475,138 500,122" /><line x1="0" x2="500" y1="106" y2="106" stroke="#34d399" strokeDasharray="5 5" opacity="0.9" /></svg><div className="absolute left-[38%] top-[30%] h-[43%] w-[25%] border border-blue-400/70 bg-blue-500/10"><span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-blue-300" /></div></div><div className="flex gap-2"><span className="rounded-lg bg-red-500/15 px-3 py-1.5 font-mono text-[9px] text-red-300">SELL · 0.10</span><span className="rounded-lg bg-blue-500/15 px-3 py-1.5 font-mono text-[9px] text-blue-200">BUY · 0.10</span><span className="ml-auto font-mono text-[9px] text-slate-500">Zone active</span></div></div>}
+              {kind === "journal" && <div className="space-y-4"><div className="flex items-center justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.18em] text-emerald-300">Execution review</p><h4 className="mt-1 text-base font-semibold text-white">Trade Journal</h4></div><span className="font-mono text-[9px] text-emerald-400">+ $3.93 today</span></div><div className="space-y-2">{[['XAU/USD', 'London Sweep', '+$182.40', 'text-emerald-400'], ['EUR/USD', 'Breakout Retest', '+$74.00', 'text-emerald-400'], ['NAS100', 'Trend Continuation', '-$51.50', 'text-red-400']].map(([symbol, setup, pnl, color]) => <div key={symbol} className="grid grid-cols-[1fr_1.3fr_0.8fr] items-center rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 py-3 font-mono text-[9px]"><span className="font-semibold text-white">{symbol}</span><span className="text-slate-400">{setup}</span><span className={`text-right ${color}`}>{pnl}</span></div>)}</div><div className="rounded-xl border border-blue-300/15 bg-blue-400/[0.06] p-3 font-mono text-[9px] text-blue-200">Notes, setup, session, quality, and rule adherence stay together.</div></div>}
+              {kind === "analytics" && <div className="space-y-4"><div className="flex items-center justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.18em] text-violet-300">Live journal only</p><h4 className="mt-1 text-base font-semibold text-white">Setup Analytics</h4></div><span className="rounded-lg border border-white/[0.08] px-2 py-1 font-mono text-[8px] text-slate-400">30 DAYS</span></div><div className="grid grid-cols-3 gap-2">{[['WIN RATE', '68%', 'text-emerald-400'], ['P. FACTOR', '1.92', 'text-blue-200'], ['AVG P&L', '$44', 'text-emerald-300']].map(([label, value, color]) => <div key={label} className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><p className="font-mono text-[7px] text-slate-500">{label}</p><p className={`mt-2 font-mono text-sm font-bold ${color}`}>{value}</p></div>)}</div><div className="space-y-2">{[['London Sweep', 82, 'bg-emerald-400'], ['Breakout Retest', 64, 'bg-blue-400'], ['Trend Continuation', 41, 'bg-violet-400']].map(([label, width, color]) => <div key={label}><div className="mb-1 flex justify-between font-mono text-[8px] text-slate-400"><span>{label}</span><span>{width}%</span></div><div className="h-2 overflow-hidden rounded-full bg-white/[0.06]"><div className={`h-full rounded-full ${color}`} style={{ width: `${width}%` }} /></div></div>)}</div></div>}
+              {kind === "room" && <div className="space-y-3"><div className="flex items-center justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.18em] text-sky-300">Member discussion</p><h4 className="mt-1 text-base font-semibold text-white">Trader’s Room</h4></div><span className="rounded-full bg-emerald-500/10 px-2 py-1 font-mono text-[8px] text-emerald-300">LIVE ROOM</span></div>{[['Execution Review', 'Keeping size disciplined into CPI', '4 replies'], ['Trade Ideas', 'Mapping London session liquidity', '11 insights'], ['Psychology', 'Notes from a patient week', '6 insights']].map(([tag, title, activity]) => <div key={title} className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><div className="flex justify-between font-mono text-[8px] text-sky-300"><span>{tag}</span><span className="text-slate-500">{activity}</span></div><p className="mt-2 text-xs font-medium text-white">{title}</p><p className="mt-1 font-mono text-[8px] text-slate-500">Private journal data is never shared.</p></div>)}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [clock, setClock] = useState(() => Date.now());
@@ -390,74 +469,40 @@ export default function Landing() {
         <WorkspacePreview />
       </section>
 
-      {/* Features Grid with Rich Hover Effects */}
-      <section id="platform" className="relative z-10 border-y border-white/[0.08] bg-[#08152a]/80 py-24 backdrop-blur-md sm:py-28">
+      <section id="platform" className="relative z-10 border-y border-white/[0.08] bg-[#050e1d] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[oklch(0.70_0.16_250)]">Precision Review Stack</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">Engineered for serious market participants.</h2>
-            <p className="mt-3 text-slate-400">A connected private operating system for the daily work behind stronger trading decisions.</p>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="tf-signal-chip inline-flex px-3 py-1 font-mono text-[9px] uppercase tracking-[0.22em] text-blue-200">What your workspace includes</p>
+            <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-white sm:text-5xl">Everything you need to build a more deliberate trading process.</h2>
+            <p className="mt-5 text-base leading-7 text-slate-400">From the plan you test to the trade you review, every module has a distinct role inside one private trading workspace.</p>
           </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <article key={feature.title} className="group relative rounded-3xl border border-blue-200/[0.12] bg-gradient-to-b from-[#13284d] to-[#0c1a31] p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-2xl hover:shadow-blue-500/20">
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-500/15 text-blue-300 transition group-hover:scale-110 group-hover:bg-blue-500/25">
-                  <feature.icon className="h-6 w-6" />
+
+          <div className="mt-20 space-y-24 sm:mt-28 sm:space-y-32">
+            {productSpotlights.map((spotlight, index) => (
+              <article key={spotlight.key} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                <div className={`${index % 2 === 1 ? "lg:order-2" : ""} max-w-xl`}>
+                  <div className={`grid h-12 w-12 place-items-center rounded-2xl border ${spotlight.accent === "emerald" ? "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300" : spotlight.accent === "violet" ? "border-violet-400/20 bg-violet-400/[0.08] text-violet-300" : spotlight.accent === "sky" ? "border-sky-400/20 bg-sky-400/[0.08] text-sky-300" : "border-blue-400/20 bg-blue-400/[0.08] text-blue-300"}`}><spotlight.icon className="h-5 w-5" /></div>
+                  <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.22em] text-blue-300">{spotlight.eyebrow}</p>
+                  <h3 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.055em] text-white sm:text-4xl">{spotlight.title}</h3>
+                  <p className="mt-5 text-base leading-7 text-slate-400">{spotlight.description}</p>
+                  <ul className="mt-7 space-y-3">
+                    {spotlight.bullets.map((bullet) => <li key={bullet} className="flex items-start gap-3 text-sm text-slate-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />{bullet}</li>)}
+                  </ul>
+                  <Link href={spotlight.href} className="mt-8 inline-flex items-center font-semibold text-blue-200 transition hover:text-white">{spotlight.action}<ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </div>
-                <p className="mt-6 font-mono text-[9px] uppercase tracking-[0.2em] text-[oklch(0.70_0.16_250)]">{feature.eyebrow}</p>
-                <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{feature.text}</p>
+                <div className={index % 2 === 1 ? "lg:order-1" : ""}><SpotlightPreview kind={spotlight.key} /></div>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="workflow" className="relative z-10 border-b border-white/[0.08] bg-[#071327] py-24 sm:py-32">
+      <section id="workflow" className="relative z-10 border-b border-white/[0.08] bg-[#071327] py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-emerald-300">The Trade Fusion loop</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">One private system for the work before, during, and after a trade.</h2>
-            <p className="mt-4 text-slate-400">Every module has a distinct role. Live journal records remain private, Backtest simulations remain isolated, and setup insight accumulates from the data you choose to log.</p>
+          <div className="flex flex-col justify-between gap-7 rounded-[2rem] border border-blue-300/[0.15] bg-[linear-gradient(125deg,rgba(20,55,109,0.42),rgba(5,18,38,0.78))] p-7 sm:flex-row sm:items-center sm:p-10">
+            <div className="max-w-2xl"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-300">One clear workflow</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">Capture the execution. Review the pattern. Prepare the next decision.</h2><p className="mt-3 text-sm leading-6 text-slate-400">Your live journal, saved setups, and analytics remain private; Backtest stays a separate rehearsal space.</p></div>
+            <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 shrink-0 px-6 !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Build your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </div>
-          <div className="mt-14 grid gap-4 md:grid-cols-2">
-            {productInsights.map((item) => <article key={item.step} className="group rounded-3xl border border-white/[0.08] bg-[#09152b] p-6 transition hover:-translate-y-0.5 hover:border-emerald-300/25"><div className="flex items-start justify-between"><span className={`grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.05] ${item.accent}`}><item.icon className="h-5 w-5" /></span><span className="font-mono text-xs text-slate-600">{item.step}</span></div><h3 className="mt-6 text-lg font-semibold text-white">{item.title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{item.text}</p></article>)}
-          </div>
-          <div className="mt-10 flex flex-col justify-between gap-4 rounded-3xl border border-sky-300/[0.16] bg-sky-400/[0.05] p-6 sm:flex-row sm:items-center"><div><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sky-300">Start with your next live trade</p><p className="mt-2 text-sm text-slate-300">Create a private workspace, add a manual execution, and build your review habit from there.</p></div><Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-11 shrink-0 px-5 text-sm !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Open your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link></div>
-        </div>
-      </section>
-
-      {/* Architecture & Workflow */}
-      <section className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 py-24 sm:py-32 lg:grid-cols-[1fr_1.1fr] lg:px-8">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[oklch(0.70_0.16_250)]">Architectural Discipline</p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">Log the setup. Review the metrics. Execute with clarity.</h2>
-          <p className="mt-5 text-base leading-7 text-slate-400">Trade Fusion keeps everyday review simple: one private journal, a reusable playbook, intentional analytics, live macro context, and a separate strategy lab.</p>
-          <div className="mt-8 space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-500/20 font-mono text-xs text-blue-300">✓</span>
-              <p className="text-sm text-slate-300"><strong className="text-white">Saved setup context:</strong> Attach a member-owned setup, session, quality, and plan-adherence label to every manual trade.</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-500/20 font-mono text-xs text-blue-300">✓</span>
-              <p className="text-sm text-slate-300"><strong className="text-white">Separated testing:</strong> Rehearse an idea in Backtest without changing any live journal metric or published community post.</p>
-            </div>
-          </div>
-        </div>
-        <div className="grid gap-4">
-          {[
-            ["01", "Capture & tag", "Record a manual execution with its setup, market session, quality, and plan-adherence context."],
-            ["02", "Review the setup", "Inspect recorded P&L, win rate, profit factor, and context across your private live journal."],
-            ["03", "Prepare with context", "Check macro events, replay a strategy privately, and enter the next session with a documented plan."],
-          ].map(([num, title, desc]) => (
-            <div key={num} className="group flex items-start gap-5 rounded-3xl border border-white/[0.08] bg-[#09152b] p-6 transition hover:border-blue-400/40 hover:bg-[#0c1c38]">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-blue-500/10 font-mono text-sm font-bold text-blue-300">{num}</span>
-              <div>
-                <h3 className="text-lg font-semibold text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{desc}</p>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
