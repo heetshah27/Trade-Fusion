@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import AddTradeModal from "@/components/AddTradeModal";
+import { InstrumentBadge } from "@/components/InstrumentBadge";
 import type { Trade } from "@/lib/tradeTypes";
 import { trpc } from "@/lib/trpc";
 import { appRoutes } from "@/lib/appRoutes";
@@ -15,9 +16,7 @@ function money(value: number) {
 }
 
 function InstrumentMark({ symbol, category }: { symbol: string; category?: string }) {
-  const profile = getInstrumentProfile(symbol, category);
-  const color = profile.category === "metals" ? "border-amber-300/20 bg-amber-400/[.10] text-amber-200" : profile.category === "crypto" ? "border-orange-300/20 bg-orange-400/[.10] text-orange-200" : profile.category === "forex" ? "border-blue-300/20 bg-blue-400/[.10] text-blue-200" : "border-slate-300/15 bg-slate-300/[.07] text-slate-300";
-  return <span aria-label={profile.label} className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border font-mono text-[9px] font-semibold ${color}`}>{profile.marker}</span>;
+  return <InstrumentBadge symbol={symbol} category={category} />;
 }
 
 function PnlValue({ value }: { value: number }) {

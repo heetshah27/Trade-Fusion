@@ -262,3 +262,7 @@
 - [x] Add shared accessible hover-lift, action-glow, focus, and touch-press tokens with reduced-motion support.
 - [x] Apply the shared interaction system to high-value landing, dashboard, Trades, Journal, and workspace controls.
 - [x] Test desktop hover, mobile press, reduced-motion, and publish the interaction upgrade.
+- [x] Review TradingView’s instrument treatment and audit all current Trade Fusion symbol displays.
+- [x] Define an original accessible badge taxonomy for forex, metals, crypto, indices, equities, and options without copying proprietary artwork.
+- [x] Build and apply reusable instrument badges across Trades, Dashboard, Journal, Analytics, and Backtest.
+- [x] Test responsive badge presentation, accessible labels, and publish the instrument-badge system.
