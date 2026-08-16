@@ -688,7 +688,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <form onSubmit={submitContact} className="rounded-[2rem] border border-white/[0.10] bg-[linear-gradient(145deg,rgba(22,43,78,0.78),rgba(5,15,32,0.92))] p-6 shadow-2xl sm:p-8" data-testid="landing-contact-form">
+          <form onSubmit={submitContact} className="tf-contact-surface rounded-[2rem] border border-white/[0.10] bg-[linear-gradient(145deg,rgba(22,43,78,0.78),rgba(5,15,32,0.92))] p-6 shadow-2xl sm:p-8" data-testid="landing-contact-form">
             <div className="flex items-start justify-between gap-4"><div><h3 className="text-xl font-semibold text-white">Send a message</h3><p className="mt-2 text-sm leading-6 text-slate-400">Tell us what you are looking to build or improve.</p></div><MessageSquare className="h-5 w-5 text-blue-300" /></div>
             <div className="mt-7 grid gap-4">
               <label className="grid gap-2 text-sm font-medium text-slate-300" htmlFor="contact-name"><span className="flex items-center gap-2"><UserRound className="h-3.5 w-3.5 text-blue-300" /> Name</span><input id="contact-name" value={contactForm.name} onChange={event => setContactForm(current => ({ ...current, name: event.target.value }))} required minLength={2} maxLength={80} placeholder="Your name" className="h-12 rounded-xl border border-white/[0.10] bg-[#08172c] px-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-blue-300/60 focus:ring-2 focus:ring-blue-400/20" /></label>
@@ -714,8 +714,8 @@ export default function Landing() {
 
           <Accordion type="single" collapsible className="mt-12 grid gap-x-10 md:grid-cols-2 md:gap-y-0" data-testid="landing-faq">
             {frequentlyAskedQuestions.map((faq, index) => (
-              <AccordionItem key={faq.question} value={`faq-${index}`} className="border-white/[0.10]">
-                <AccordionTrigger className="py-5 text-left text-base font-semibold text-slate-100 hover:no-underline hover:text-blue-200 sm:text-[17px]">
+              <AccordionItem key={faq.question} value={`faq-${index}`} className="tf-faq-item border-white/[0.10]">
+                <AccordionTrigger className="tf-faq-trigger py-5 text-left text-base font-semibold text-slate-100 hover:no-underline sm:text-[17px]">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="max-w-xl pr-7 text-sm leading-6 text-slate-400">

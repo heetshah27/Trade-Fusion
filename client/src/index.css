@@ -437,3 +437,83 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Public FAQ and contact feedback. These surfaces are interactive without
+   becoming visually noisy in the trading-product layout. */
+.tf-faq-item {
+  border-radius: 0.9rem;
+  transition: background-color 180ms var(--tf-ease-out), border-color 180ms var(--tf-ease-out), box-shadow 180ms var(--tf-ease-out), transform 180ms var(--tf-ease-out);
+}
+
+.tf-faq-trigger {
+  color: rgb(226 232 240);
+  transition: color 180ms var(--tf-ease-out), transform 180ms var(--tf-ease-out), padding-inline 180ms var(--tf-ease-out);
+}
+
+.tf-faq-trigger > svg {
+  color: rgb(100 116 139);
+  transition: color 180ms var(--tf-ease-out), transform 180ms var(--tf-ease-out);
+}
+
+.tf-faq-trigger[data-state="open"] {
+  color: rgb(191 219 254);
+}
+
+.tf-faq-trigger[data-state="open"] > svg {
+  color: rgb(125 211 252);
+}
+
+.tf-faq-item:has(.tf-faq-trigger[data-state="open"]) {
+  background: linear-gradient(100deg, rgb(30 64 175 / 0.12), transparent 72%);
+  border-color: rgb(96 165 250 / 0.34);
+  box-shadow: inset 3px 0 0 rgb(96 165 250 / 0.62);
+}
+
+.tf-contact-surface {
+  transition: border-color 180ms var(--tf-ease-out), box-shadow 180ms var(--tf-ease-out), transform 180ms var(--tf-ease-out);
+}
+
+@media (hover: hover) {
+  .tf-faq-item:hover {
+    background: rgb(30 64 175 / 0.10);
+    border-color: rgb(96 165 250 / 0.28);
+    box-shadow: inset 3px 0 0 rgb(96 165 250 / 0.45), 0 12px 28px rgb(2 8 23 / 0.22);
+    transform: translateY(-2px);
+  }
+
+  .tf-faq-trigger:hover {
+    color: rgb(191 219 254);
+    padding-inline: 0.65rem;
+  }
+
+  .tf-faq-trigger:hover > svg {
+    color: rgb(125 211 252);
+    transform: rotate(-90deg) scale(1.12);
+  }
+
+  .tf-contact-surface:hover {
+    border-color: rgb(96 165 250 / 0.28);
+    box-shadow: 0 24px 58px rgb(2 8 23 / 0.46), 0 0 0 1px rgb(96 165 250 / 0.08);
+    transform: translateY(-2px);
+  }
+
+  main footer a.transition:hover {
+    transform: translateX(2px);
+  }
+}
+
+@media (hover: none) {
+  .tf-faq-trigger:active,
+  .tf-contact-surface:active {
+    transform: scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-faq-item,
+  .tf-faq-trigger,
+  .tf-faq-trigger > svg,
+  .tf-contact-surface {
+    transition: none;
+  }
+}

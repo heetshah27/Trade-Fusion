@@ -333,3 +333,7 @@
 - [x] Defer optional server-side WhatsApp delivery until the owner selects a supported provider and submits credentials securely; the live contact form uses secure owner alerts without exposing a number.
 - [x] Test private delivery, abuse handling, desktop/mobile form UX, and publish the contact experience.
 - [x] Confirm no owner WhatsApp number is rendered, embedded, or committed while server-side provider delivery remains deferred.
+- [x] Audit FAQ accordions and remaining high-value Trade Fusion sections for missing hover, focus, or press feedback.
+- [x] Add shared FAQ accordion hover, icon-motion, focus, and touch-press treatments.
+- [x] Apply the interaction completion pass across remaining public and workspace sections.
+- [x] Test desktop hover, mobile press, reduced-motion support, and publish the interaction completion pass.
