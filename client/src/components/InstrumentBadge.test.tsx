@@ -56,4 +56,10 @@ describe("InstrumentBadge", () => {
     expect(screen.getByRole("img", { name: /British pound.*US dollar forex pair/i })).toBeTruthy();
     expect(document.querySelector('img[src*="trade-fusion-gbpusd-paired-flags"]')).toBeTruthy();
   });
+
+  it("renders the supplied symbol for DXY", () => {
+    render(<InstrumentBadge symbol="DXY" category="indices" />);
+    expect(screen.getByRole("img", { name: /U\.S\. Dollar Index/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-dxy-dollar-index"]')).toBeTruthy();
+  });
 });

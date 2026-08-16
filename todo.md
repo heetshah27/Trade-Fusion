@@ -299,3 +299,6 @@
 - [x] Prepare the supplied GBP/USD paired-flag asset and confirm its shared badge integration point.
 - [x] Replace the generic GBP/USD pair token with the supplied compact paired-flag marker while retaining accessible text.
 - [x] Verify the GBP/USD marker across Trade Fusion and publish the update.
+- [x] Prepare the supplied DXY asset and confirm its shared badge integration point.
+- [x] Replace the DXY text marker with the supplied compact U.S. Dollar Index symbol while retaining accessible text.
+- [x] Verify the DXY marker across Trade Fusion and publish the update.
