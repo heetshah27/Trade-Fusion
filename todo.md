@@ -229,3 +229,6 @@
 - [x] Repair startup-logo timing, visibility, and transition behavior without breaking reduced-motion support.
 - [x] Test the unified Trade Fusion brand-system correction.
 - [x] Save and publish the unified Trade Fusion brand-system correction after 122-test validation.
+- [x] Add Backtest to the landing-page workspace preview navigation and active module states.
+- [x] Render an original simulated Backtest replay preview that remains clearly separate from live journal performance.
+- [x] Test and publish the updated Trade Fusion workspace preview across desktop and mobile.

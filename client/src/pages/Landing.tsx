@@ -124,7 +124,7 @@ function Brand() {
 }
 
 function WorkspacePreview() {
-  const [activeTab, setActiveTab] = useState<"journal" | "calendar" | "room">("journal");
+  const [activeTab, setActiveTab] = useState<"journal" | "calendar" | "room" | "backtest">("journal");
   const previewRef = useRef<HTMLDivElement>(null);
   const inView = useInView(previewRef, { once: true, amount: 0.22 });
   const reducedMotion = useReducedMotion();
@@ -163,6 +163,12 @@ function WorkspacePreview() {
                 Calendar
               </button>
               <button
+                onClick={() => setActiveTab("backtest")}
+                className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "backtest" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+              >
+                Backtest
+              </button>
+              <button
                 onClick={() => setActiveTab("room")}
                 className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "room" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
@@ -190,6 +196,12 @@ function WorkspacePreview() {
                   className={`w-full text-left rounded-xl border px-3 py-2.5 text-xs font-medium transition ${activeTab === "calendar" ? "border-blue-300/30 bg-blue-500/15 text-white" : "border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
                 >
                   Economic Calendar
+                </button>
+                <button
+                  onClick={() => setActiveTab("backtest")}
+                  className={`w-full text-left rounded-xl border px-3 py-2.5 text-xs font-medium transition ${activeTab === "backtest" ? "border-blue-300/30 bg-blue-500/15 text-white" : "border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
+                >
+                  Backtest Lab
                 </button>
                 <button
                   onClick={() => setActiveTab("room")}
@@ -287,6 +299,65 @@ function WorkspacePreview() {
                 </div>
               )}
 
+              {activeTab === "backtest" && (
+                <div className="space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[oklch(0.70_0.16_250)]">Private Replay Workspace</p>
+                      <h3 className="text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Backtest Lab · XAU/USD</h3>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 font-mono text-[10px] text-blue-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-300" /> SIMULATED
+                    </span>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_155px]">
+                    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#071225]">
+                      <div className="flex items-center justify-between border-b border-white/[0.07] bg-white/[0.025] px-4 py-2.5">
+                        <div className="flex items-center gap-2.5 font-mono text-[9px] text-slate-400">
+                          <span className="font-semibold text-white">XAU/USD</span><span>15m</span><span>Historical replay</span>
+                        </div>
+                        <span className="font-mono text-[9px] text-emerald-300">2,384.62</span>
+                      </div>
+                      <div className="relative h-[180px] overflow-hidden sm:h-[215px]">
+                        <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:linear-gradient(#315a8b_1px,transparent_1px),linear-gradient(90deg,#315a8b_1px,transparent_1px)] [background-size:44px_36px]" />
+                        <div className="absolute left-[38%] top-[26%] h-[38%] w-[27%] border border-blue-300/70 bg-blue-500/10">
+                          <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full border border-white/60 bg-blue-300" />
+                          <span className="absolute -right-1 -bottom-1 h-2 w-2 rounded-full border border-white/60 bg-blue-300" />
+                          <span className="absolute -top-5 left-0 font-mono text-[8px] uppercase tracking-wider text-blue-200">Demand zone</span>
+                        </div>
+                        <svg viewBox="0 0 640 270" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-label="Illustrative simulated XAU/USD candlestick replay chart">
+                          <g strokeWidth="2">
+                            <path d="M35 166V114M35 128V146M72 177V123M72 139V160M109 152V87M109 102V132M146 139V95M146 108V124M183 172V112M183 125V154M220 146V69M220 88V128M257 128V75M257 90V113M294 161V108M294 122V145M331 144V82M331 95V130M368 117V58M368 72V101M405 133V78M405 92V117M442 183V111M442 128V168M479 154V97M479 110V138M516 128V60M516 76V111M553 112V47M553 65V95M590 126V79M590 94V110" stroke="#8aa7ce" opacity="0.92" />
+                            <g fill="#34d399"><rect x="27" y="128" width="16" height="18" rx="1" /><rect x="101" y="102" width="16" height="30" rx="1" /><rect x="212" y="88" width="16" height="40" rx="1" /><rect x="360" y="72" width="16" height="29" rx="1" /><rect x="508" y="76" width="16" height="35" rx="1" /><rect x="545" y="65" width="16" height="30" rx="1" /></g>
+                            <g fill="#fb7185"><rect x="64" y="139" width="16" height="21" rx="1" /><rect x="138" y="108" width="16" height="16" rx="1" /><rect x="175" y="125" width="16" height="29" rx="1" /><rect x="249" y="90" width="16" height="23" rx="1" /><rect x="286" y="122" width="16" height="23" rx="1" /><rect x="397" y="92" width="16" height="25" rx="1" /><rect x="434" y="128" width="16" height="40" rx="1" /><rect x="471" y="110" width="16" height="28" rx="1" /><rect x="582" y="94" width="16" height="16" rx="1" /></g>
+                          </g>
+                          <path d="M0 147 C80 159 120 112 180 134 S285 149 335 103 S430 108 485 92 S565 112 640 75" fill="none" stroke="#60a5fa" strokeWidth="2.5" opacity="0.8" />
+                          <line x1="0" y1="121" x2="640" y2="121" stroke="#34d399" strokeWidth="1.5" strokeDasharray="6 6" opacity="0.75" />
+                        </svg>
+                        <div className="absolute bottom-3 left-3 rounded-lg border border-emerald-400/25 bg-[#071225]/90 px-2 py-1 font-mono text-[8px] text-emerald-300">ENTRY 2,381.20</div>
+                        <div className="absolute right-3 top-3 rounded-lg border border-white/[0.1] bg-[#071225]/90 px-2 py-1 font-mono text-[8px] text-slate-400">Replay 58%</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+                      <div className="rounded-2xl border border-white/[0.08] bg-[#09152b] p-3.5">
+                        <p className="font-mono text-[8px] uppercase tracking-[0.15em] text-slate-500">Position plan</p>
+                        <p className="mt-2 font-mono text-sm font-semibold text-white">0.10 lots</p>
+                        <p className="mt-1 font-mono text-[9px] text-slate-500">Risk: 0.50%</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/[0.08] bg-[#09152b] p-3.5">
+                        <p className="font-mono text-[8px] uppercase tracking-[0.15em] text-slate-500">Chart tools</p>
+                        <div className="mt-2 flex gap-1.5"><span className="rounded-md bg-blue-500/15 px-2 py-1 font-mono text-[8px] text-blue-200">ZONE</span><span className="rounded-md bg-white/[0.06] px-2 py-1 font-mono text-[8px] text-slate-400">LINE</span></div>
+                      </div>
+                      <div className="col-span-2 flex gap-2 lg:col-span-1"><span className="flex-1 rounded-lg bg-red-500/15 px-2 py-2 text-center font-mono text-[9px] font-semibold text-red-300">SELL</span><span className="flex-1 rounded-lg bg-blue-500/15 px-2 py-2 text-center font-mono text-[9px] font-semibold text-blue-200">BUY</span></div>
+                    </div>
+                  </div>
+
+                  <p className="rounded-xl border border-blue-300/10 bg-blue-400/[0.05] px-3 py-2.5 font-mono text-[9px] leading-relaxed text-slate-400">Backtest sessions, zones, and simulated entries are private practice data. They do not contribute to your live Journal or Setup Analytics performance.</p>
+                </div>
+              )}
+
               {activeTab === "room" && (
                 <div className="space-y-6">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -327,7 +398,7 @@ function WorkspacePreview() {
           </div>
         </div>
       </div>
-      <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Interactive TradeFXBook Architecture Preview · Click tabs to explore modules</p>
+      <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>
     </motion.div>
   );
 }

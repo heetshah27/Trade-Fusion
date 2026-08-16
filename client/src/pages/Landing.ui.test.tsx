@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } } } }));
@@ -34,5 +34,16 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByText("Account Settings")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Trade Fusion X channel coming soon" })).toBeTruthy();
     expect(screen.getByText("Built for review, not signals")).toBeTruthy();
+  });
+
+  it("adds Backtest as an interactive first-class workspace-preview module", () => {
+    render(<Landing />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Backtest" }));
+
+    expect(screen.getByText("Backtest Lab · XAU/USD")).toBeTruthy();
+    expect(screen.getByText("Private Replay Workspace")).toBeTruthy();
+    expect(screen.getByText(/Backtest sessions, zones, and simulated entries/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Backtest Lab" })).toBeTruthy();
   });
 });
