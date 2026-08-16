@@ -41,6 +41,17 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByText("Built for review, not signals")).toBeTruthy();
   });
 
+  it("includes an accessible landing-page FAQ that explains product scope and private ownership", () => {
+    render(<Landing />);
+
+    expect(screen.getByRole("heading", { name: "Frequently asked questions" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Is my data private?" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "FAQ" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Is my data private?" }));
+    expect(screen.getByText(/nothing from your private journal is shared there automatically/i)).toBeTruthy();
+  });
+
   it("adds Backtest as an interactive first-class workspace-preview module", () => {
     render(<Landing />);
 

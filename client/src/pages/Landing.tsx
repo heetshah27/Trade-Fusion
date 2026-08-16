@@ -5,6 +5,7 @@ import { motion, useInView, useReducedMotion, useScroll, useTransform } from "fr
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { TradeFusionBrand, TradeFusionMark } from "@/components/TradeFusionBrand";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { trpc } from "@/lib/trpc";
 
@@ -62,6 +63,41 @@ const features = [
     eyebrow: "Trader’s Room",
     title: "Discuss execution with peers.",
     text: "An authenticated community workspace featuring trade ideas, psychology notes, chart attachments, and verified member badges.",
+  },
+];
+
+const frequentlyAskedQuestions = [
+  {
+    question: "What is Trade Fusion?",
+    answer: "Trade Fusion is a private trading-performance workspace for recording live executions, reviewing the decision behind them, organizing setups, studying analytics, and rehearsing ideas in a separate Backtest environment.",
+  },
+  {
+    question: "Is my data private?",
+    answer: "Yes. Live trades, Journal notes, saved setups, screenshots, and analytics are scoped to your authenticated account. Trader’s Room discussions are separate, and nothing from your private journal is shared there automatically.",
+  },
+  {
+    question: "How do I log a trade?",
+    answer: "Open Trades, choose an instrument from the visual picker or enter a custom symbol, then record direction, size, entry, exit, fees, setup context, and the final result. The assisted P&L calculator can help with supported instruments, while manual adjustments remain available.",
+  },
+  {
+    question: "How does Backtest work?",
+    answer: "Backtest is a private replay workspace for reviewing source-backed historical markets, marking levels or zones, and simulating entries and exits. Simulated trades remain separate from your live Journal and Setup Analytics results.",
+  },
+  {
+    question: "Which markets can I record?",
+    answer: "You can record the listed Forex, Metals, Crypto, Indices, Energy, and Equity instruments, or enter a custom symbol. The visual picker also recognizes familiar searches such as gold, bitcoin, cable, and crude.",
+  },
+  {
+    question: "How does the Market Calendar work?",
+    answer: "The calendar displays source-published economic events with impact context and U.S. Eastern Time formatting. It clearly indicates when source coverage or refreshed data is unavailable rather than presenting invented events.",
+  },
+  {
+    question: "Can I attach chart screenshots to a Journal entry?",
+    answer: "Yes. Each private Journal entry can include up to four supported chart screenshots. Attachments stay with your account and are not shared to Trader’s Room, Analytics, or Backtest.",
+  },
+  {
+    question: "Does Trade Fusion sync with MT5 or a broker?",
+    answer: "Manual logging is available today. Direct broker or MT5/VPS synchronization is planned for a future phase and is not currently required to use the private journal, review tools, or Backtest workspace.",
   },
 ];
 
@@ -541,6 +577,7 @@ export default function Landing() {
         <nav className="hidden items-center gap-8 text-sm md:flex">
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#platform">Platform</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#workflow">Workflow</a>
+          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#faq">FAQ</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#security">Privacy</a>
         </nav>
         <div className="hidden items-center gap-3 md:flex">
@@ -555,6 +592,7 @@ export default function Landing() {
           <div className="grid gap-3 text-sm text-slate-300">
             <a href="#platform" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Platform</a>
             <a href="#workflow" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Workflow</a>
+            <a href="#faq" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">FAQ</a>
             <Link href={appRoutes.journal} className="mt-2 inline-flex items-center justify-center rounded-xl bg-[oklch(0.66_0.18_250)] px-4 py-3 font-semibold text-white">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </div>
         </div>
@@ -620,6 +658,29 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="faq" className="relative z-10 border-t border-white/[0.08] bg-[#040d1b] px-5 py-20 sm:py-28 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="tf-signal-chip inline-flex px-3 py-1 font-mono text-[9px] uppercase tracking-[0.22em] text-blue-200">Support</p>
+            <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-white sm:text-5xl">Frequently asked questions</h2>
+            <p className="mt-5 text-base leading-7 text-slate-400">A clear view of what Trade Fusion does today, how your private workspace works, and where current feature boundaries are.</p>
+          </div>
+
+          <Accordion type="single" collapsible className="mt-12 grid gap-x-10 md:grid-cols-2 md:gap-y-0" data-testid="landing-faq">
+            {frequentlyAskedQuestions.map((faq, index) => (
+              <AccordionItem key={faq.question} value={`faq-${index}`} className="border-white/[0.10]">
+                <AccordionTrigger className="py-5 text-left text-base font-semibold text-slate-100 hover:no-underline hover:text-blue-200 sm:text-[17px]">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="max-w-xl pr-7 text-sm leading-6 text-slate-400">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       <footer className="relative z-10 border-t border-white/[0.08] bg-[#030914] px-5 pt-16 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-12 pb-14 md:grid-cols-[1.45fr_0.7fr_0.7fr_1fr] md:gap-8">
           <div className="max-w-xs">
@@ -651,6 +712,7 @@ export default function Landing() {
               <Link href={appRoutes.account} className="transition hover:text-white">Saved Setups</Link>
               <Link href={appRoutes.account} className="transition hover:text-white">Account Settings</Link>
               <a href="#workflow" className="transition hover:text-white">How it works</a>
+              <a href="#faq" className="transition hover:text-white">Frequently asked questions</a>
               <a href="#security" className="transition hover:text-white">Privacy by design</a>
             </nav>
           </div>

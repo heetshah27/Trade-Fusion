@@ -315,3 +315,15 @@
 - [x] Inspect the mobile Trades metadata row that still renders plain Long and Short text.
 - [x] Replace mobile plain direction text with compact animated shared Long/Short badges.
 - [x] Verify mobile badge readability, motion, and card alignment, then publish the repair.
+- [x] Define three original Trade Fusion logo-direction briefs with distinct candlestick, signal, and institutional mark concepts.
+- [x] Generate and review three original logo previews for user comparison.
+- [x] Deliver the logo directions with a clear selection path before applying any sitewide brand change.
+- [x] Define the conversion message, feed composition, and current Trade Fusion brand treatment for the trading signals announcement.
+- [x] Generate a high-converting Trade Fusion trading signals Instagram feed post.
+- [x] Review and deliver the final social post with a clear usage note.
+- [x] Define a corrected full Instagram campaign layout with headline, signal card, benefits, CTA, and a small Trade Fusion brand mark.
+- [x] Generate the corrected high-converting Trading Signals Instagram announcement post.
+- [x] Deliver the corrected full social post for user review.
+- [x] Define accurate Trade Fusion FAQ topics and answers covering privacy, journals, trade logging, Backtest, Calendar, supported markets, and future broker sync.
+- [x] Build an original accessible responsive FAQ section with landing-page navigation access.
+- [x] Test FAQ content, accordion interaction, desktop/mobile layout, and publish the landing-page update.
