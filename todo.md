@@ -312,3 +312,6 @@
 - [x] Review current picker search behavior and define supported ticker, market-name, and alias matching for each listed instrument.
 - [x] Implement normalized smart symbol search across visual picker choices without changing category filters or custom entry.
 - [x] Test alias results, category-filter interaction, custom fallback, and publish the smart search upgrade.
+- [x] Inspect the mobile Trades metadata row that still renders plain Long and Short text.
+- [x] Replace mobile plain direction text with compact animated shared Long/Short badges.
+- [x] Verify mobile badge readability, motion, and card alignment, then publish the repair.

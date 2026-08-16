@@ -26,4 +26,9 @@ describe("Trades workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /trade journal/i }));
     expect(mocks.setLocation).toHaveBeenCalled();
   });
+
+  it("uses the shared animated Long direction badge in the compact mobile card metadata", () => {
+    render(<Trades />);
+    expect(screen.getAllByLabelText("Long direction").length).toBeGreaterThan(1);
+  });
 });

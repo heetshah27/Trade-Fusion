@@ -16,5 +16,5 @@ export function DirectionBadge({ direction, size = "md", className = "" }: { dir
     ? "border-sky-300/25 bg-gradient-to-br from-sky-400/[.17] to-blue-500/[.10] text-sky-100 shadow-[0_6px_18px_rgba(37,99,235,.13)]"
     : "border-rose-300/25 bg-gradient-to-br from-rose-400/[.15] to-red-500/[.08] text-rose-100 shadow-[0_6px_18px_rgba(225,29,72,.11)]";
   const Icon = isLong ? TrendingUp : TrendingDown;
-  return <span role="img" aria-label={label} title={label} className={`inline-flex items-center rounded-lg border font-mono font-semibold uppercase tracking-[.08em] ${sizeClasses[size]} ${tone} ${className}`}><Icon className="h-3.5 w-3.5" aria-hidden="true" />{isLong ? "Long" : "Short"}</span>;
+  return <span role="img" aria-label={label} title={label} className={`tf-direction-badge inline-flex items-center rounded-lg border font-mono font-semibold uppercase tracking-[.08em] ${sizeClasses[size]} ${tone} ${className}`}><Icon className="h-3.5 w-3.5" aria-hidden="true" />{isLong ? "Long" : "Short"}</span>;
 }
