@@ -1,8 +1,8 @@
 import { dashboardReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
 import { appRoutes } from "@/lib/appRoutes";
-import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, ChevronRight, Cloud, Globe2, LockKeyhole, Menu, MessageSquare, ScanLine, ShieldCheck, Sparkles, TrendingUp, X, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight, Cloud, Crosshair, Globe2, Layers3, LockKeyhole, Menu, MessageSquare, ScanLine, ShieldCheck, Sparkles, Target, TrendingUp, X, Zap } from "lucide-react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 
 import { trpc } from "@/lib/trpc";
@@ -27,10 +27,28 @@ const features = [
     text: "Turn executions into a focused review system with automated P&L color coding, win rate analytics, profit factor, and trade-level notes.",
   },
   {
+    icon: BookOpenCheck,
+    eyebrow: "Saved Setups",
+    title: "Turn your playbook into a repeatable process.",
+    text: "Create private setup definitions, reuse them in your journal, and retain their historical performance as your process evolves.",
+  },
+  {
+    icon: TrendingUp,
+    eyebrow: "Setup Analytics",
+    title: "See where your edge is actually forming.",
+    text: "Compare recorded P&L, win rate, profit factor, symbol, direction, weekday, and market-session context—live journal trades only.",
+  },
+  {
+    icon: Crosshair,
+    eyebrow: "Backtest Lab",
+    title: "Rehearse your strategy before live risk.",
+    text: "Replay source-backed markets, mark private zones, simulate entries and exits, and keep strategy testing separate from live performance.",
+  },
+  {
     icon: Cloud,
     eyebrow: "Private Cloud Journal",
     title: "Secure sync across all your devices.",
-    text: "Your account keeps your private journal isolated from other traders and synchronized instantly wherever you sign in.",
+    text: "Your account keeps private journal data isolated from other traders and synchronized wherever you sign in.",
   },
   {
     icon: CalendarDays,
@@ -44,6 +62,13 @@ const features = [
     title: "Discuss execution with peers.",
     text: "An authenticated community workspace featuring trade ideas, psychology notes, chart attachments, and verified member badges.",
   },
+];
+
+const productInsights = [
+  { icon: BookOpenCheck, step: "01", title: "Capture the trade while context is fresh", text: "Log manual executions with entry, exit, fees, notes, saved setup, market session, instrument category, trade quality, and plan adherence.", accent: "text-sky-300" },
+  { icon: Layers3, step: "02", title: "Build a playbook that stays organized", text: "Maintain a private saved-setup library. Archive older ideas without breaking historic analytics or your trade record.", accent: "text-emerald-300" },
+  { icon: BarChart3, step: "03", title: "Review patterns, not isolated outcomes", text: "Inspect how each setup behaves across symbol, direction, session, and weekday to identify what deserves more attention.", accent: "text-violet-300" },
+  { icon: Target, step: "04", title: "Practice the plan before live exposure", text: "Use the private Backtest workspace to replay markets, annotate a thesis, and assess a simulated execution separately from your journal.", accent: "text-amber-200" },
 ];
 
 function TFMonogram({ size = "regular" }: { size?: "regular" | "small" }) {
@@ -322,13 +347,13 @@ export default function Landing() {
       <header className="relative z-20 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Brand />
         <nav className="hidden items-center gap-8 text-sm md:flex">
-          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#features">Features</a>
-          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#architecture">Architecture</a>
+          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#platform">Platform</a>
+          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#workflow">Workflow</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#security">Privacy</a>
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           <Link href={appRoutes.journal} className="text-xs font-mono text-slate-300 hover:text-white transition px-3 py-2">Sign in</Link>
-          <Link href={appRoutes.journal} className="tf-cta-primary px-4 py-2.5 text-sm inline-flex items-center">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] px-4 py-2.5 text-sm inline-flex !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </div>
         <button onClick={() => setMobileOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.10] bg-white/[0.04] text-slate-300 md:hidden" aria-label="Toggle navigation">{mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}</button>
       </header>
@@ -336,8 +361,8 @@ export default function Landing() {
       {mobileOpen && (
         <div className="relative z-20 mx-5 rounded-2xl border border-white/[0.09] bg-[#0c1a31]/95 p-5 shadow-2xl backdrop-blur-xl md:hidden">
           <div className="grid gap-3 text-sm text-slate-300">
-            <a href="#features" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Features</a>
-            <a href="#architecture" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Architecture</a>
+            <a href="#platform" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Platform</a>
+            <a href="#workflow" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Workflow</a>
             <Link href={appRoutes.journal} className="mt-2 inline-flex items-center justify-center rounded-xl bg-[oklch(0.66_0.18_250)] px-4 py-3 font-semibold text-white">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </div>
         </div>
@@ -345,17 +370,17 @@ export default function Landing() {
 
       <section className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-16 text-center sm:pb-28 sm:pt-20 lg:px-8 lg:pt-24">
         <div className="tf-signal-chip mx-auto inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-blue-200">
-          <Sparkles className="h-3.5 w-3.5 text-blue-400" /> Inspired by TradeFXBook Analytics · Enterprise Grade
+          <Sparkles className="h-3.5 w-3.5 text-blue-400" /> Private Trading Performance System · Built for Deliberate Review
         </div>
         <h1 className="tf-rise tf-rise-delay-1 mx-auto mt-7 max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
           Turn every execution into <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-sky-300 bg-clip-text text-transparent">your next edge.</span>
         </h1>
         <p className="tf-rise tf-rise-delay-2 mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
-          Trade Fusion unites your trade journal, quantitative performance review, live macro calendar, and peer community in one lightning-fast workspace.
+          Trade Fusion brings together manual journaling, private saved setups, setup analytics, market context, replay practice, and peer discussion in one disciplined workflow.
         </p>
         <div className="tf-rise tf-rise-delay-3 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href={appRoutes.journal} className="tf-cta-primary h-12 px-7 text-base font-semibold shadow-xl shadow-blue-500/20">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
-          <a href="#features" className="tf-cta-secondary h-12 px-7 text-base">Explore platform <ChevronRight className="ml-1 h-4 w-4" /></a>
+          <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 px-7 text-base font-semibold shadow-xl !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          <a href="#platform" className="tf-cta-secondary h-12 px-7 text-base">Explore platform <ChevronRight className="ml-1 h-4 w-4" /></a>
         </div>
         <div className="tf-rise tf-rise-delay-4 mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-400 font-mono">
           <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Private neon database</span>
@@ -366,14 +391,14 @@ export default function Landing() {
       </section>
 
       {/* Features Grid with Rich Hover Effects */}
-      <section id="features" className="relative z-10 border-y border-white/[0.08] bg-[#08152a]/80 py-24 backdrop-blur-md sm:py-28">
+      <section id="platform" className="relative z-10 border-y border-white/[0.08] bg-[#08152a]/80 py-24 backdrop-blur-md sm:py-28">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="max-w-2xl">
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[oklch(0.70_0.16_250)]">Precision Review Stack</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">Engineered for serious market participants.</h2>
-            <p className="mt-3 text-slate-400">Everything you need to eliminate emotional mistakes and compound your edge.</p>
+            <p className="mt-3 text-slate-400">A connected private operating system for the daily work behind stronger trading decisions.</p>
           </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <article key={feature.title} className="group relative rounded-3xl border border-blue-200/[0.12] bg-gradient-to-b from-[#13284d] to-[#0c1a31] p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-2xl hover:shadow-blue-500/20">
                 <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-500/15 text-blue-300 transition group-hover:scale-110 group-hover:bg-blue-500/25">
@@ -388,28 +413,42 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="workflow" className="relative z-10 border-b border-white/[0.08] bg-[#071327] py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-emerald-300">The Trade Fusion loop</p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">One private system for the work before, during, and after a trade.</h2>
+            <p className="mt-4 text-slate-400">Every module has a distinct role. Live journal records remain private, Backtest simulations remain isolated, and setup insight accumulates from the data you choose to log.</p>
+          </div>
+          <div className="mt-14 grid gap-4 md:grid-cols-2">
+            {productInsights.map((item) => <article key={item.step} className="group rounded-3xl border border-white/[0.08] bg-[#09152b] p-6 transition hover:-translate-y-0.5 hover:border-emerald-300/25"><div className="flex items-start justify-between"><span className={`grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.05] ${item.accent}`}><item.icon className="h-5 w-5" /></span><span className="font-mono text-xs text-slate-600">{item.step}</span></div><h3 className="mt-6 text-lg font-semibold text-white">{item.title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{item.text}</p></article>)}
+          </div>
+          <div className="mt-10 flex flex-col justify-between gap-4 rounded-3xl border border-sky-300/[0.16] bg-sky-400/[0.05] p-6 sm:flex-row sm:items-center"><div><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sky-300">Start with your next live trade</p><p className="mt-2 text-sm text-slate-300">Create a private workspace, add a manual execution, and build your review habit from there.</p></div><Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-11 shrink-0 px-5 text-sm !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Open your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link></div>
+        </div>
+      </section>
+
       {/* Architecture & Workflow */}
-      <section id="architecture" className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 py-24 sm:py-32 lg:grid-cols-[1fr_1.1fr] lg:px-8">
+      <section className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 py-24 sm:py-32 lg:grid-cols-[1fr_1.1fr] lg:px-8">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[oklch(0.70_0.16_250)]">Architectural Discipline</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">Log the setup. Review the metrics. Execute with clarity.</h2>
-          <p className="mt-5 text-base leading-7 text-slate-400">Trade Fusion provides a frictionless recording loop so you can focus entirely on price action and risk management.</p>
+          <p className="mt-5 text-base leading-7 text-slate-400">Trade Fusion keeps everyday review simple: one private journal, a reusable playbook, intentional analytics, live macro context, and a separate strategy lab.</p>
           <div className="mt-8 space-y-4">
             <div className="flex items-start gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-500/20 font-mono text-xs text-blue-300">✓</span>
-              <p className="text-sm text-slate-300"><strong className="text-white">Instant Day P&L Coloring:</strong> Green or red daily badges highlight profitable sessions instantly.</p>
+              <p className="text-sm text-slate-300"><strong className="text-white">Saved setup context:</strong> Attach a member-owned setup, session, quality, and plan-adherence label to every manual trade.</p>
             </div>
             <div className="flex items-start gap-3">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-500/20 font-mono text-xs text-blue-300">✓</span>
-              <p className="text-sm text-slate-300"><strong className="text-white">Zero Setup Friction:</strong> Add trades in seconds with session tags, risk/reward ratios, and side selectors.</p>
+              <p className="text-sm text-slate-300"><strong className="text-white">Separated testing:</strong> Rehearse an idea in Backtest without changing any live journal metric or published community post.</p>
             </div>
           </div>
         </div>
         <div className="grid gap-4">
           {[
-            ["01", "Capture Execution", "Record entry price, exit size, and strategic notes while trade context is fresh."],
-            ["02", "Quantitative Review", "Inspect win rate, profit factor, and return distribution across instruments."],
-            ["03", "Macro Preparedness", "Review high-impact economic releases before committing risk to the market."],
+            ["01", "Capture & tag", "Record a manual execution with its setup, market session, quality, and plan-adherence context."],
+            ["02", "Review the setup", "Inspect recorded P&L, win rate, profit factor, and context across your private live journal."],
+            ["03", "Prepare with context", "Check macro events, replay a strategy privately, and enter the next session with a documented plan."],
           ].map(([num, title, desc]) => (
             <div key={num} className="group flex items-start gap-5 rounded-3xl border border-white/[0.08] bg-[#09152b] p-6 transition hover:border-blue-400/40 hover:bg-[#0c1c38]">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-blue-500/10 font-mono text-sm font-bold text-blue-300">{num}</span>

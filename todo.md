@@ -201,3 +201,8 @@
 - [x] Add restrained motion, loading states, and hover/press feedback across the authenticated workspace.
 - [x] Verify the comprehensive UI upgrade across desktop and mobile views.
 - [x] Save and publish the comprehensive UI upgrade after 117-test validation.
+- [x] Audit landing-page messaging and prioritize public proof points for Journal, saved setups, Analytics, Calendar, Backtest, and Trader’s Room.
+- [x] Add a clear workflow narrative and feature-insight sections to the public landing page.
+- [x] Add navigation and calls to action that connect landing-page sections to the protected product journey.
+- [x] Test the expanded responsive landing page.
+- [x] Save and publish the expanded landing page after 118-test validation.
