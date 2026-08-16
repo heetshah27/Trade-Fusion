@@ -254,3 +254,7 @@
 - [x] Add secure owner-scoped Journal attachment schema, storage, validation, and protected upload/removal procedures.
 - [x] Add screenshot upload, preview, and removal controls to the private Journal entry workflow.
 - [x] Test attachment privacy, invalid-file handling, desktop/mobile rendering, and publish the Journal screenshot feature.
+- [x] Review the supplied portfolio reference and audit the current Trades ledger, manual entry form, and P&L handling.
+- [x] Define original instrument markers and transparent lot/quantity P&L calculation rules with broker-adjustment guidance.
+- [x] Add assisted P&L calculation to trade entry and a compact instrument-aware Trade Fusion portfolio ledger without time fields.
+- [x] Test calculation scenarios, manual overrides, responsive layouts, and publish the Trades upgrade.

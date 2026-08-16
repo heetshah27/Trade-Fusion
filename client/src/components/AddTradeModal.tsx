@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc';
 import type { Trade, TradeDirection } from '@/lib/tradeTypes';
-import { computePnl, generateId } from '@/lib/tradeTypes';
+import { generateId } from '@/lib/tradeTypes';
+import { calculateTradePnl } from '@/lib/tradeInstruments';
 
 interface Props {
   open: boolean;
@@ -69,7 +70,8 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
     }
   }, [editTrade, open]);
 
-  const computed = computePnl(form);
+  const pnlDetails = calculateTradePnl(form);
+  const computed = pnlDetails.net;
   const displayPnl = useManual ? parseFloat(manualPnl) || 0 : computed;
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -139,7 +141,7 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
 
           {/* Quantity */}
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Quantity / Contracts</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Size · {pnlDetails.profile.quantityLabel}</Label>
             <Input
               type="number"
               min="0"
@@ -219,9 +221,9 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
           </div>
 
           {/* P&L display / override */}
-          <div className="flex flex-col gap-1.5">
+          <div className="col-span-2 flex flex-col gap-1.5 rounded-xl border border-blue-400/15 bg-blue-500/[.045] p-3">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-              P&L {useManual ? '(manual)' : '(auto)'}
+              Assisted P&amp;L {useManual ? '(manual override)' : '(auto)'}
               <button
                 type="button"
                 onClick={() => setUseManual((v) => !v)}
@@ -238,18 +240,7 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
                 onChange={(e) => setManualPnl(e.target.value)}
                 className="bg-input border-border font-mono text-sm"
               />
-            ) : (
-              <div
-                className="h-9 flex items-center px-3 rounded-md border border-border font-mono text-sm"
-                style={{
-                  color: computed > 0 ? 'var(--profit)' : computed < 0 ? 'var(--loss)' : 'var(--muted-foreground)',
-                  background: computed > 0 ? 'var(--profit-bg)' : computed < 0 ? 'var(--loss-bg)' : 'transparent',
-                }}
-              >
-                {computed >= 0 ? '+' : ''}
-                {computed.toFixed(2)}
-              </div>
-            )}
+            ) : <><div className="h-9 flex items-center px-3 rounded-md border border-border font-mono text-sm" style={{ color: computed > 0 ? 'var(--profit)' : computed < 0 ? 'var(--loss)' : 'var(--muted-foreground)', background: computed > 0 ? 'var(--profit-bg)' : computed < 0 ? 'var(--loss-bg)' : 'transparent' }}>{computed >= 0 ? '+' : ''}{computed.toFixed(2)}</div><p className="mt-1 text-[10px] leading-4 text-slate-500"><span className="font-medium text-blue-200">{pnlDetails.profile.label}{pnlDetails.profile.estimate ? ' · estimate' : ''}</span> · {pnlDetails.formula}</p><p className="text-[10px] leading-4 text-slate-600">{pnlDetails.profile.basis}</p></>}
           </div>
         </div>
 

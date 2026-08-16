@@ -1,6 +1,8 @@
 // Trade Journal — Core types and utilities
 // Design: Trading Terminal — dark, data-dense, green/red P&L signals
 
+import { calculateTradePnl } from './tradeInstruments';
+
 export type TradeDirection = 'LONG' | 'SHORT';
 export type TradeStatus = 'WIN' | 'LOSS' | 'BREAKEVEN';
 
@@ -35,11 +37,7 @@ export interface DayGroup {
 }
 
 export function computePnl(trade: Omit<Trade, 'id' | 'pnl'>): number {
-  const raw =
-    trade.direction === 'LONG'
-      ? (trade.exitPrice - trade.entryPrice) * trade.quantity
-      : (trade.entryPrice - trade.exitPrice) * trade.quantity;
-  return parseFloat((raw - trade.fees).toFixed(2));
+  return calculateTradePnl(trade).net;
 }
 
 export function groupByDay(trades: Trade[]): DayGroup[] {
