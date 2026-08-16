@@ -17,6 +17,7 @@ import {
   type CommunityReaction,
 } from "../shared/communityConfig";
 import { getDb } from "./db";
+import { enforceFreeThreadLimit } from "./membership";
 import { ENV } from "./_core/env";
 import { protectedProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
@@ -218,6 +219,7 @@ export const communityRouter = router({
   }),
 
   createPost: protectedProcedure.input(createPostSchema).mutation(async ({ ctx, input }) => {
+    await enforceFreeThreadLimit(ctx.user.id);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
 

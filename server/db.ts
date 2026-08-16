@@ -99,4 +99,28 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0];
+}
+
+export async function getUserByStripeCustomerId(stripeCustomerId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.stripeCustomerId, stripeCustomerId)).limit(1);
+  return result[0];
+}
+
+export async function updateStripeReferences(userId: number, references: { stripeCustomerId?: string | null; stripeSubscriptionId?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const values: Partial<InsertUser> = { updatedAt: new Date() };
+  if (references.stripeCustomerId !== undefined) values.stripeCustomerId = references.stripeCustomerId;
+  if (references.stripeSubscriptionId !== undefined) values.stripeSubscriptionId = references.stripeSubscriptionId;
+  const result = await db.update(users).set(values).where(eq(users.id, userId)).returning();
+  return result[0];
+}
+
 // TODO: add feature queries here as your schema grows.

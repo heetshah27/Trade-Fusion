@@ -22,6 +22,12 @@ vi.mock("@/lib/trpc", () => ({
       update: { useMutation: () => ({ mutate: mocks.updateSetup, isPending: false, error: null }) },
       archive: { useMutation: () => ({ mutate: mocks.archiveSetup, isPending: false, error: null }) },
     },
+    billing: {
+      status: { useQuery: () => ({ data: { tier: "free", backtestAccess: "locked", billingReady: true, usage: { trades: { used: 2, limit: 15, remaining: 13 }, threads: { used: 1, limit: 10, remaining: 9 } } }, isLoading: false }) },
+      history: { useQuery: () => ({ data: [] }) },
+      createCheckout: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      createPortal: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+    },
   },
 }));
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import { tradeSetups, trades as tradesTable } from "../drizzle/schema";
+import { enforceFreeTradeLimit } from "./membership";
 
 const TradeSchema = z.object({
   id: z.number(),
@@ -71,6 +72,7 @@ export const tradesRouter = router({
   }),
 
   create: protectedProcedure.input(TradeSchema.omit({ id: true })).mutation(async ({ ctx, input }) => {
+    await enforceFreeTradeLimit(ctx.user.id);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const setupName = await setupNameForOwner(db, ctx.user.id, input.setupId);

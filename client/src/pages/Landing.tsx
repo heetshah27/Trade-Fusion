@@ -81,7 +81,7 @@ const frequentlyAskedQuestions = [
   },
   {
     question: "How does Backtest work?",
-    answer: "Backtest is a private replay workspace for reviewing source-backed historical markets, marking levels or zones, and simulating entries and exits. Simulated trades remain separate from your live Journal and Setup Analytics results.",
+    answer: "Backtest is a Trade Fusion Pro replay workspace for reviewing source-backed historical markets, marking levels or zones, and simulating entries and exits. Simulated trades remain separate from your live Journal and Setup Analytics results.",
   },
   {
     question: "Which markets can I record?",
@@ -116,7 +116,7 @@ const productSpotlights = [
     title: <>Test a decision before it becomes a live position.</>,
     description: "Step through source-backed historical markets, mark the thesis, rehearse execution, and measure a simulated outcome without changing live journal metrics.",
     bullets: ["Replay crypto, FX, and gold source data", "Draw private zones, levels, and trendlines", "Separate simulated P&L from live performance"],
-    action: "Open Backtest lab",
+    action: "Explore Pro Backtest",
     href: appRoutes.backtest,
     accent: "blue",
   },
@@ -586,6 +586,7 @@ export default function Landing() {
         <nav className="hidden items-center gap-8 text-sm md:flex">
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#platform">Platform</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#workflow">Workflow</a>
+          <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#pricing">Pricing</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#faq">FAQ</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#contact">Contact</a>
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#security">Privacy</a>
@@ -602,6 +603,7 @@ export default function Landing() {
           <div className="grid gap-3 text-sm text-slate-300">
             <a href="#platform" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Platform</a>
             <a href="#workflow" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Workflow</a>
+            <a href="#pricing" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Pricing</a>
             <a href="#faq" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">FAQ</a>
             <a href="#contact" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Contact</a>
             <Link href={appRoutes.journal} className="mt-2 inline-flex items-center justify-center rounded-xl bg-[oklch(0.66_0.18_250)] px-4 py-3 font-semibold text-white">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
@@ -650,6 +652,35 @@ export default function Landing() {
           <div className="flex flex-col justify-between gap-7 rounded-[2rem] border border-blue-300/[0.15] bg-[linear-gradient(125deg,rgba(20,55,109,0.42),rgba(5,18,38,0.78))] p-7 sm:flex-row sm:items-center sm:p-10">
             <div className="max-w-2xl"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-300">One clear workflow</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">Capture the execution. Review the pattern. Prepare the next decision.</h2><p className="mt-3 text-sm leading-6 text-slate-400">Your live journal, saved setups, and analytics remain private; Backtest stays a separate rehearsal space.</p></div>
             <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 shrink-0 px-6 !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Build your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="relative z-10 overflow-hidden border-b border-white/[0.08] bg-[#050e1d] px-5 py-20 sm:py-28 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.18),transparent_24rem),radial-gradient(circle_at_15%_75%,rgba(14,165,233,0.12),transparent_26rem)]" />
+        <div className="relative mx-auto max-w-6xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="tf-signal-chip inline-flex px-3 py-1 font-mono text-[9px] uppercase tracking-[0.22em] text-blue-200">Simple, focused access</p>
+            <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-white sm:text-5xl">Start with the journal. Upgrade when you are ready to rehearse the plan.</h2>
+            <p className="mt-5 text-base leading-7 text-slate-400">Every member gets a private core workspace. Pro removes usage limits and opens the dedicated Backtest lab without mixing simulations into live performance.</p>
+          </div>
+
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">
+            <article className="tf-hover-lift rounded-[1.75rem] border border-white/[0.10] bg-[linear-gradient(150deg,rgba(17,35,62,0.92),rgba(6,15,29,0.92))] p-6 sm:p-8">
+              <div className="flex items-start justify-between gap-4"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">Free</p><h3 className="mt-3 text-2xl font-semibold text-white">Build the review habit.</h3></div><span className="rounded-full border border-slate-300/15 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-300">$0</span></div>
+              <p className="mt-5 max-w-md text-sm leading-6 text-slate-400">A structured starting point for documenting real decisions and participating in the member community.</p>
+              <ul className="mt-7 grid gap-3 text-sm text-slate-200"><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Up to 15 new live trades per calendar month</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Private Journal entries linked to eligible trades</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Market Calendar and Setup Analytics</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Up to 10 new Trader’s Room threads per month; replies remain open</li></ul>
+              <Link href={appRoutes.journal} className="tf-press mt-8 inline-flex h-11 items-center rounded-xl border border-white/[0.14] px-5 text-sm font-semibold text-slate-100 transition hover:bg-white/[0.06]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </article>
+
+            <article className="relative overflow-hidden rounded-[1.75rem] border border-violet-300/35 bg-[radial-gradient(circle_at_top_right,rgba(167,139,250,0.24),transparent_38%),linear-gradient(150deg,rgba(30,32,71,0.98),rgba(9,15,34,0.98))] p-6 shadow-[0_20px_70px_rgba(99,102,241,0.18)] sm:p-8">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-violet-300/20 blur-3xl" />
+              <div className="relative flex items-start justify-between gap-4"><div><div className="inline-flex items-center gap-1.5 rounded-full border border-violet-200/25 bg-violet-300/10 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-violet-100"><Sparkles className="h-3 w-3" /> Pro</div><h3 className="mt-3 text-2xl font-semibold text-white">Rehearse with more conviction.</h3></div><div className="text-right"><p className="text-3xl font-semibold tracking-[-0.05em] text-white">$10</p><p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-violet-200">USD / month</p></div></div>
+              <p className="relative mt-5 max-w-md text-sm leading-6 text-slate-300">Unlimited private review and the full Backtest workspace for building and testing a repeatable strategy process.</p>
+              <ul className="relative mt-7 grid gap-3 text-sm text-white"><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-200" />Unlimited manual trades and private Journal entries</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-200" />Unlimited Trader’s Room threads and replies</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-200" />Full Backtest replay, drawings, simulated execution, and snapshots</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-200" />One 7-day trial with a card required; cancel before renewal</li></ul>
+              <Link href={appRoutes.account} className="tf-press relative mt-8 inline-flex h-11 items-center rounded-xl bg-violet-300 px-5 text-sm font-semibold text-slate-950 shadow-[0_12px_28px_rgba(167,139,250,0.25)] transition hover:bg-violet-200">Start 7-day Pro trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <p className="relative mt-4 text-xs leading-5 text-slate-400">Monthly billing only. No annual plan at launch. Payments are non-refundable for unused time, except where applicable law requires otherwise.</p>
+            </article>
           </div>
         </div>
       </section>
@@ -757,6 +788,7 @@ export default function Landing() {
             <nav className="mt-5 grid gap-3 text-sm text-slate-400">
               <Link href={appRoutes.account} className="transition hover:text-white">Saved Setups</Link>
               <Link href={appRoutes.account} className="transition hover:text-white">Account Settings</Link>
+              <a href="#pricing" className="transition hover:text-white">Pricing</a>
               <a href="#workflow" className="transition hover:text-white">How it works</a>
               <a href="#contact" className="transition hover:text-white">Contact</a>
               <a href="#faq" className="transition hover:text-white">Frequently asked questions</a>

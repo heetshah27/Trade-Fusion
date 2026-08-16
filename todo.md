@@ -340,3 +340,21 @@
 - [x] Audit the Dashboard recorded-performance chart data mapping and current curve rendering.
 - [x] Replace the awkward line with a clearer stepped live-trade equity curve, trade anchors, and restrained performance shading.
 - [x] Test real-trade accuracy, empty states, desktop/mobile rendering, and publish the Dashboard curve upgrade.
+- [x] Enable Stripe capabilities and define a secure Backtest subscription entitlement model.
+- [x] Define the public Backtest pricing plans, billing cadence, and included features with the owner before configuring live products.
+- [x] Build secure subscription entitlements and protected premium Backtest access.
+- [x] Add a public Pricing section plus member checkout and subscription-management journeys.
+- [x] Configure the server-managed Stripe product, monthly price, credentials, and signature-verified webhook behavior for payment flows.
+- [ ] Test checkout, cancellation, entitlement privacy, responsive pricing UI, and publish the monetization flow.
+- [x] Supersede the initial Free, Go, and Pro proposal with the owner-approved two-tier Free and Pro model.
+- [x] Define calendar-month usage resets, a precise conversation-count rule, and transparent limit-reached behavior.
+- [x] Implement the selected 7-day card-required Pro trial with clear renewal disclosure.
+- [x] Implement a seven-day read-only Backtest grace period after payment failure or cancellation, preserving private historical simulations and restoring them on renewal.
+- [x] Draft customer-facing cancellation and no-refund policy language for owner review before publication.
+- [x] Remove the Go tier from the proposed pricing, entitlement, and customer-facing plan model.
+- [x] Finalize the simplified Free and Pro plan definitions, including Free usage caps and unlimited Pro Backtest access.
+- [x] Record the owner’s monthly-only decision and omit annual billing from the Pro plan at launch.
+- [x] Configure the finalized $10 USD monthly-only Pro plan with no annual billing option at launch.
+- [x] Implement the approved Free limits of 15 new live trades and 10 new Trader’s Room threads per calendar month, with replies permitted and Journal entries linked to eligible trades.
+- [x] Verify the public pricing and member billing layouts at desktop and mobile breakpoints.
+- [ ] After claiming the Stripe sandbox, run the owner-approved end-to-end test-card checkout, webhook delivery, cancellation, renewal, and payment-history verification before accepting live payments.

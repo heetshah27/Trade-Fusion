@@ -55,7 +55,7 @@ function DrawingButton({ active, children, disabled = false, onClick, onSnapshot
   return <><Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`tf-press border-white/[0.12] ${active ? "border-emerald-300/30 bg-emerald-400/[0.12] text-emerald-100" : "bg-transparent text-slate-300 hover:bg-white/[0.06]"}`}>{children}</Button><Button type="button" size="sm" variant="outline" aria-label="Download private chart snapshot" onClick={onSnapshot} className="tf-press border-sky-300/30 bg-sky-400/10 text-sky-100 hover:bg-sky-400/20"><Camera className="mr-1 h-3.5 w-3.5" /> Snapshot</Button></>;
 }
 
-export function BacktestReplay({ session }: { session: ReplaySession }) {
+export function BacktestReplay({ session, readOnly = false }: { session: ReplaySession; readOnly?: boolean }) {
   const initialSymbol = toReplaySymbol(session.symbol);
   const [symbol, setSymbol] = useState<(typeof pairs)[number]>(initialSymbol ?? "BTCUSD");
   const [interval, setInterval] = useState<ReplayInterval>(toReplayInterval(session.timeframe));
@@ -115,7 +115,7 @@ export function BacktestReplay({ session }: { session: ReplaySession }) {
     onError: error => toast.error(error.message || "The simulated trade could not be saved. Check the execution details and try again."),
   });
   const annotations = annotationsQuery.data ?? [];
-  const archived = session.status === "archived";
+  const archived = session.status === "archived" || readOnly;
   const candles = data?.candles ?? [];
   const prices = data?.prices ?? [];
   const chartPoints = data?.seriesType === "line" ? prices : candles;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Archive, ArchiveRestore, BadgeCheck, Check, CircleUserRound, ImagePlus, Layers3, LoaderCircle, Mail, Pencil, Plus, Save, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
+import { Archive, ArchiveRestore, BadgeCheck, Check, CircleUserRound, CreditCard, ImagePlus, Layers3, LoaderCircle, LockKeyhole, Mail, Pencil, Plus, ReceiptText, Save, ShieldCheck, Sparkles, Trash2, UserRound, X } from "lucide-react";
 
 const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -13,6 +13,8 @@ export default function Account() {
   const { user } = useAuth();
   const utils = trpc.useUtils();
   const { data: profile } = trpc.account.profile.useQuery();
+  const { data: billing, isLoading: billingLoading } = trpc.billing.status.useQuery();
+  const { data: billingHistory = [] } = trpc.billing.history.useQuery(undefined, { enabled: Boolean(billing?.billingReady) });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
@@ -67,6 +69,17 @@ export default function Account() {
     onSuccess: async () => { setSetupError(null); await utils.setups.list.invalidate(); },
     onError: error => setSetupError(error.message),
   });
+  const checkout = trpc.billing.createCheckout.useMutation({
+    onSuccess: ({ url, trialApplied }) => {
+      window.open(url, "_blank");
+      setUploadError(trialApplied ? "Your 7-day Pro trial checkout opened in a new tab." : "Your Pro checkout opened in a new tab.");
+    },
+    onError: error => setUploadError(error.message),
+  });
+  const openBillingPortal = trpc.billing.createPortal.useMutation({
+    onSuccess: ({ url }) => window.open(url, "_blank"),
+    onError: error => setUploadError(error.message),
+  });
 
   useEffect(() => setDisplayName(profile?.name || user?.name || "Trader"), [profile?.name, user?.name]);
 
@@ -98,6 +111,9 @@ export default function Account() {
   const setupWorking = createSetup.isPending || updateSetup.isPending || archiveSetup.isPending;
   const activeSetups = setups.filter(setup => !setup.isArchived);
   const archivedSetups = setups.filter(setup => setup.isArchived);
+  const isPro = billing?.tier === "pro";
+  const backtestReadOnly = billing?.backtestAccess === "read_only";
+  const formatInvoiceAmount = (amount: number, currencyCode: string) => new Intl.NumberFormat("en-US", { style: "currency", currency: currencyCode.toUpperCase(), maximumFractionDigits: 2 }).format(amount / 100);
   const startSetupEdit = (setup: typeof setups[number]) => {
     setEditingSetupId(setup.id);
     setEditingSetupName(setup.name);
@@ -158,6 +174,18 @@ export default function Account() {
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-blue-200/[0.12] bg-blue-400/[0.08] text-blue-200"><UserRound className="h-4 w-4" /></span>
             <div><p className="text-sm font-medium text-white">Profile photo fallback</p><p className="mt-1 text-xs leading-5 text-slate-500">If you remove a custom photo, Trade Fusion returns to the email-linked avatar when available, then uses your private initials fallback.</p></div>
           </div>
+        </Card>
+
+        <Card className="mt-5 overflow-hidden border-violet-300/[0.18] bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_34rem),linear-gradient(145deg,#152647,#101c33)] p-5 sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-300/25 bg-violet-400/10 text-violet-200">{isPro ? <BadgeCheck className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}</span><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-violet-200">Plan & billing</p><h2 className="mt-1 text-lg font-semibold text-white">{billingLoading ? "Checking membership…" : isPro ? "Trade Fusion Pro" : backtestReadOnly ? "Backtest history preserved" : "Trade Fusion Free"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{isPro ? "Unlimited journal and Trader’s Room access plus the full private Backtest workspace." : backtestReadOnly ? "Your private Backtest history is retained in read-only mode. Renew Pro to create, edit, or remove strategy data." : "Your Free plan includes the private core workspace. Upgrade when you are ready for unlimited review and the Backtest lab."}</p></div></div>
+            <div className="flex flex-wrap gap-2 lg:justify-end">{isPro ? <Button type="button" onClick={() => openBillingPortal.mutate()} disabled={openBillingPortal.isPending || !billing?.billingReady} className="bg-violet-400 text-slate-950 hover:bg-violet-300"><CreditCard className="mr-2 h-4 w-4" />{openBillingPortal.isPending ? "Opening…" : "Manage billing"}</Button> : <Button type="button" onClick={() => checkout.mutate()} disabled={checkout.isPending || !billing?.billingReady} className="bg-violet-400 text-slate-950 hover:bg-violet-300"><Sparkles className="mr-2 h-4 w-4" />{checkout.isPending ? "Opening checkout…" : "Start 7-day Pro trial"}</Button>}</div>
+          </div>
+
+          {!billingLoading && <div className="mt-6 grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/[0.09] bg-[#0a1427]/80 p-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Live trade allowance</p><p className="mt-2 text-sm font-semibold text-white">{isPro ? "Unlimited" : `${billing?.usage.trades.remaining ?? 0} remaining this month`}</p>{!isPro && <p className="mt-1 text-xs text-slate-500">{billing?.usage.trades.used ?? 0} of {billing?.usage.trades.limit ?? 15} new live trades used. Resets monthly at 00:00 UTC.</p>}</div><div className="rounded-xl border border-white/[0.09] bg-[#0a1427]/80 p-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Trader’s Room threads</p><p className="mt-2 text-sm font-semibold text-white">{isPro ? "Unlimited" : `${billing?.usage.threads.remaining ?? 0} remaining this month`}</p>{!isPro && <p className="mt-1 text-xs text-slate-500">{billing?.usage.threads.used ?? 0} of {billing?.usage.threads.limit ?? 10} new threads used. Replies stay open.</p>}</div></div>}
+          <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-slate-500"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-300" />Pro is $10 USD per month, monthly billing only. The first Pro trial lasts seven days and requires a card. Payments are non-refundable for unused time, except where applicable law requires otherwise.</p>
+
+          {billingHistory.length > 0 && <div className="mt-6 border-t border-white/[0.08] pt-5"><div className="flex items-center gap-2"><ReceiptText className="h-4 w-4 text-violet-200" /><h3 className="text-sm font-medium text-white">Payment history</h3></div><div className="mt-3 overflow-hidden rounded-xl border border-white/[0.08]"><div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 border-b border-white/[0.08] bg-white/[0.025] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500"><span>Item</span><span>Date</span><span>Paid</span></div>{billingHistory.map(invoice => <div key={invoice.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 px-4 py-3 text-xs text-slate-300"><span className="truncate">{invoice.item}</span><span className="text-slate-500">{new Date(invoice.date).toLocaleDateString()}</span><span className={invoice.status === "paid" ? "text-emerald-300" : "text-amber-200"}>{formatInvoiceAmount(invoice.amountPaid, invoice.currency)}</span></div>)}</div></div>}
         </Card>
 
         <Card className="mt-5 border-blue-200/[0.10] bg-[#101c33] p-5 sm:p-6">

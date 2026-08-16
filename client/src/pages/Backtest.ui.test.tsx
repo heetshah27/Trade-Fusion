@@ -18,6 +18,10 @@ vi.mock("@/lib/trpc", () => ({
       reopenSession: { useMutation: () => ({ mutate: mocks.reopenSession, isPending: false }) },
       deleteTrade: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
     },
+    billing: {
+      status: { useQuery: () => ({ data: { tier: "pro", backtestAccess: "full", billingReady: true, product: { price: "$10 USD", cadence: "per month", trialDays: 7 }, usage: { trades: { used: 0, limit: 15, remaining: 15 }, threads: { used: 0, limit: 10, remaining: 10 } } }, isLoading: false, error: null, refetch: vi.fn() }) },
+      createCheckout: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+    },
   },
 }));
 

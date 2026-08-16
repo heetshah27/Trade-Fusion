@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
+import { requireBacktestAccess } from "./membership";
 
 export const replaySymbolSchema = z.enum(["BTCUSD", "ETHUSD", "SOLUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD"]);
 export const replayIntervalSchema = z.enum(["1m", "5m", "15m", "30m", "1h", "4h", "1d"]);
@@ -200,8 +201,14 @@ export async function getReplaySeries(symbol: z.infer<typeof replaySymbolSchema>
 }
 
 export const replayRouter = router({
-  candles: protectedProcedure.input(z.object({ symbol: replaySymbolSchema, interval: replayIntervalSchema })).query(async ({ input }) => getReplaySeries(input.symbol, input.interval)),
-  supportedInstruments: protectedProcedure.query(() => ({ crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], forexIntraday: { symbols: ["EURUSD", "GBPUSD", "USDJPY"], intervals: ["15m", "1h"] }, goldDaily: ["XAUUSD"], goldIntraday: { symbols: ["XAUUSD"], intervals: ["15m", "1h"] }, futureProviderRequired: ["indices"] })),
+  candles: protectedProcedure.input(z.object({ symbol: replaySymbolSchema, interval: replayIntervalSchema })).query(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id);
+    return getReplaySeries(input.symbol, input.interval);
+  }),
+  supportedInstruments: protectedProcedure.query(async ({ ctx }) => {
+    await requireBacktestAccess(ctx.user.id);
+    return { crypto: ["BTCUSD", "ETHUSD", "SOLUSD"], forexDaily: ["EURUSD", "GBPUSD", "USDJPY"], forexIntraday: { symbols: ["EURUSD", "GBPUSD", "USDJPY"], intervals: ["15m", "1h"] }, goldDaily: ["XAUUSD"], goldIntraday: { symbols: ["XAUUSD"], intervals: ["15m", "1h"] }, futureProviderRequired: ["indices"] };
+  }),
 });
 
 export function requireReplaySymbol(value: string) {

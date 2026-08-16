@@ -26,7 +26,7 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByText("Private replay lab")).toBeTruthy();
     expect(screen.getByText("Execution journal")).toBeTruthy();
     expect(screen.getAllByText("Setup Analytics").length).toBeGreaterThan(1);
-    expect(screen.getByText("Open Backtest lab")).toBeTruthy();
+    expect(screen.getByText("Explore Pro Backtest")).toBeTruthy();
     expect(screen.getAllByText("Trader’s Room").length).toBeGreaterThan(0);
     expect(screen.getByText("Capture the execution. Review the pattern. Prepare the next decision.")).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /platform/i }).length).toBeGreaterThan(0);
@@ -50,6 +50,20 @@ describe("Expanded Trade Fusion landing page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Is my data private?" }));
     expect(screen.getByText(/nothing from your private journal is shared there automatically/i)).toBeTruthy();
+  });
+
+  it("presents the approved Free and $10 monthly Pro plans without an annual billing option", () => {
+    render(<Landing />);
+
+    expect(screen.getByText("Simple, focused access")).toBeTruthy();
+    expect(screen.getByText("Build the review habit.")).toBeTruthy();
+    expect(screen.getByText("Rehearse with more conviction.")).toBeTruthy();
+    expect(screen.getByText("$10")).toBeTruthy();
+    expect(screen.getByText("USD / month")).toBeTruthy();
+    expect(screen.getByText(/monthly billing only\. no annual plan at launch/i)).toBeTruthy();
+    expect(screen.getByText(/15 new live trades per calendar month/i)).toBeTruthy();
+    expect(screen.getByText(/10 new trader’s room threads per month/i)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /start 7-day pro trial/i })).toBeTruthy();
   });
 
   it("adds a private landing contact form without exposing a phone number", () => {

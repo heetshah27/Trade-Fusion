@@ -46,10 +46,16 @@ export const users = pgTable("users", {
   tradingStyle: tradingStyleEnum("tradingStyle"),
   profileAvatarUrl: text("profileAvatarUrl"),
   profileAvatarKey: text("profileAvatarKey"),
+  /** Stripe references only; billing status and payment details remain in Stripe. */
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn", { withTimezone: true }).defaultNow().notNull(),
-});
+}, table => [
+  uniqueIndex("users_stripe_customer_id_unique").on(table.stripeCustomerId),
+  uniqueIndex("users_stripe_subscription_id_unique").on(table.stripeSubscriptionId),
+]);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;

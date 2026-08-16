@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const databaseMocks = vi.hoisted(() => ({ getDb: vi.fn() }));
 
 vi.mock("./db", () => ({ getDb: databaseMocks.getDb }));
+vi.mock("./membership", () => ({ enforceFreeTradeLimit: vi.fn() }));
 
 import { tradesRouter } from "./trades";
 import { tradeSetups } from "../drizzle/schema";

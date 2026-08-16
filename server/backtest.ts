@@ -4,6 +4,7 @@ import { z } from "zod";
 import { backtestAnnotations, backtestSessions, backtestTrades } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
+import { requireBacktestAccess } from "./membership";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date");
 const numericInput = z.union([z.string(), z.number()]);
@@ -181,6 +182,7 @@ async function getOwnedSession(sessionId: number, userId: number) {
 
 export const backtestRouter = router({
   listSessions: protectedProcedure.query(async ({ ctx }) => {
+    await requireBacktestAccess(ctx.user.id);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const sessions = await db.select().from(backtestSessions).where(eq(backtestSessions.userId, ctx.user.id)).orderBy(desc(backtestSessions.createdAt));
@@ -196,6 +198,7 @@ export const backtestRouter = router({
   }),
 
   getSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id);
     const { db, session } = await getOwnedSession(input.id, ctx.user.id);
     const trades = await db.select().from(backtestTrades).where(eq(backtestTrades.sessionId, session.id)).orderBy(desc(backtestTrades.date), desc(backtestTrades.createdAt));
     return {
@@ -208,6 +211,7 @@ export const backtestRouter = router({
   }),
 
   listAnnotations: protectedProcedure.input(z.object({ sessionId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id);
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     const annotations = await db.select().from(backtestAnnotations).where(eq(backtestAnnotations.sessionId, session.id)).orderBy(desc(backtestAnnotations.createdAt));
     return annotations.map(annotation => ({
@@ -224,6 +228,7 @@ export const backtestRouter = router({
   }),
 
   createAnnotation: protectedProcedure.input(annotationInput).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive chart annotations" });
     if (!hasValidAnnotationGeometry(input)) throw new TRPCError({ code: "BAD_REQUEST", message: "Trendlines and zones require valid start and end anchors" });
@@ -251,6 +256,7 @@ export const backtestRouter = router({
   }),
 
   updateAnnotation: protectedProcedure.input(updateAnnotationInput).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const [annotation] = await db.select().from(backtestAnnotations).where(and(eq(backtestAnnotations.id, input.id), eq(backtestAnnotations.userId, ctx.user.id)));
@@ -264,6 +270,7 @@ export const backtestRouter = router({
   }),
 
   deleteAnnotation: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const [annotation] = await db.select().from(backtestAnnotations).where(and(eq(backtestAnnotations.id, input.id), eq(backtestAnnotations.userId, ctx.user.id)));
@@ -273,6 +280,7 @@ export const backtestRouter = router({
   }),
 
   createSession: protectedProcedure.input(sessionInput).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     if (input.endDate < input.startDate) throw new TRPCError({ code: "BAD_REQUEST", message: "End date must be after start date" });
     const db = await getDb();
     if (!db) throw databaseUnavailable();
@@ -290,24 +298,28 @@ export const backtestRouter = router({
   }),
 
   archiveSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const { db, session } = await getOwnedSession(input.id, ctx.user.id);
     await db.update(backtestSessions).set({ status: "archived", updatedAt: new Date() }).where(eq(backtestSessions.id, session.id));
     return { success: true };
   }),
 
   reopenSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const { db, session } = await getOwnedSession(input.id, ctx.user.id);
     await db.update(backtestSessions).set({ status: "active", updatedAt: new Date() }).where(eq(backtestSessions.id, session.id));
     return { success: true };
   }),
 
   deleteSession: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const { db, session } = await getOwnedSession(input.id, ctx.user.id);
     await db.delete(backtestSessions).where(eq(backtestSessions.id, session.id));
     return { success: true };
   }),
 
   createTrade: protectedProcedure.input(tradeInput).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const { db, session } = await getOwnedSession(input.sessionId, ctx.user.id);
     if (!isBacktestSessionEditable(session.status)) throw new TRPCError({ code: "BAD_REQUEST", message: "Archived sessions cannot receive simulated trades" });
     if (!hasValidBacktestTradeWindow(input.entryAt, input.exitAt)) throw new TRPCError({ code: "BAD_REQUEST", message: "Simulated exit time must be after the entry time" });
@@ -337,6 +349,7 @@ export const backtestRouter = router({
   }),
 
   deleteTrade: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await requireBacktestAccess(ctx.user.id, true);
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const [trade] = await db.select().from(backtestTrades).where(and(eq(backtestTrades.id, input.id), eq(backtestTrades.userId, ctx.user.id)));
