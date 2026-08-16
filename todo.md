@@ -275,3 +275,6 @@
 - [x] Prepare the supplied gold-bars asset and confirm its XAU/USD badge integration points.
 - [x] Replace the XAU/USD text token with the supplied gold-bars symbol in the reusable instrument badge while retaining accessible text.
 - [x] Verify the gold-bars XAU/USD badge across all Trade Fusion surfaces and publish the update.
+- [x] Prepare the supplied silver-bars asset and confirm its XAG/USD badge integration points.
+- [x] Replace the XAG/USD text token with the supplied silver-bars symbol in the reusable instrument badge while retaining accessible text.
+- [x] Verify the silver-bars XAG/USD badge across Trade Fusion and publish the update.

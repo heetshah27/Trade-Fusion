@@ -17,4 +17,10 @@ describe("InstrumentBadge", () => {
     rerender(<InstrumentBadge symbol="BTCUSD" category="crypto" />);
     expect(screen.getByRole("img", { name: /btc crypto/i }).textContent).toContain("₿");
   });
+
+  it("renders the supplied silver-bars asset for XAG/USD", () => {
+    render(<InstrumentBadge symbol="XAGUSD" category="metals" />);
+    expect(screen.getByRole("img", { name: /silver/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-xagusd-silver-bars"]')).toBeTruthy();
+  });
 });
