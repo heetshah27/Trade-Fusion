@@ -12,6 +12,39 @@ export type InstrumentProfile = {
   basis: string;
 };
 
+export type InstrumentPickerOption = {
+  symbol: string;
+  category: InstrumentCategory;
+  group: "Forex" | "Metals" | "Crypto" | "Indices" | "Energy" | "Equities";
+  name: string;
+};
+
+export const INSTRUMENT_PICKER_OPTIONS: InstrumentPickerOption[] = [
+  { symbol: "EURUSD", category: "forex", group: "Forex", name: "Euro / U.S. Dollar" },
+  { symbol: "GBPUSD", category: "forex", group: "Forex", name: "British Pound / U.S. Dollar" },
+  { symbol: "NZDUSD", category: "forex", group: "Forex", name: "New Zealand Dollar / U.S. Dollar" },
+  { symbol: "AUDUSD", category: "forex", group: "Forex", name: "Australian Dollar / U.S. Dollar" },
+  { symbol: "USDJPY", category: "forex", group: "Forex", name: "U.S. Dollar / Japanese Yen" },
+  { symbol: "USDCAD", category: "forex", group: "Forex", name: "U.S. Dollar / Canadian Dollar" },
+  { symbol: "USDCHF", category: "forex", group: "Forex", name: "U.S. Dollar / Swiss Franc" },
+  { symbol: "XAUUSD", category: "metals", group: "Metals", name: "Gold / U.S. Dollar" },
+  { symbol: "XAGUSD", category: "metals", group: "Metals", name: "Silver / U.S. Dollar" },
+  { symbol: "BTCUSD", category: "crypto", group: "Crypto", name: "Bitcoin / U.S. Dollar" },
+  { symbol: "ETHUSD", category: "crypto", group: "Crypto", name: "Ethereum / U.S. Dollar" },
+  { symbol: "SOLUSD", category: "crypto", group: "Crypto", name: "Solana / U.S. Dollar" },
+  { symbol: "DXY", category: "indices", group: "Indices", name: "U.S. Dollar Index" },
+  { symbol: "NAS100", category: "indices", group: "Indices", name: "NASDAQ 100" },
+  { symbol: "US500", category: "indices", group: "Indices", name: "S&P 500" },
+  { symbol: "US30", category: "indices", group: "Indices", name: "Dow Jones 30" },
+  { symbol: "GER40", category: "indices", group: "Indices", name: "Germany 40" },
+  { symbol: "USOIL", category: "other", group: "Energy", name: "U.S. Oil" },
+  { symbol: "AAPL", category: "equities", group: "Equities", name: "Apple" },
+  { symbol: "NVDA", category: "equities", group: "Equities", name: "NVIDIA" },
+  { symbol: "TSLA", category: "equities", group: "Equities", name: "Tesla" },
+];
+
+export const INSTRUMENT_PICKER_GROUPS = ["All", "Forex", "Metals", "Crypto", "Indices", "Energy", "Equities"] as const;
+
 const cryptoSymbols = new Set(["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "BNB", "AVAX", "LINK", "LTC"]);
 const indexSymbols = new Set(["US30", "NAS100", "US100", "SPX500", "US500", "GER40", "UK100", "JP225", "HK50"]);
 

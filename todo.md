@@ -305,3 +305,7 @@
 - [x] Prepare the supplied BTC/USD Bitcoin asset and confirm its shared badge integration point.
 - [x] Replace the generic BTC/USD crypto glyph with the supplied compact Bitcoin symbol while retaining accessible text.
 - [x] Verify the BTC/USD marker across Trade Fusion and publish the update.
+- [x] Review the manual trade form and shared instrument metadata for visual picker integration.
+- [x] Build an accessible searchable instrument picker with category filters and shared badges.
+- [x] Connect picker selection to manual trade entry while preserving custom-symbol entry.
+- [x] Test keyboard access, responsive layouts, trade persistence, and publish the visual instrument picker.

@@ -11,6 +11,7 @@ import { trpc } from '@/lib/trpc';
 import type { Trade, TradeDirection } from '@/lib/tradeTypes';
 import { generateId } from '@/lib/tradeTypes';
 import { calculateTradePnl } from '@/lib/tradeInstruments';
+import { InstrumentPicker } from '@/components/InstrumentPicker';
 
 interface Props {
   open: boolean;
@@ -111,15 +112,11 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
             />
           </div>
 
-          {/* Symbol */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Symbol</Label>
-            <Input
-              placeholder="e.g. AAPL, BTC"
-              value={form.symbol}
-              onChange={(e) => set('symbol', e.target.value.toUpperCase())}
-              className="bg-input border-border font-mono text-sm uppercase"
-            />
+          {/* Instrument */}
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-3"><Label className="text-xs text-muted-foreground uppercase tracking-wider">Instrument</Label><span className="text-[10px] text-slate-500">Search a listed market or enter a custom symbol</span></div>
+            <InstrumentPicker symbol={form.symbol} category={form.instrumentCategory} onSelect={(instrument) => { set('symbol', instrument.symbol); set('instrumentCategory', instrument.category); }} />
+            <Input aria-label="Custom instrument symbol" placeholder="Or type custom symbol, e.g. AAPL, BTC" value={form.symbol} onChange={(event) => set('symbol', event.target.value.toUpperCase())} className="h-9 bg-input border-border font-mono text-sm uppercase" />
           </div>
 
           {/* Direction */}

@@ -53,4 +53,18 @@ describe("AddTradeModal structured manual logging", () => {
 
     expect(createSetup).toHaveBeenCalledWith({ name: "New York reversal" });
   });
+
+  it("selects a visual instrument and fills its category while retaining the custom symbol field", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<AddTradeModal open onClose={vi.fn()} onSave={onSave} />);
+
+    await user.click(screen.getByRole("button", { name: /choose an instrument/i }));
+    await user.click(screen.getByRole("option", { name: /xauusd/i }));
+
+    expect((screen.getByLabelText("Custom instrument symbol") as HTMLInputElement).value).toBe("XAUUSD");
+    expect((screen.getByLabelText("Instrument category") as HTMLSelectElement).value).toBe("metals");
+    await user.click(screen.getByRole("button", { name: /log trade/i }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ symbol: "XAUUSD", instrumentCategory: "metals" }));
+  });
 });
