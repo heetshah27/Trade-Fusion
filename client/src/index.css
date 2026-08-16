@@ -84,6 +84,8 @@
   --chart-3: oklch(0.66 0.18 250);
   --chart-4: oklch(0.78 0.14 60);
   --chart-5: oklch(0.70 0.15 300);
+  --tf-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --tf-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
@@ -142,8 +144,61 @@
   .tf-workspace-surface { border: 1px solid oklch(0.78 0.04 252 / 0.11); background: linear-gradient(145deg, oklch(0.20 0.035 252 / 0.92), oklch(0.15 0.030 252 / 0.92)); box-shadow: 0 18px 48px rgb(0 0 0 / 0.16); }
   .tf-workspace-surface:hover { border-color: oklch(0.70 0.18 145 / 0.22); }
   .tf-kpi-card { border: 1px solid oklch(0.78 0.04 252 / 0.12); background: linear-gradient(145deg, oklch(0.22 0.05 252 / 0.94), oklch(0.17 0.034 252 / 0.94)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025), 0 14px 30px rgb(0 0 0 / 0.14); }
-  .tf-press { transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .tf-press { will-change: transform; transition: transform 160ms var(--tf-ease-out), background 160ms var(--tf-ease-out), border-color 160ms var(--tf-ease-out), box-shadow 160ms var(--tf-ease-out), color 160ms var(--tf-ease-out); }
   .tf-press:active { transform: scale(0.97); }
+
+  .tf-hover-lift, .tf-ledger-row, .tf-interactive-card {
+    will-change: transform;
+    transition: transform 190ms var(--tf-ease-out), border-color 190ms var(--tf-ease-out), box-shadow 190ms var(--tf-ease-out), background 190ms var(--tf-ease-out);
+  }
+
+  .tf-action-glow {
+    will-change: transform;
+    transition: transform 160ms var(--tf-ease-out), box-shadow 160ms var(--tf-ease-out), filter 160ms var(--tf-ease-out);
+  }
+
+  .tf-icon-action {
+    transition: transform 160ms var(--tf-ease-out), color 160ms var(--tf-ease-out), background 160ms var(--tf-ease-out);
+  }
+
+  .tf-focus-ring:focus-visible,
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid oklch(0.72 0.16 250 / 0.92);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .tf-press:hover { transform: translateY(-1px); }
+    .tf-hover-lift:hover, .tf-interactive-card:hover { transform: translateY(-4px); border-color: oklch(0.70 0.15 250 / 0.30); box-shadow: 0 22px 46px rgb(0 0 0 / 0.24), 0 0 0 1px oklch(0.66 0.18 250 / 0.06); }
+    .tf-workspace-surface.tf-hover-lift:hover { border-color: oklch(0.70 0.18 145 / 0.27); box-shadow: 0 26px 58px rgb(0 0 0 / 0.26), 0 0 0 1px oklch(0.70 0.18 145 / 0.06); }
+    .tf-action-glow:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px oklch(0.44 0.16 250 / 0.36); }
+    .tf-action-glow:hover .tf-icon-action { transform: translateX(2px) rotate(-4deg); }
+    .tf-ledger-row:hover { transform: translateY(-1px); }
+    .tf-ledger-row:hover > td { background: oklch(0.66 0.18 250 / 0.045); }
+    .tf-ledger-row:hover > td:first-child { box-shadow: inset 2px 0 0 oklch(0.66 0.18 250 / 0.72); }
+    main section[class*="rounded-2xl"][class*="bg-[#0a111f]"] {
+      will-change: transform;
+      transition: transform 190ms var(--tf-ease-out), border-color 190ms var(--tf-ease-out), box-shadow 190ms var(--tf-ease-out);
+    }
+    main section[class*="rounded-2xl"][class*="bg-[#0a111f]"]:hover {
+      transform: translateY(-3px);
+      border-color: oklch(0.70 0.15 250 / 0.27);
+      box-shadow: 0 22px 44px rgb(0 0 0 / 0.24), 0 0 0 1px oklch(0.66 0.18 250 / 0.05);
+    }
+    main tr[class*="hover:bg-white"] {
+      transition: transform 170ms var(--tf-ease-out), background 170ms var(--tf-ease-out);
+    }
+    main tr[class*="hover:bg-white"]:hover {
+      transform: translateY(-1px);
+    }
+    main tr[class*="hover:bg-white"]:hover > td {
+      background: oklch(0.66 0.18 250 / 0.045);
+    }
+  }
 
   .tf-monogram {
     position: relative;
@@ -278,8 +333,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .tf-signal-chip, .tf-rise { animation: none; }
-    .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card { transition: none; }
-    .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover { transform: none; }
+    .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card, .tf-press, .tf-hover-lift, .tf-ledger-row, .tf-interactive-card, .tf-action-glow, .tf-icon-action { transition: none; }
+    .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover, .tf-press:hover, .tf-hover-lift:hover, .tf-ledger-row:hover, .tf-interactive-card:hover, .tf-action-glow:hover { transform: none; }
   }
 
   @media (max-width: 767px) {
