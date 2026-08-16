@@ -270,3 +270,5 @@
 - [x] Create an original accessible Long/Short direction badge component with clear visual semantics.
 - [x] Apply the shared direction badges to key live and simulated trade presentation surfaces.
 - [x] Test responsive rendering, accessibility, and publish the direction-badge system.
+- [x] Replace the still-visible legacy Type pills in the desktop and mobile Trades ledger with the shared Long/Short badge.
+- [x] Verify the visible Trades direction badges on desktop and mobile, then publish the repair.

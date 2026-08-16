@@ -381,6 +381,32 @@
       max-width: 1280px; /* Standard content width */
     }
   }
+
+  /* The desktop trade ledger is intentionally dense. Upgrade its existing
+     Type chips with the same directional language as the shared badges. */
+  main table tbody td:nth-child(3) > span[class*="border-blue-300/20"],
+  main table tbody td:nth-child(3) > span[class*="border-rose-300/20"] {
+    align-items: center;
+    border-radius: 0.55rem;
+    box-shadow: 0 6px 18px rgb(15 23 42 / 0.18);
+    gap: 0.3rem;
+    letter-spacing: 0.08em;
+    padding: 0.34rem 0.52rem;
+  }
+
+  main table tbody td:nth-child(3) > span[class*="border-blue-300/20"]::before {
+    color: rgb(125 211 252);
+    content: "↗";
+    font-size: 0.82rem;
+    line-height: 1;
+  }
+
+  main table tbody td:nth-child(3) > span[class*="border-rose-300/20"]::before {
+    color: rgb(253 164 175);
+    content: "↘";
+    font-size: 0.82rem;
+    line-height: 1;
+  }
 }
 
 @layer utilities {
