@@ -288,3 +288,8 @@
 - [x] Review Backtest navigation and header placement for a visible compact BETA status badge.
 - [x] Add an original amber BETA badge to Backtest navigation and page context without obstructing controls.
 - [x] Verify the BETA badge on desktop and mobile and publish the Backtest status update.
+- [x] Prepare the supplied oil-drop asset and confirm its USOIL badge integration points.
+- [x] Replace the USOIL text marker with the supplied oil-drop symbol in the reusable instrument badge while retaining accessible text.
+- [x] Verify the oil-drop USOIL badge across Trade Fusion and publish the update.
+- [x] Prepare the supplied NZD/USD paired-flag asset and integrate it into the shared forex badge without losing its accessible pair label.
+- [x] Verify the custom USOIL and NZD/USD markers across Trade Fusion and publish the combined update.

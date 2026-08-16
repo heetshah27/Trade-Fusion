@@ -30,4 +30,16 @@ describe("InstrumentBadge", () => {
     expect(silverBadge.className).toContain("w-8");
     expect(document.querySelector('img[src*="trade-fusion-xagusd-silver-bars"]')).toBeTruthy();
   });
+
+  it("renders the supplied oil-drop asset for USOIL", () => {
+    render(<InstrumentBadge symbol="USOIL" category="other" />);
+    expect(screen.getByRole("img", { name: /US Oil instrument/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-usoil-oil-drop"]')).toBeTruthy();
+  });
+
+  it("renders the supplied paired-flag asset for NZD/USD", () => {
+    render(<InstrumentBadge symbol="NZDUSD" category="forex" />);
+    expect(screen.getByRole("img", { name: /New Zealand dollar.*US dollar forex pair/i })).toBeTruthy();
+    expect(document.querySelector('img[src*="trade-fusion-nzdusd-paired-flags"]')).toBeTruthy();
+  });
 });
