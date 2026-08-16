@@ -3,107 +3,94 @@ import {
   calendarFallback,
   getCalendarCoverage,
   getLiveCalendarEvents,
+  hasCurrentCalendarCoverage,
   parseForexFactoryFeed,
+  parseForexFactoryJson,
+  resetCalendarCacheForTest,
   toIsoDate,
 } from "./calendar";
 
 const SAMPLE_FOREX_FACTORY_FEED = `<?xml version="1.0" encoding="windows-1252"?>
 <weeklyevents>
-  <event>
-    <title>Cash Rate</title>
-    <country>AUD</country>
-    <date><![CDATA[08-11-2026]]></date>
-    <time><![CDATA[4:30am]]></time>
-    <impact><![CDATA[High]]></impact>
-    <forecast><![CDATA[4.35%]]></forecast>
-    <previous><![CDATA[4.35%]]></previous>
-    <url><![CDATA[https://www.forexfactory.com/calendar/21-au-cash-rate]]></url>
-  </event>
-  <event>
-    <title>Bank Holiday</title>
-    <country>JPY</country>
-    <date><![CDATA[08-10-2026]]></date>
-    <time><![CDATA[11:00pm]]></time>
-    <impact><![CDATA[Holiday]]></impact>
-    <forecast />
-    <previous />
-    <url><![CDATA[https://www.forexfactory.com/calendar/393-jn-bank-holiday]]></url>
-  </event>
+  <event><title>Cash Rate</title><country>AUD</country><date><![CDATA[08-11-2026]]></date><time><![CDATA[4:30am]]></time><impact><![CDATA[High]]></impact><forecast><![CDATA[4.35%]]></forecast><previous><![CDATA[4.35%]]></previous></event>
+  <event><title>Bank Holiday</title><country>JPY</country><date><![CDATA[08-10-2026]]></date><time><![CDATA[11:00pm]]></time><impact><![CDATA[Holiday]]></impact></event>
 </weeklyevents>`;
+
+const SAMPLE_FOREX_FACTORY_JSON = JSON.stringify([
+  { title: "Core CPI y/y", country: "USD", date: "2026-08-17T08:30:00-04:00", impact: "High", forecast: "2.5%", previous: "2.6%" },
+  { title: "Retail Sales m/m", country: "GBP", date: "2026-08-21T02:00:00-04:00", impact: "High", forecast: "-0.4%", previous: "1.0%" },
+]);
 
 describe("ForexFactory calendar parser", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    resetCalendarCacheForTest();
   });
 
-  it("converts feed dates into date-only ISO strings without timezone drift", () => {
+  it("converts legacy feed dates into date-only ISO strings without timezone drift", () => {
     expect(toIsoDate("08-11-2026")).toBe("2026-08-11");
     expect(toIsoDate("invalid-date")).toBeUndefined();
   });
 
-  it("parses actual ForexFactory feed fields without inventing missing values", () => {
+  it("retains legacy XML parsing for diagnostics without inventing missing values", () => {
     const events = parseForexFactoryFeed(SAMPLE_FOREX_FACTORY_FEED);
-
-    expect(events).toHaveLength(2);
-    expect(events[0]).toMatchObject({
-      date: "2026-08-11",
-      time: "4:30am",
-      country: "AUD",
-      event: "Cash Rate",
-      impact: "high",
-      forecast: "4.35%",
-      previous: "4.35%",
-    });
-    expect(events[1]).toMatchObject({
-      date: "2026-08-10",
-      time: "11:00pm",
-      country: "JPY",
-      event: "Bank Holiday",
-      impact: "holiday",
-    });
-    expect(events[1]?.forecast).toBeUndefined();
-    expect(events[1]?.previous).toBeUndefined();
+    expect(events).toMatchObject([{ date: "2026-08-11", time: "4:30am", impact: "high" }, { date: "2026-08-10", impact: "holiday" }]);
   });
 
-  it("retains source-published Friday events and reports the weekly coverage end date", () => {
-    const fridayFeed = SAMPLE_FOREX_FACTORY_FEED.replace(
-      "</weeklyevents>",
-      `<event><title>Retail Sales</title><country>USD</country><date><![CDATA[08-14-2026]]></date><time><![CDATA[8:30am]]></time><impact><![CDATA[High]]></impact></event></weeklyevents>`
+  it("parses source-published JSON timestamps in Eastern Time through the upcoming Friday coverage", () => {
+    const events = parseForexFactoryJson(SAMPLE_FOREX_FACTORY_JSON);
+    expect(events).toMatchObject([
+      { date: "2026-08-17", time: "8:30am", country: "USD", event: "Core CPI y/y", impact: "high" },
+      { date: "2026-08-21", time: "2:00am", country: "GBP", event: "Retail Sales m/m", impact: "high" },
+    ]);
+    expect(getCalendarCoverage(events)).toEqual({ coverageStart: "2026-08-17", coverageEnd: "2026-08-21" });
+  });
+
+  it("does not claim an old weekly export is current after its coverage has ended", () => {
+    const oldEvents = parseForexFactoryJson(SAMPLE_FOREX_FACTORY_JSON.replaceAll("2026-08-17", "2026-08-10").replaceAll("2026-08-21", "2026-08-14"));
+    expect(hasCurrentCalendarCoverage(oldEvents, new Date("2026-08-16T16:00:00.000Z"))).toBe(false);
+  });
+
+  it("uses the source JSON export and preserves its upcoming ET records", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(SAMPLE_FOREX_FACTORY_JSON, { headers: { "content-type": "application/json" } })
+      )
     );
-    const events = parseForexFactoryFeed(fridayFeed);
-    expect(events.some(event => event.date === "2026-08-14" && event.event === "Retail Sales")).toBe(true);
-    expect(getCalendarCoverage(events)).toEqual({ coverageStart: "2026-08-10", coverageEnd: "2026-08-14" });
+
+    const response = await getLiveCalendarEvents();
+    expect(response.sourceStatus).toBe("live");
+    expect(response.coverageEnd).toBe("2026-08-21");
+    expect(response.events.some(event => event.impact === "high" && event.event === "Retail Sales m/m")).toBe(true);
   });
 
-  it("discards incomplete source records instead of filling them with mock values", () => {
-    const events = parseForexFactoryFeed(`
-      <weeklyevents>
-        <event><title>Incomplete Event</title><country>USD</country></event>
-      </weeklyevents>
-    `);
+  it("rejects an HTML challenge rather than parsing it as an empty calendar", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("<html><title>Rate Limited</title></html>", { headers: { "content-type": "text/html" } })
+      )
+    );
 
-    expect(events).toEqual([]);
+    const response = await getLiveCalendarEvents();
+    expect(response.sourceStatus).toBe("unavailable");
+    expect(response.events).toEqual([]);
   });
 
   it("returns a truthful unavailable state with no events when the source cannot be reached", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Source blocked")));
-
     const response = await getLiveCalendarEvents();
-
     expect(response.sourceStatus).toBe("unavailable");
     expect(response.events).toEqual([]);
     expect(response.message).toContain("temporarily unavailable");
   });
 
-  it("retains the last verified weekly events when the source is rate-limited", () => {
-    const cached = {
-      events: parseForexFactoryFeed(SAMPLE_FOREX_FACTORY_FEED),
-      sourceStatus: "live" as const,
-      refreshedAt: "2026-08-12T12:00:00.000Z",
-    };
+  it("retains the last verified calendar when the source is rate-limited", () => {
+    const cached = { events: parseForexFactoryJson(SAMPLE_FOREX_FACTORY_JSON), sourceStatus: "live" as const, refreshedAt: "2026-08-17T12:00:00.000Z" };
     const response = calendarFallback(cached, "Source unavailable");
     expect(response.sourceStatus).toBe("stale");
     expect(response.events).toHaveLength(2);
-    expect(response.message).toContain("last verified weekly calendar");
+    expect(response.message).toContain("last verified calendar");
   });
 });

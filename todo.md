@@ -206,3 +206,8 @@
 - [x] Add navigation and calls to action that connect landing-page sections to the protected product journey.
 - [x] Test the expanded responsive landing page.
 - [x] Save and publish the expanded landing page after 118-test validation.
+- [x] Diagnose why high-impact Market Calendar data stops at 13 August instead of showing the source-published upcoming week.
+- [x] Correct live source retrieval, date parsing, and Eastern Time normalization for current and upcoming events.
+- [x] Harden high-impact filter coverage, source-cache fallback, and truthful calendar coverage messaging.
+- [x] Test the corrected live Market Calendar across desktop and mobile.
+- [x] Save and publish the corrected live Market Calendar after 121-test validation.
