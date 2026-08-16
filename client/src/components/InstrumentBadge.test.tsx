@@ -7,7 +7,10 @@ import { InstrumentBadge } from "./InstrumentBadge";
 describe("InstrumentBadge", () => {
   it("renders accessible original paired currency tokens for forex", () => {
     render(<InstrumentBadge symbol="EURUSD" category="forex" />);
-    expect(screen.getByRole("img", { name: /euro.*US dollar forex pair/i })).toBeTruthy();
+    const badge = screen.getByRole("img", { name: /euro.*US dollar forex pair/i });
+    expect(badge).toBeTruthy();
+    expect(badge.textContent).toContain("🇪🇺");
+    expect(badge.textContent).toContain("🇺🇸");
   });
 
   it("renders the supplied gold-bars asset for XAU/USD and the original crypto mark", () => {

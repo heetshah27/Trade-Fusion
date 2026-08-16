@@ -3,15 +3,15 @@ import { getInstrumentProfile, type InstrumentCategory } from "@/lib/tradeInstru
 
 type BadgeSize = "sm" | "md" | "lg";
 
-const CURRENCY_TOKENS: Record<string, { glyph: string; label: string; tone: string }> = {
-  EUR: { glyph: "€", label: "Euro", tone: "border-blue-300/25 bg-blue-400/[.12] text-blue-100" },
-  USD: { glyph: "$", label: "US dollar", tone: "border-emerald-300/25 bg-emerald-400/[.12] text-emerald-100" },
-  GBP: { glyph: "£", label: "British pound", tone: "border-violet-300/25 bg-violet-400/[.12] text-violet-100" },
-  JPY: { glyph: "¥", label: "Japanese yen", tone: "border-rose-300/25 bg-rose-400/[.12] text-rose-100" },
-  CHF: { glyph: "₣", label: "Swiss franc", tone: "border-red-300/25 bg-red-400/[.12] text-red-100" },
-  AUD: { glyph: "A$", label: "Australian dollar", tone: "border-amber-300/25 bg-amber-400/[.12] text-amber-100" },
-  CAD: { glyph: "C$", label: "Canadian dollar", tone: "border-orange-300/25 bg-orange-400/[.12] text-orange-100" },
-  NZD: { glyph: "N$", label: "New Zealand dollar", tone: "border-cyan-300/25 bg-cyan-400/[.12] text-cyan-100" },
+const CURRENCY_TOKENS: Record<string, { glyph: string; flag: string; label: string; tone: string }> = {
+  EUR: { glyph: "€", flag: "🇪🇺", label: "Euro", tone: "border-blue-300/25 bg-blue-400/[.12] text-blue-100" },
+  USD: { glyph: "$", flag: "🇺🇸", label: "US dollar", tone: "border-emerald-300/25 bg-emerald-400/[.12] text-emerald-100" },
+  GBP: { glyph: "£", flag: "🇬🇧", label: "British pound", tone: "border-violet-300/25 bg-violet-400/[.12] text-violet-100" },
+  JPY: { glyph: "¥", flag: "🇯🇵", label: "Japanese yen", tone: "border-rose-300/25 bg-rose-400/[.12] text-rose-100" },
+  CHF: { glyph: "₣", flag: "🇨🇭", label: "Swiss franc", tone: "border-red-300/25 bg-red-400/[.12] text-red-100" },
+  AUD: { glyph: "A$", flag: "🇦🇺", label: "Australian dollar", tone: "border-amber-300/25 bg-amber-400/[.12] text-amber-100" },
+  CAD: { glyph: "C$", flag: "🇨🇦", label: "Canadian dollar", tone: "border-orange-300/25 bg-orange-400/[.12] text-orange-100" },
+  NZD: { glyph: "N$", flag: "🇳🇿", label: "New Zealand dollar", tone: "border-cyan-300/25 bg-cyan-400/[.12] text-cyan-100" },
 };
 
 const SIZE: Record<BadgeSize, { root: string; token: string; stacked: string }> = {
@@ -45,9 +45,9 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
   const label = pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
 
   if (pair) {
-    const first = CURRENCY_TOKENS[pair[0]] ?? { glyph: pair[0].slice(0, 1), label: pair[0], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
-    const second = CURRENCY_TOKENS[pair[1]] ?? { glyph: pair[1].slice(0, 1), label: pair[1], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
-    return <span role="img" aria-label={label} title={label} className={`inline-flex ${scale.root} items-center justify-center ${className}`}><span className={`grid ${scale.token} place-items-center rounded-full border font-mono font-bold ${first.tone}`}>{first.glyph}</span><span className={`grid ${scale.token} ${scale.stacked} place-items-center rounded-full border font-mono font-bold ${second.tone}`}>{second.glyph}</span></span>;
+    const first = CURRENCY_TOKENS[pair[0]] ?? { glyph: pair[0].slice(0, 1), flag: pair[0].slice(0, 1), label: pair[0], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
+    const second = CURRENCY_TOKENS[pair[1]] ?? { glyph: pair[1].slice(0, 1), flag: pair[1].slice(0, 1), label: pair[1], tone: "border-slate-300/20 bg-slate-300/[.10] text-slate-100" };
+    return <span role="img" aria-label={label} title={label} className={`inline-flex ${scale.root} items-center justify-center ${className}`}><span className="relative inline-flex items-center"><span className={`grid ${scale.token} z-10 place-items-center rounded-md border font-sans font-bold shadow-[0_4px_10px_rgb(15_23_42_/_0.22)] ${first.tone}`}>{first.flag}</span><span className={`grid ${scale.token} ${scale.stacked} place-items-center rounded-md border font-sans font-bold shadow-[0_4px_10px_rgb(15_23_42_/_0.22)] ${second.tone}`}>{second.flag}</span></span></span>;
   }
 
   if (profile.category === "metals" && value.startsWith("XAU")) {

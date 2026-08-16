@@ -278,3 +278,7 @@
 - [x] Prepare the supplied silver-bars asset and confirm its XAG/USD badge integration points.
 - [x] Replace the XAG/USD text token with the supplied silver-bars symbol in the reusable instrument badge while retaining accessible text.
 - [x] Verify the silver-bars XAG/USD badge across Trade Fusion and publish the update.
+- [x] Review the supplied currency-pair reference and audit the current Trade Fusion forex badge treatment.
+- [x] Define an original high-recognition forex-pair badge style with accessible pair labels.
+- [x] Apply the refined forex-pair badges across Trade Fusion trade surfaces without copying the reference artwork.
+- [x] Test responsive badge rendering and publish the forex-pair badge upgrade.
