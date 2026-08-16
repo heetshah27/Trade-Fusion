@@ -242,3 +242,6 @@
 - [x] Define an original Trade Fusion command-center dashboard layout with compact metrics, performance review, calendar risk, and private activity modules.
 - [x] Implement the desktop and mobile command-center redesign while preserving existing private Journal, Analytics, Calendar, Backtest, and Trader’s Room workflows.
 - [x] Test privacy, data states, desktop/mobile rendering, and publish the redesigned workspace.
+- [x] Diagnose the narrow-screen workspace-preview sidebar, metric, and ledger collisions shown in the mobile screenshot.
+- [x] Create a dedicated mobile layout for the landing-page workspace preview while retaining the desktop command-center preview.
+- [x] Verify all preview modules on phone and desktop, then publish the responsive repair.

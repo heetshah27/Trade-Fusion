@@ -52,6 +52,15 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByRole("button", { name: "Backtest Lab" })).toBeTruthy();
   });
 
+  it("keeps the preview module switcher keyboard-readable with explicit active-tab state", () => {
+    render(<Landing />);
+
+    const journalTab = screen.getByRole("button", { name: "Journal" });
+    expect(journalTab.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Calendar" }));
+    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
   it("includes scroll-linked depth treatment for the workspace preview and product spotlights", () => {
     render(<Landing />);
 

@@ -197,44 +197,48 @@ function WorkspacePreview() {
       <div className="tf-preview-shell relative overflow-hidden rounded-[1.8rem] border border-blue-200/[0.20] bg-[#071328] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] sm:p-4">
         <div className="overflow-hidden rounded-[1.3rem] border border-white/[0.09] bg-[#0b1830]">
           {/* Top Bar with Interactive Tab Switcher */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-3 sm:px-6">
-            <div className="flex items-center gap-2.5">
+          <div className="flex flex-col gap-2.5 border-b border-white/[0.08] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6">
+            <div className="hidden items-center gap-2.5 sm:flex">
               <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-              <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">TradeFXBook Architecture</span>
+              <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Trade Fusion workspace preview</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1">
+            <div className="grid w-full grid-cols-2 gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1 sm:flex sm:w-auto sm:items-center sm:gap-1.5">
               <button
                 onClick={() => setActiveTab("journal")}
-                className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "journal" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                aria-pressed={activeTab === "journal"}
+                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "journal" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Journal
               </button>
               <button
                 onClick={() => setActiveTab("calendar")}
-                className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "calendar" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                aria-pressed={activeTab === "calendar"}
+                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "calendar" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Calendar
               </button>
               <button
                 onClick={() => setActiveTab("backtest")}
-                className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "backtest" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                aria-pressed={activeTab === "backtest"}
+                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "backtest" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Backtest
               </button>
               <button
                 onClick={() => setActiveTab("room")}
-                className={`rounded-lg px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] transition ${activeTab === "room" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                aria-pressed={activeTab === "room"}
+                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "room" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Trader’s Room
               </button>
             </div>
           </div>
 
-          <div className="grid min-h-[380px] grid-cols-[150px_1fr] sm:min-h-[460px] sm:grid-cols-[210px_1fr]">
+          <div className="min-h-[380px] md:grid md:grid-cols-[210px_minmax(0,1fr)] md:min-h-[460px]">
             {/* Sidebar */}
-            <aside className="border-r border-white/[0.08] bg-[#071326] p-3 sm:p-5">
+            <aside className="hidden border-r border-white/[0.08] bg-[#071326] p-5 md:block">
               <div className="flex items-center gap-2.5 text-xs font-semibold text-white">
                 <TradeFusionMark size="small" />
                 <span className="hidden sm:inline tracking-tight">TRADEFUSION</span>
@@ -272,9 +276,9 @@ function WorkspacePreview() {
             </aside>
 
             {/* Main Content Area based on Tab */}
-            <div className="p-4 sm:p-7 overflow-x-auto">
+            <div className="min-w-0 p-4 sm:p-6 md:p-7">
               {activeTab === "journal" && (
-                <div className="space-y-6">
+                <div className="space-y-5 sm:space-y-6">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[oklch(0.70_0.16_250)]">Verified Performance</p>
@@ -301,7 +305,7 @@ function WorkspacePreview() {
                   </div>
 
                   <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#09152b]">
-                    <div className="grid grid-cols-[1.2fr_1fr_1fr_0.8fr] border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 font-mono text-[8px] uppercase tracking-[0.18em] text-slate-400">
+                    <div className="hidden grid-cols-[1.2fr_1fr_1fr_0.8fr] border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 font-mono text-[8px] uppercase tracking-[0.18em] text-slate-400 sm:grid">
                       <span>Session</span><span>Instrument</span><span>Setup</span><span>Net Result</span>
                     </div>
                     {[
@@ -309,11 +313,11 @@ function WorkspacePreview() {
                       ["London · Morning", "XAU/USD", "Liquidity Sweep", "+$895.50", "text-emerald-400"],
                       ["New York · Power Hour", "NAS100", "Trend Continuation", "-$310.00", "text-red-400"],
                     ].map(([session, inst, setup, res, color]) => (
-                      <div key={`${session}-${inst}`} className="grid grid-cols-[1.2fr_1fr_1fr_0.8fr] border-b border-white/[0.05] px-4 py-3.5 font-mono text-xs text-slate-300 last:border-0 hover:bg-white/[0.02] transition">
-                        <span className="text-slate-400">{session}</span>
-                        <span className="font-semibold text-white">{inst}</span>
-                        <span className="text-slate-400">{setup}</span>
-                        <span className={`font-bold ${color}`}>{res}</span>
+                      <div key={`${session}-${inst}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/[0.05] px-3 py-3 font-mono text-xs text-slate-300 last:border-0 hover:bg-white/[0.02] sm:grid-cols-[1.2fr_1fr_1fr_0.8fr] sm:px-4 sm:py-3.5">
+                        <span className="min-w-0 sm:text-slate-400"><span className="block truncate font-semibold text-white sm:hidden">{inst}</span><span className="block truncate text-slate-400">{session}</span><span className="mt-0.5 block truncate text-[10px] text-slate-500 sm:hidden">{setup}</span></span>
+                        <span className="hidden font-semibold text-white sm:block">{inst}</span>
+                        <span className="hidden text-slate-400 sm:block">{setup}</span>
+                        <span className={`text-right font-bold ${color}`}>{res}</span>
                       </div>
                     ))}
                   </div>
