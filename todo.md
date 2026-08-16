@@ -337,3 +337,6 @@
 - [x] Add shared FAQ accordion hover, icon-motion, focus, and touch-press treatments.
 - [x] Apply the interaction completion pass across remaining public and workspace sections.
 - [x] Test desktop hover, mobile press, reduced-motion support, and publish the interaction completion pass.
+- [x] Audit the Dashboard recorded-performance chart data mapping and current curve rendering.
+- [x] Replace the awkward line with a clearer stepped live-trade equity curve, trade anchors, and restrained performance shading.
+- [x] Test real-trade accuracy, empty states, desktop/mobile rendering, and publish the Dashboard curve upgrade.
