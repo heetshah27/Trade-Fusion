@@ -105,6 +105,34 @@ export type Trade = typeof trades.$inferSelect;
 export type InsertTrade = typeof trades.$inferInsert;
 
 /**
+ * Private written trading review linked to one member-owned live trade. These
+ * records never feed analytics and are never shared to the Trader's Room.
+ */
+export const tradeJournalEntries = pgTable(
+  "trade_journal_entries",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    tradeId: integer("tradeId").notNull().references(() => trades.id, { onDelete: "cascade" }),
+    tradeIdea: text("tradeIdea"),
+    marketContext: text("marketContext"),
+    executionReview: text("executionReview"),
+    reflection: text("reflection"),
+    emotion: varchar("emotion", { length: 48 }),
+    rating: integer("rating"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    uniqueIndex("trade_journal_entries_user_trade_unique").on(table.userId, table.tradeId),
+    index("trade_journal_entries_user_updated_idx").on(table.userId, table.updatedAt),
+    index("trade_journal_entries_trade_idx").on(table.tradeId),
+  ]
+);
+
+export type TradeJournalEntry = typeof tradeJournalEntries.$inferSelect;
+
+/**
  * Private strategy-testing sessions. These simulated records never feed live
  * journal statistics or are shared with the Trader’s Room automatically.
  */

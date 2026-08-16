@@ -1,6 +1,8 @@
 export const appRoutes = {
   landing: "/",
-  journal: "/app",
+  dashboard: "/app",
+  trades: "/app/trades",
+  journal: "/app/journal",
   calendar: "/app/news",
   community: "/app/room",
   account: "/app/account",

@@ -245,3 +245,8 @@
 - [x] Diagnose the narrow-screen workspace-preview sidebar, metric, and ledger collisions shown in the mobile screenshot.
 - [x] Create a dedicated mobile layout for the landing-page workspace preview while retaining the desktop command-center preview.
 - [x] Verify all preview modules on phone and desktop, then publish the responsive repair.
+- [x] Audit current journal routes, live-trade fields, and note capabilities for a Dashboard, Trades, and Journal module split.
+- [x] Define private ownership, routing, and migration requirements for trade-linked Journal entries.
+- [x] Build protected private Journal entry storage and APIs linked to a member-owned live trade.
+- [x] Split the workspace into Dashboard, Trades, and Journal interfaces with clear navigation while retaining Analytics, Backtest, Calendar, Trader’s Room, and Account.
+- [x] Test ownership, Backtest isolation, existing trade preservation, desktop/mobile flows, and publish the workspace restructure.

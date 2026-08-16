@@ -11,7 +11,7 @@ afterEach(async () => {
 });
 
 describe("Neon private journal schema", () => {
-  it("has the users and trades tables required for OAuth and private trade storage", async () => {
+  it("has the users, trades, and private trade-Journal tables required for member-owned records", async () => {
     const connectionString = process.env.NEON_DATABASE_URL;
     expect(connectionString).toMatch(/^postgresql:\/\//);
 
@@ -19,9 +19,9 @@ describe("Neon private journal schema", () => {
     const rows = await sql<{ table_name: string }[]>`
       select table_name
       from information_schema.tables
-      where table_schema = 'public' and table_name in ('users', 'trades')
+      where table_schema = 'public' and table_name in ('users', 'trades', 'trade_journal_entries')
     `;
 
-    expect(rows.map((row) => row.table_name).sort()).toEqual(["trades", "users"]);
+    expect(rows.map((row) => row.table_name).sort()).toEqual(["trade_journal_entries", "trades", "users"]);
   });
 });

@@ -18,29 +18,23 @@ vi.mock("@/lib/trpc", () => ({
   },
 }));
 vi.mock("wouter", () => ({ useLocation: () => ["/app", mocks.setLocation] }));
-vi.mock("@/components/TradeStats", () => ({ default: () => <div data-testid="trade-stats">Trade stats</div> }));
-vi.mock("@/components/DayRow", () => ({ default: () => <div data-testid="day-row">Day row</div> }));
-vi.mock("@/components/AddTradeModal", () => ({ default: ({ open }: { open: boolean }) => open ? <div role="dialog">Trade entry open</div> : null }));
-
 import Home from "./Home";
 
-describe("Journal command center", () => {
+describe("Dashboard command center", () => {
   afterEach(() => { cleanup(); Object.values(mocks).forEach(mock => mock.mockReset()); });
 
-  it("renders the private command-center modules and opens the manual log flow", () => {
+  it("renders the private Dashboard modules and routes to the manual Trade flow", () => {
     render(<Home />);
-    expect(screen.getByText("Private command center")).toBeTruthy();
-    expect(screen.getByText("Monthly P&L")).toBeTruthy();
+    expect(screen.getByText("Live-trade command center")).toBeTruthy();
+    expect(screen.getByText("Recorded performance")).toBeTruthy();
     expect(screen.getByText("Recent activity")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /open market calendar/i })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /log trade/i }));
-    expect(screen.getByRole("dialog").textContent).toContain("Trade entry open");
+    expect(mocks.setLocation).toHaveBeenCalled();
   });
 
-  it("keeps symbol filter chips and Backtest access within the command center", () => {
+  it("keeps Journal access within the Dashboard workflow", () => {
     render(<Home />);
-    expect(screen.getByRole("button", { name: "XAUUSD" })).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("button", { name: /open backtest/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /open journal/i }));
     expect(mocks.setLocation).toHaveBeenCalled();
   });
 });

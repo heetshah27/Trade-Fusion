@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { BarChart3, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LogOut, MessagesSquare, Plus, ShieldCheck, UserRound } from "lucide-react";
+import { BarChart3, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LayoutDashboard, LogOut, MessagesSquare, Plus, ShieldCheck, UserRound, WalletCards } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -24,14 +24,16 @@ import { trpc } from "@/lib/trpc";
 import { NotificationMenu } from "./NotificationMenu";
 
 const menuItems = [
-  { icon: ChartNoAxesCombined, label: "Journal", subtitle: "Trade performance", path: appRoutes.journal },
+  { icon: LayoutDashboard, label: "Dashboard", subtitle: "Command center", path: appRoutes.dashboard },
+  { icon: WalletCards, label: "Trades", subtitle: "Manual trade ledger", path: appRoutes.trades },
+  { icon: BookOpenCheck, label: "Journal", subtitle: "Ideas and reviews", path: appRoutes.journal },
   { icon: BarChart3, label: "Setup Analytics", subtitle: "Live trade patterns", path: appRoutes.analytics },
   { icon: FlaskConical, label: "Backtest", subtitle: "Simulated strategy lab", path: appRoutes.backtest },
   { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
   { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },
   { icon: UserRound, label: "Account", subtitle: "Profile and privacy", path: appRoutes.account },
 ];
-const mobileMenuItems = [menuItems[0], menuItems[3], menuItems[2], menuItems[4], menuItems[5]];
+const mobileMenuItems = [menuItems[0], menuItems[1], menuItems[2], menuItems[4], menuItems[5]];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user, logout } = useAuth();
@@ -119,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="hidden h-5 w-px bg-white/[0.08] sm:block" />
             <div className="hidden sm:block">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-slate-600">Live workspace</p>
-              <p className="mt-0.5 text-xs text-slate-400">Private performance journal</p>
+              <p className="mt-0.5 text-xs text-slate-400">Private live-trade workspace</p>
             </div>
           </div>
           <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-emerald-300/[0.16] bg-emerald-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-200"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_oklch(0.70_0.18_145)]" /> Secure sync</div></div>
@@ -130,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             const isActive = location === item.path;
             return <button key={item.path} type="button" onClick={() => setLocation(item.path)} className={`tf-press flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[9px] font-medium ${isActive ? "bg-emerald-400/[0.14] text-emerald-200" : "text-slate-500"}`}><item.icon className="h-4 w-4" /><span className="max-w-full truncate">{item.label.replace("Trader’s ", "")}</span></button>;
           })}
-          <button type="button" onClick={() => { setLocation(appRoutes.journal); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-400 px-1 py-1.5 text-[9px] font-bold text-[#092117] shadow-[0_8px_20px_oklch(0.36_0.15_145_/_0.34)]"><Plus className="h-4 w-4" /><span>Log</span></button>
+          <button type="button" onClick={() => { setLocation(appRoutes.trades); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-400 px-1 py-1.5 text-[9px] font-bold text-[#092117] shadow-[0_8px_20px_oklch(0.36_0.15_145_/_0.34)]"><Plus className="h-4 w-4" /><span>Log</span></button>
         </nav>
       </SidebarInset>
     </SidebarProvider>
