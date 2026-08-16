@@ -189,3 +189,15 @@
 - [x] Add a private Saved Setups manager to Account with active and archived setup views.
 - [x] Test setup editing, archive/restore ownership, and responsive Account settings behavior.
 - [x] Publish the Saved Setups manager release after 114-test validation.
+- [x] Assess MT4/MT5, cTrader, and broker-API trade-sync pathways alongside manual private trade logging.
+- [x] Define secure broker-connection storage, import deduplication, and imported-versus-manual trade boundaries.
+- [x] Deliver a phased recommendation for an optional broker/API sync rollout.
+- [x] Define and apply a unified premium visual system with refined brand tokens, typography, card treatments, and interaction states.
+- [x] Add a responsive mobile bottom navigation with a reachable primary log-trade action.
+- [x] Build a command-center dashboard with daily summary, calendar risk, recent activity, and a clear log-trade action.
+- [x] Refine the Journal with filter chips, sticky table context, clearer tag visibility, P&L hierarchy, and improved empty states.
+- [x] Polish Setup Analytics with sparklines, clearer comparison treatment, and more focused filter placement.
+- [x] Polish the Backtest workstation with a compact tool rail, selected-tool states, and a more focused execution panel.
+- [x] Add restrained motion, loading states, and hover/press feedback across the authenticated workspace.
+- [x] Verify the comprehensive UI upgrade across desktop and mobile views.
+- [x] Save and publish the comprehensive UI upgrade after 117-test validation.

@@ -1,10 +1,10 @@
 // Trade Journal — Main page
 // Design: Trading Terminal — dark, data-dense, green/red P&L signals
 // Typography: Space Grotesk (headings), Inter (body), JetBrains Mono (numbers)
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { trpc } from '@/lib/trpc';
-import { Plus, TrendingUp, Download, Trash2, BarChart2, Calendar } from 'lucide-react';
+import { ArrowUpRight, BarChart2, CalendarDays, Download, FlaskConical, ListFilter, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -31,6 +31,15 @@ export default function Home() {
   const [filterSymbol, setFilterSymbol] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const openTradeLog = () => {
+      setEditTrade(null);
+      setModalOpen(true);
+    };
+    window.addEventListener('trade-fusion:open-log-trade', openTradeLog);
+    return () => window.removeEventListener('trade-fusion:open-log-trade', openTradeLog);
+  }, []);
 
   // Fetch trades from cloud API
   const { data: cloudTrades = [], isLoading } = trpc.trades.list.useQuery(undefined, {
@@ -139,12 +148,17 @@ export default function Home() {
     return sortAsc ? [...groups].reverse() : groups;
   }, [filtered, sortAsc]);
 
+  const symbolChips = useMemo(() => Array.from(new Set(cloudTrades.map((trade) => trade.symbol))).slice(0, 5), [cloudTrades]);
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayTrades = useMemo(() => cloudTrades.filter((trade) => trade.date === todayKey), [cloudTrades, todayKey]);
+  const todayPnl = useMemo(() => todayTrades.reduce((total, trade) => total + trade.pnl, 0), [todayTrades]);
+
   return (
     <div className="min-h-full bg-[#07101f] text-foreground">
       <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
-        <section className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <section className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[oklch(0.70_0.16_250)]">Execution review</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300">Execution review</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">Trade Journal</h1>
             <p className="mt-2 text-sm text-slate-500">Log every execution. Measure the pattern. Improve the process.</p>
           </div>
@@ -154,7 +168,7 @@ export default function Home() {
               placeholder="Filter by symbol..."
               value={filterSymbol}
               onChange={(e) => setFilterSymbol(e.target.value)}
-              className="h-9 w-44 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-[oklch(0.66_0.18_250)]"
+              className="h-9 w-44 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 font-mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-300"
             />
             <button type="button" onClick={() => setSortAsc((v) => !v)} className="h-9 rounded-xl border border-blue-200/[0.10] bg-blue-400/[0.04] px-3 text-xs text-slate-400 transition-colors hover:bg-blue-400/[0.10] hover:text-white">{sortAsc ? '↑ Oldest' : '↓ Newest'}</button>
             <Button
@@ -178,31 +192,42 @@ export default function Home() {
                 Clear All
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLocation(appRoutes.analytics)}
-              className="h-9 rounded-xl gap-1.5 border-violet-300/20 bg-violet-400/[0.08] text-violet-100 hover:bg-violet-400/[0.16]"
-            >
+            <Button variant="outline" size="sm" onClick={() => setLocation(appRoutes.analytics)} className="h-9 rounded-xl gap-1.5 border-emerald-300/20 bg-emerald-400/[0.07] text-emerald-100 hover:bg-emerald-400/[0.14]">
               <BarChart2 className="w-3.5 h-3.5" />
               Analytics
             </Button>
             <Button
               size="sm"
               onClick={() => { setEditTrade(null); setModalOpen(true); }}
-              className="h-9 rounded-xl gap-1.5 bg-[oklch(0.66_0.18_250)] text-white shadow-[0_10px_24px_oklch(0.45_0.18_250_/_0.32)] hover:bg-[oklch(0.72_0.18_250)]"
+              className="tf-press h-9 rounded-xl gap-1.5 bg-gradient-to-br from-emerald-300 to-emerald-400 text-[#092117] shadow-[0_10px_24px_oklch(0.36_0.15_145_/_0.32)] hover:from-emerald-200 hover:to-emerald-300"
             >
               <Plus className="w-4 h-4" />
               Log Trade
             </Button>
           </div>
         </section>
+
+        <section className="tf-workspace-surface mb-5 overflow-hidden rounded-2xl p-4 sm:p-5">
+          <div className="grid gap-4 xl:grid-cols-[1.25fr_.85fr_.85fr] xl:items-stretch">
+            <div className="rounded-xl border border-emerald-300/[0.12] bg-gradient-to-br from-emerald-400/[0.10] via-transparent to-transparent p-4">
+              <div className="flex items-start justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-300">Daily command center</p><h2 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">Keep the next decision simple.</h2><p className="mt-1.5 max-w-lg text-sm leading-5 text-slate-400">Record the execution, protect the review process, and use your live data to improve the next setup.</p></div><Sparkles className="h-5 w-5 shrink-0 text-emerald-300" /></div>
+              <div className="mt-4 flex flex-wrap gap-2"><Button onClick={() => { setEditTrade(null); setModalOpen(true); }} className="tf-press bg-emerald-300 text-[#092117] hover:bg-emerald-200"><Plus className="mr-1.5 h-4 w-4" />Log execution</Button><Button variant="outline" onClick={() => setLocation(appRoutes.analytics)} className="tf-press border-white/[0.12] bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]"><BarChart2 className="mr-1.5 h-4 w-4" />Review patterns</Button></div>
+            </div>
+            <div className="tf-kpi-card rounded-xl p-4"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Today’s executions</p><p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white">{todayTrades.length}</p><p className={`mt-1 text-sm font-medium ${todayPnl >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>{todayTrades.length === 0 ? 'No trades logged yet' : `${todayPnl >= 0 ? '+' : '-'}$${Math.abs(todayPnl).toFixed(2)} recorded P&L`}</p></div>
+            <div className="tf-kpi-card rounded-xl p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Market preparation</p><p className="mt-3 text-sm font-medium text-slate-200">Check macro risk before the next setup.</p></div><CalendarDays className="h-4 w-4 text-sky-300" /></div><button onClick={() => setLocation(appRoutes.calendar)} className="tf-press mt-4 inline-flex items-center gap-1 text-xs font-medium text-sky-200 hover:text-sky-100">Open calendar <ArrowUpRight className="h-3.5 w-3.5" /></button></div>
+          </div>
+        </section>
+
+        <section className="mb-5 flex flex-col gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0"><ListFilter className="h-4 w-4 shrink-0 text-slate-500" /><button onClick={() => setFilterSymbol('')} className={`tf-press shrink-0 rounded-full border px-3 py-1.5 text-xs ${!filterSymbol ? 'border-emerald-300/30 bg-emerald-400/[0.10] text-emerald-200' : 'border-white/[0.09] text-slate-500 hover:text-slate-200'}`}>All symbols</button>{symbolChips.map((symbol) => <button key={symbol} onClick={() => setFilterSymbol(symbol)} className={`tf-press shrink-0 rounded-full border px-3 py-1.5 font-mono text-[11px] ${filterSymbol === symbol ? 'border-emerald-300/30 bg-emerald-400/[0.10] text-emerald-200' : 'border-white/[0.09] text-slate-500 hover:text-slate-200'}`}>{symbol}</button>)}</div>
+          <button onClick={() => setLocation(appRoutes.backtest)} className="tf-press inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-violet-200"><FlaskConical className="h-3.5 w-3.5 text-violet-300" />Open Backtest lab <ArrowUpRight className="h-3.5 w-3.5" /></button>
+        </section>
         {/* Stats bar */}
         <TradeStats trades={filtered} />
 
         {/* Table header */}
         {dayGroups.length > 0 && (
-          <div className="flex items-center gap-3 px-4 pb-2 text-xs text-muted-foreground uppercase tracking-wider border-b border-border mb-3">
+          <div className="sticky top-[76px] z-10 mb-3 flex items-center gap-3 border-b border-border bg-[#07101f]/95 px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground backdrop-blur-xl">
             <span className="w-4 flex-shrink-0" />
             <span className="w-44 flex-shrink-0">Date</span>
             <span className="w-24 flex-shrink-0">Trades</span>
@@ -215,7 +240,7 @@ export default function Home() {
 
         {/* Always-visible table shell (terminal frame) */}
         {dayGroups.length === 0 && (
-          <div className="rounded-lg border border-border overflow-hidden mb-4">
+          <div className="tf-workspace-surface mb-4 overflow-hidden rounded-xl">
             {/* Table header row */}
             <div className="flex items-center gap-3 px-4 py-2.5 bg-card border-b border-border text-xs text-muted-foreground uppercase tracking-wider">
               <span className="w-4 flex-shrink-0" />
@@ -282,8 +307,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   onClick={() => { setEditTrade(null); setModalOpen(true); }}
-                  className="gap-2"
-                  style={{ background: 'oklch(0.62 0.18 240)' }}
+                  className="tf-press gap-2 bg-emerald-300 text-[#092117] hover:bg-emerald-200"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Log trade
@@ -305,7 +329,7 @@ export default function Home() {
       <footer className="border-t border-border py-4">
         <div className="container flex items-center justify-between text-xs text-muted-foreground">
           <span style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Trade Fusion Journal</span>
-          <span>Data stored locally in your browser · {trades.length} total trade{trades.length !== 1 ? 's' : ''}</span>
+          <span>Private sync active · {cloudTrades.length} total trade{cloudTrades.length !== 1 ? 's' : ''}</span>
         </div>
       </footer>
 

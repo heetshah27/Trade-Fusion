@@ -42,7 +42,7 @@ const emptySession = (): SessionDraft => ({ strategyName: "", symbol: "", timefr
 const emptyTrade = (): TradeDraft => ({ date: today(), entryAt: `${today()}T09:00`, exitAt: `${today()}T16:00`, direction: "LONG", entryPrice: "", exitPrice: "", quantity: "1", stopLoss: "", takeProfit: "", fees: "0", setupTag: "", notes: "" });
 
 function MetricCard({ label, value, tone = "text-white" }: { label: string; value: string; tone?: string }) {
-  return <div className="rounded-2xl border border-blue-200/[0.10] bg-[#101d35]/75 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.14)]"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600">{label}</p><p className={`mt-2 text-xl font-semibold tracking-[-0.04em] ${tone}`}>{value}</p></div>;
+  return <div className="tf-kpi-card rounded-2xl p-4"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">{label}</p><p className={`mt-2 text-xl font-semibold tracking-[-0.04em] ${tone}`}>{value}</p></div>;
 }
 
 export default function Backtest() {
@@ -89,14 +89,14 @@ export default function Backtest() {
     <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
       <section className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-violet-300">Strategy laboratory</p>
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"><FlaskConical className="h-8 w-8 text-violet-300" /> Backtest Workspace</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300">Strategy laboratory</p>
+          <h1 className="mt-2 flex items-center gap-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"><FlaskConical className="h-8 w-8 text-emerald-300" /> Backtest Workspace</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-500">Test historical ideas with simulated entries. Backtest results are private and never affect your live journal statistics.</p>
         </div>
-        <Button onClick={() => setSessionOpen(true)} className="h-10 rounded-xl bg-violet-500 text-white shadow-[0_10px_24px_rgba(139,92,246,0.34)] hover:bg-violet-400"><Plus className="mr-2 h-4 w-4" /> New strategy session</Button>
+        <Button onClick={() => setSessionOpen(true)} className="tf-press h-10 rounded-xl bg-sky-400 text-slate-950 shadow-[0_10px_24px_rgba(56,189,248,0.26)] hover:bg-sky-300"><Plus className="mr-2 h-4 w-4" /> New strategy session</Button>
       </section>
 
-      <div className="mb-6 flex items-center gap-2 rounded-2xl border border-violet-300/[0.12] bg-violet-400/[0.06] px-4 py-3 text-xs text-violet-100"><ShieldCheck className="h-4 w-4 shrink-0 text-violet-300" /><span><strong>Simulated only.</strong> Strategy sessions, trades, and metrics are isolated from your live journal and are not shared with the Trader’s Room.</span></div>
+      <div className="mb-6 flex items-center gap-2 rounded-2xl border border-emerald-300/[0.12] bg-emerald-400/[0.06] px-4 py-3 text-xs text-emerald-100"><ShieldCheck className="h-4 w-4 shrink-0 text-emerald-300" /><span><strong>Simulated only.</strong> Strategy sessions, trades, and metrics are isolated from your live journal and are not shared with the Trader’s Room.</span></div>
 
       <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-blue-200/[0.10] bg-[#0c1830]/88 p-3">

@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { BarChart3, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LogOut, MessagesSquare, PanelLeft, ShieldCheck, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LogOut, MessagesSquare, Plus, ShieldCheck, UserRound } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -30,6 +30,7 @@ const menuItems = [
   { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },
   { icon: UserRound, label: "Account", subtitle: "Profile and privacy", path: appRoutes.account },
 ];
+const mobileMenuItems = [menuItems[0], menuItems[3], menuItems[2], menuItems[4], menuItems[5]];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user, logout } = useAuth();
@@ -56,13 +57,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar collapsible="icon" className="border-r border-blue-200/[0.08] bg-[#0a1427] text-slate-300">
         <SidebarHeader className="h-[76px] border-b border-blue-200/[0.08] px-3 py-0">
           <div className="flex h-full items-center gap-3 px-2">
-            <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-[oklch(0.66_0.18_250)] shadow-[0_8px_24px_oklch(0.45_0.18_250_/_0.38)]">
-              <span className="relative z-10 text-xs font-black tracking-[-0.12em] text-slate-950">TF</span>
-              <span className="absolute bottom-1.5 left-1.5 h-1 w-1 rounded-full bg-emerald-300" />
-              <span className="absolute bottom-1.5 right-1.5 h-1 w-1 rounded-full bg-rose-300" />
+            <div className="tf-monogram shrink-0">
+              <span className="tf-monogram-t">T</span><span className="tf-monogram-f">F</span>
+              <span className="tf-monogram-candle-up" /><span className="tf-monogram-candle-down" />
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></div>
+              <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-emerald-300">FUSION</span></div>
               <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.26em] text-slate-500">Trading workspace</div>
             </div>
           </div>
@@ -79,22 +79,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     isActive={isActive}
                     onClick={() => setLocation(item.path)}
                     tooltip={item.label}
-                    className={`relative h-[52px] rounded-xl px-3 text-slate-400 transition-colors hover:bg-blue-400/[0.07] hover:text-white data-[active=true]:bg-blue-500/[0.15] data-[active=true]:text-white ${isActive ? "before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-[oklch(0.66_0.18_250)]" : ""}`}
+                    className={`tf-press relative h-[52px] rounded-xl px-3 text-slate-400 transition-colors hover:bg-emerald-400/[0.06] hover:text-white data-[active=true]:bg-emerald-400/[0.10] data-[active=true]:text-white ${isActive ? "before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-emerald-300" : ""}`}
                   >
-                    <item.icon className={`h-[18px] w-[18px] ${isActive ? "text-[oklch(0.70_0.16_250)]" : ""}`} />
+                    <item.icon className={`h-[18px] w-[18px] ${isActive ? "text-emerald-300" : ""}`} />
                     <span className="flex min-w-0 flex-1 flex-col text-left group-data-[collapsible=icon]:hidden">
                       <span className="text-sm font-medium leading-4">{item.label}</span>
                       <span className="mt-0.5 text-[10px] font-normal text-slate-600">{item.subtitle}</span>
                     </span>
-                    {isActive && <ChevronRight className="h-3.5 w-3.5 text-[oklch(0.70_0.16_250)] group-data-[collapsible=icon]:hidden" />}
+                    {isActive && <ChevronRight className="h-3.5 w-3.5 text-emerald-300 group-data-[collapsible=icon]:hidden" />}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
             })}
           </SidebarMenu>
 
-          <div className="mt-8 rounded-xl border border-blue-200/[0.09] bg-gradient-to-br from-blue-400/[0.09] to-transparent p-3 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><ShieldCheck className="h-3.5 w-3.5 text-[oklch(0.70_0.16_250)]" /> Private data</div>
+          <div className="mt-8 rounded-xl border border-emerald-300/[0.12] bg-gradient-to-br from-emerald-400/[0.08] to-transparent p-3 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><ShieldCheck className="h-3.5 w-3.5 text-emerald-300" /> Private data</div>
             <p className="mt-1.5 text-[11px] leading-4 text-slate-600">Your executions and notes remain account-specific.</p>
           </div>
         </SidebarContent>
@@ -124,9 +124,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="mt-0.5 text-xs text-slate-400">Private performance journal</p>
             </div>
           </div>
-          <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-blue-300/[0.16] bg-blue-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-200"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.18_250)]" /> Secure sync</div></div>
+          <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-emerald-300/[0.16] bg-emerald-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-200"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_oklch(0.70_0.18_145)]" /> Secure sync</div></div>
         </header>
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0 tf-mobile-safe-bottom">{children}</main>
+        <nav aria-label="Mobile workspace navigation" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 rounded-2xl border border-white/[0.12] bg-[#0b162a]/95 p-1.5 shadow-[0_18px_50px_rgba(0,0,0,.42)] backdrop-blur-xl md:hidden">
+          {mobileMenuItems.map((item) => {
+            const isActive = location === item.path;
+            return <button key={item.path} type="button" onClick={() => setLocation(item.path)} className={`tf-press flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[9px] font-medium ${isActive ? "bg-emerald-400/[0.14] text-emerald-200" : "text-slate-500"}`}><item.icon className="h-4 w-4" /><span className="max-w-full truncate">{item.label.replace("Trader’s ", "")}</span></button>;
+          })}
+          <button type="button" onClick={() => { setLocation(appRoutes.journal); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-400 px-1 py-1.5 text-[9px] font-bold text-[#092117] shadow-[0_8px_20px_oklch(0.36_0.15_145_/_0.34)]"><Plus className="h-4 w-4" /><span>Log</span></button>
+        </nav>
       </SidebarInset>
     </SidebarProvider>
   );
