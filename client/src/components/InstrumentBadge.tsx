@@ -20,6 +20,12 @@ const SIZE: Record<BadgeSize, { root: string; token: string; stacked: string }> 
   lg: { root: "h-10 min-w-10", token: "h-6 w-6 text-[10px]", stacked: "-ml-2.5" },
 };
 
+const METAL_BADGE_SIZE: Record<BadgeSize, string> = {
+  sm: "h-6 w-6",
+  md: "h-8 w-8",
+  lg: "h-10 w-10",
+};
+
 const XAU_GOLD_BARS_ASSET = "/manus-storage/trade-fusion-xauusd-gold-bars_1b1d3759.png";
 const XAG_SILVER_BARS_ASSET = "/manus-storage/trade-fusion-xagusd-silver-bars_e5cb130a.png";
 
@@ -41,6 +47,7 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
   const profile = getInstrumentProfile(symbol, category);
   const value = normalized(symbol);
   const scale = SIZE[size];
+  const metalSize = METAL_BADGE_SIZE[size];
   const pair = profile.category === "forex" && value.length === 6 ? [value.slice(0, 3), value.slice(3)] : null;
   const label = pair ? `${CURRENCY_TOKENS[pair[0]]?.label ?? pair[0]} / ${CURRENCY_TOKENS[pair[1]]?.label ?? pair[1]} forex pair` : `${marketLabel(symbol, profile.category)} ${profile.label}`;
 
@@ -51,11 +58,11 @@ export function InstrumentBadge({ symbol, category, size = "md", className = "" 
   }
 
   if (profile.category === "metals" && value.startsWith("XAU")) {
-    return <span role="img" aria-label={label} title={label} className={`inline-grid ${scale.root} overflow-hidden rounded-lg border border-amber-300/25 bg-[#d89f00] shadow-[0_5px_14px_rgb(180_120_0_/_0.2)] ${className}`}><img src={XAU_GOLD_BARS_ASSET} alt="" className="h-full w-full object-cover" /></span>;
+    return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-amber-300/25 bg-[#d89f00] shadow-[0_5px_14px_rgb(180_120_0_/_0.2)] ${className}`}><img src={XAU_GOLD_BARS_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
   }
 
   if (profile.category === "metals" && value.startsWith("XAG")) {
-    return <span role="img" aria-label={label} title={label} className={`inline-grid ${scale.root} overflow-hidden rounded-lg border border-slate-200/30 bg-[#a7a7b2] shadow-[0_5px_14px_rgb(148_163_184_/_0.18)] ${className}`}><img src={XAG_SILVER_BARS_ASSET} alt="" className="h-full w-full object-cover" /></span>;
+    return <span role="img" aria-label={label} title={label} className={`inline-grid ${metalSize} shrink-0 overflow-hidden rounded-lg border border-slate-200/30 bg-[#a7a7b2] shadow-[0_5px_14px_rgb(148_163_184_/_0.18)] ${className}`}><img src={XAG_SILVER_BARS_ASSET} alt="" className="block h-full w-full max-w-none object-contain" /></span>;
   }
 
   const style = profile.category === "metals" ? "border-amber-300/25 bg-amber-400/[.12] text-amber-100" : profile.category === "crypto" ? "border-orange-300/25 bg-orange-400/[.12] text-orange-100" : profile.category === "indices" ? "border-sky-300/25 bg-sky-400/[.12] text-sky-100" : profile.category === "options" ? "border-violet-300/25 bg-violet-400/[.12] text-violet-100" : profile.category === "equities" ? "border-slate-300/20 bg-slate-300/[.09] text-slate-100" : "border-blue-300/20 bg-blue-400/[.10] text-blue-100";

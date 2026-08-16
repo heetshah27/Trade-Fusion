@@ -15,7 +15,9 @@ describe("InstrumentBadge", () => {
 
   it("renders the supplied gold-bars asset for XAU/USD and the original crypto mark", () => {
     const { rerender } = render(<InstrumentBadge symbol="XAUUSD" category="metals" />);
-    expect(screen.getByRole("img", { name: /gold/i })).toBeTruthy();
+    const goldBadge = screen.getByRole("img", { name: /gold/i });
+    expect(goldBadge).toBeTruthy();
+    expect(goldBadge.className).toContain("w-8");
     expect(document.querySelector('img[src*="trade-fusion-xauusd-gold-bars"]')).toBeTruthy();
     rerender(<InstrumentBadge symbol="BTCUSD" category="crypto" />);
     expect(screen.getByRole("img", { name: /btc crypto/i }).textContent).toContain("₿");
@@ -23,7 +25,9 @@ describe("InstrumentBadge", () => {
 
   it("renders the supplied silver-bars asset for XAG/USD", () => {
     render(<InstrumentBadge symbol="XAGUSD" category="metals" />);
-    expect(screen.getByRole("img", { name: /silver/i })).toBeTruthy();
+    const silverBadge = screen.getByRole("img", { name: /silver/i });
+    expect(silverBadge).toBeTruthy();
+    expect(silverBadge.className).toContain("w-8");
     expect(document.querySelector('img[src*="trade-fusion-xagusd-silver-bars"]')).toBeTruthy();
   });
 });

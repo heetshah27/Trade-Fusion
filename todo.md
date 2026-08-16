@@ -282,3 +282,6 @@
 - [x] Define an original high-recognition forex-pair badge style with accessible pair labels.
 - [x] Apply the refined forex-pair badges across Trade Fusion trade surfaces without copying the reference artwork.
 - [x] Test responsive badge rendering and publish the forex-pair badge upgrade.
+- [x] Diagnose the stretched XAU/USD and XAG/USD metal badge image presentation shown in the Trades ledger.
+- [x] Correct the shared gold and silver badge containers so their supplied symbols render compactly and proportionally.
+- [x] Verify metal badge rendering across the ledger and shared views, then publish the repair.
