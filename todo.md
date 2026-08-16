@@ -211,3 +211,7 @@
 - [x] Harden high-impact filter coverage, source-cache fallback, and truthful calendar coverage messaging.
 - [x] Test the corrected live Market Calendar across desktop and mobile.
 - [x] Save and publish the corrected live Market Calendar after 121-test validation.
+- [x] Redesign the startup screen as a minimal dark canvas with a centered Trade Fusion TF market mark.
+- [x] Preserve reduced-motion support, readable loading context, and consistent TF brand treatment across startup and sign-in.
+- [x] Test the refreshed Trade Fusion startup logo experience.
+- [x] Save and publish the refreshed Trade Fusion startup logo experience after 121-test validation.

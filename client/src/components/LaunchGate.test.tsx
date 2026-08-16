@@ -16,6 +16,7 @@ describe("LaunchGate branding", () => {
   it("keeps Trade Fusion branding visible after the loading intro transitions to sign-in", async () => {
     render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
     expect(screen.getByLabelText("Trade Fusion loading")).toBeTruthy();
+    expect(screen.getByLabelText("Trade Fusion")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Sign in to Trade Fusion")).toBeTruthy());
     expect(screen.getAllByText("Trade Journal")).toHaveLength(2);

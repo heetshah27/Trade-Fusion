@@ -34,6 +34,24 @@ function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
   );
 }
 
+function StartupMark() {
+  return (
+    <div className="relative flex flex-col items-center" aria-label="Trade Fusion">
+      <div className="relative flex h-24 items-end leading-none sm:h-28" aria-hidden="true">
+        <span className="relative z-10 -mr-2 font-black italic tracking-[-0.22em] text-7xl text-white sm:text-8xl">T</span>
+        <span className="relative z-10 font-black italic tracking-[-0.24em] text-7xl text-[oklch(0.67_0.18_250)] sm:text-8xl">F</span>
+        <span className="absolute -right-1 top-1 h-14 w-2 rounded-full bg-[oklch(0.68_0.18_250)] shadow-[0_0_26px_oklch(0.67_0.18_250_/_0.4)] sm:h-16" />
+        <span className="absolute -right-3 top-7 h-6 w-6 border-r-2 border-t-2 border-[oklch(0.68_0.18_250)]" />
+      </div>
+      <div className="mt-2 flex items-center gap-2 font-mono text-[9px] font-medium uppercase tracking-[0.42em] text-slate-500 sm:text-[10px]">
+        <span className="h-px w-5 bg-[oklch(0.68_0.18_250_/_0.6)]" />
+        Trade Fusion
+        <span className="h-px w-5 bg-[oklch(0.68_0.18_250_/_0.6)]" />
+      </div>
+    </div>
+  );
+}
+
 function LaunchBackground() {
   return (
     <>
@@ -52,34 +70,34 @@ function IntroScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
-      className="relative w-full overflow-hidden bg-[#080b0f] text-white"
+      className="relative w-full overflow-hidden bg-[#050912] text-white"
       style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}
       aria-label="Trade Fusion loading"
     >
-      <LaunchBackground />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,oklch(0.67_0.18_250_/_0.09),transparent_25%)]" />
       <div className="relative w-full px-6" style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.96 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
           className="flex flex-col items-center"
         >
           <motion.div
-            animate={reduceMotion ? undefined : { scale: [1, 1.03, 1] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-            className="mb-5"
+            animate={reduceMotion ? undefined : { opacity: [0.9, 1, 0.9] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            className="mb-6"
           >
-            <BrandMark size="large" />
+            <StartupMark />
           </motion.div>
-          <div className="h-px w-40 overflow-hidden bg-white/10">
+          <div className="h-px w-24 overflow-hidden bg-white/[0.08]">
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
-              transition={{ duration: 1.15, repeat: Infinity, ease: "easeInOut" }}
-              className="h-full w-1/2 bg-[oklch(0.66_0.18_250)]"
+              transition={{ duration: 1.35, repeat: Infinity, ease: "easeInOut" }}
+              className="h-full w-1/3 bg-[oklch(0.68_0.18_250)]"
             />
           </div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">Calibrating your trade journal</p>
+          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-600">Launching private workspace</p>
         </motion.div>
       </div>
     </motion.main>
@@ -100,26 +118,26 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
       <div className="absolute left-6 top-6 z-10"><BrandMark /></div>
       <div className="relative w-full px-6" style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
         <section className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-950/60 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
-        <BrandMark />
-        <div className="mt-10">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-300/[0.22] bg-blue-400/[0.10] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-200">
-            <Sparkles className="h-3.5 w-3.5" /> Private workspace
+          <BrandMark />
+          <div className="mt-10">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-300/[0.22] bg-blue-400/[0.10] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-200">
+              <Sparkles className="h-3.5 w-3.5" /> Private workspace
+            </div>
+            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Review. Refine. Repeat.</h1>
+            <p className="mt-3 leading-6 text-slate-400">Sign in to open your private, cross-device trading journal and market calendar.</p>
           </div>
-          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Review. Refine. Repeat.</h1>
-          <p className="mt-3 leading-6 text-slate-400">Sign in to open your private, cross-device trading journal and market calendar.</p>
-        </div>
-        <div className="mt-8 space-y-3 text-sm text-slate-400">
-          <div className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your trades remain linked to your account.</div>
-          <div className="flex items-center gap-3"><LockKeyhole className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your journal stays separate from other traders.</div>
-        </div>
-        <Button
-          onClick={onSignIn}
-          disabled={checkingAuth}
-          className="mt-9 h-11 w-full bg-[oklch(0.66_0.18_250)] font-semibold text-white hover:bg-[oklch(0.72_0.18_250)]"
-        >
-          {checkingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in to Trade Fusion"}
-        </Button>
-        <p className="mt-4 text-center text-xs leading-5 text-slate-500">Secure access is required before your journal loads.</p>
+          <div className="mt-8 space-y-3 text-sm text-slate-400">
+            <div className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your trades remain linked to your account.</div>
+            <div className="flex items-center gap-3"><LockKeyhole className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your journal stays separate from other traders.</div>
+          </div>
+          <Button
+            onClick={onSignIn}
+            disabled={checkingAuth}
+            className="mt-9 h-11 w-full bg-[oklch(0.66_0.18_250)] font-semibold text-white hover:bg-[oklch(0.72_0.18_250)]"
+          >
+            {checkingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in to Trade Fusion"}
+          </Button>
+          <p className="mt-4 text-center text-xs leading-5 text-slate-500">Secure access is required before your journal loads.</p>
         </section>
       </div>
     </motion.main>
