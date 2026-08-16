@@ -285,3 +285,6 @@
 - [x] Diagnose the stretched XAU/USD and XAG/USD metal badge image presentation shown in the Trades ledger.
 - [x] Correct the shared gold and silver badge containers so their supplied symbols render compactly and proportionally.
 - [x] Verify metal badge rendering across the ledger and shared views, then publish the repair.
+- [x] Review Backtest navigation and header placement for a visible compact BETA status badge.
+- [x] Add an original amber BETA badge to Backtest navigation and page context without obstructing controls.
+- [x] Verify the BETA badge on desktop and mobile and publish the Backtest status update.

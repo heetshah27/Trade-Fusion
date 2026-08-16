@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { BacktestReplay } from "@/components/BacktestReplay";
 import { SimulatedTradeHistory } from "@/components/SimulatedTradeHistory";
+import { BacktestBetaBadge } from "@/components/BacktestBetaBadge";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
@@ -88,9 +89,9 @@ export default function Backtest() {
   return <div className="min-h-full bg-[#07101f] text-white">
     <main className="mx-auto w-full max-w-[1640px] px-5 py-7 lg:px-8 lg:py-9">
       <section className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div>
+        <div className="relative pr-14">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300">Strategy laboratory</p>
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl"><FlaskConical className="h-8 w-8 text-emerald-300" /> Backtest Workspace</h1>
+          <h1 className="mt-2 flex items-center gap-2.5 text-2xl font-semibold tracking-[-0.04em] sm:gap-3 sm:text-4xl"><FlaskConical className="h-7 w-7 shrink-0 text-emerald-300 sm:h-8 sm:w-8" /> Backtest Workspace</h1><BacktestBetaBadge className="absolute right-0 top-4" />
           <p className="mt-2 max-w-2xl text-sm text-slate-500">Test historical ideas with simulated entries. Backtest results are private and never affect your live journal statistics.</p>
         </div>
         <Button onClick={() => setSessionOpen(true)} className="tf-press h-10 rounded-xl bg-sky-400 text-slate-950 shadow-[0_10px_24px_rgba(56,189,248,0.26)] hover:bg-sky-300"><Plus className="mr-2 h-4 w-4" /> New strategy session</Button>

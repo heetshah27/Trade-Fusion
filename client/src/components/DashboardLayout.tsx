@@ -19,6 +19,7 @@ import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { TradeFusionBrand, TradeFusionMark } from "./TradeFusionBrand";
+import { BacktestBetaBadge } from "./BacktestBetaBadge";
 import { appRoutes } from "@/lib/appRoutes";
 import { trpc } from "@/lib/trpc";
 import { NotificationMenu } from "./NotificationMenu";
@@ -83,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   >
                     <item.icon className={`h-[18px] w-[18px] ${isActive ? "text-blue-300" : ""}`} />
                     <span className="flex min-w-0 flex-1 flex-col text-left group-data-[collapsible=icon]:hidden">
-                      <span className="text-sm font-medium leading-4">{item.label}</span>
+                      <span className="flex items-center gap-2 text-sm font-medium leading-4">{item.label}{item.path === appRoutes.backtest && <BacktestBetaBadge />}</span>
                       <span className="mt-0.5 text-[10px] font-normal text-slate-600">{item.subtitle}</span>
                     </span>
                     {isActive && <ChevronRight className="h-3.5 w-3.5 text-blue-300 group-data-[collapsible=icon]:hidden" />}
