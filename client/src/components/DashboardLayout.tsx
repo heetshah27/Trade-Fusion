@@ -18,6 +18,7 @@ import { BarChart3, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserR
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
+import { TradeFusionBrand, TradeFusionMark } from "./TradeFusionBrand";
 import { appRoutes } from "@/lib/appRoutes";
 import { trpc } from "@/lib/trpc";
 import { NotificationMenu } from "./NotificationMenu";
@@ -42,7 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#07101f] px-6 text-white">
-        <div className="tf-blue-glow w-full max-w-sm rounded-[1.25rem] border border-blue-300/10 bg-[#101d35]/90 p-8 text-center shadow-2xl"><div className="mb-7 flex items-center justify-center gap-2"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[oklch(0.66_0.18_250)] text-sm font-black text-slate-950">TF</span><span className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></span></div>
+        <div className="tf-blue-glow w-full max-w-sm rounded-[1.25rem] border border-blue-300/10 bg-[#101d35]/90 p-8 text-center shadow-2xl"><div className="mb-7 flex justify-center"><TradeFusionBrand mode="compact" /></div>
           <ShieldCheck className="mx-auto h-7 w-7 text-[oklch(0.70_0.16_250)]" />
           <h1 className="mt-4 text-xl font-semibold">Secure workspace</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">Sign in to access your private Trade Fusion journal.</p>
@@ -57,12 +58,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar collapsible="icon" className="border-r border-blue-200/[0.08] bg-[#0a1427] text-slate-300">
         <SidebarHeader className="h-[76px] border-b border-blue-200/[0.08] px-3 py-0">
           <div className="flex h-full items-center gap-3 px-2">
-            <div className="tf-monogram shrink-0">
-              <span className="tf-monogram-t">T</span><span className="tf-monogram-f">F</span>
-              <span className="tf-monogram-candle-up" /><span className="tf-monogram-candle-down" />
-            </div>
+            <TradeFusionMark className="shrink-0" />
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-emerald-300">FUSION</span></div>
+              <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></div>
               <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.26em] text-slate-500">Trading workspace</div>
             </div>
           </div>

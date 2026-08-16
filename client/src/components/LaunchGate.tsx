@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
+import { TradeFusionBrand } from "@/components/TradeFusionBrand";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { LockKeyhole, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import React, { type ReactNode, useEffect, useState } from "react";
@@ -9,48 +10,6 @@ import { getLaunchState, INTRO_DURATION_MS } from "@/lib/launchState";
 type LaunchGateProps = {
   children: ReactNode;
 };
-
-function BrandMark({ size = "regular" }: { size?: "regular" | "large" }) {
-  const isLarge = size === "large";
-
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`relative grid place-items-center overflow-hidden rounded-xl bg-[oklch(0.66_0.18_250)] shadow-[0_0_40px_oklch(0.66_0.18_250_/_0.30)] ${
-          isLarge ? "h-12 w-12" : "h-9 w-9"
-        }`}
-      >
-        <span className={`${isLarge ? "text-lg" : "text-xs"} relative z-10 font-black tracking-[-0.12em] text-slate-950`}>TF</span>
-        <span className="absolute bottom-2 left-2 h-1 w-1 rounded-full bg-emerald-300" />
-        <span className="absolute bottom-2 right-2 h-1 w-1 rounded-full bg-rose-300" />
-      </div>
-      <div className="leading-none">
-        <div className={`${isLarge ? "text-2xl" : "text-base"} font-bold tracking-[-0.04em] text-white`}>
-          TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span>
-        </div>
-        <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-500">Trade Journal</div>
-      </div>
-    </div>
-  );
-}
-
-function StartupMark() {
-  return (
-    <div className="relative flex flex-col items-center" aria-label="Trade Fusion">
-      <div className="relative flex h-24 items-end leading-none sm:h-28" aria-hidden="true">
-        <span className="relative z-10 -mr-2 font-black italic tracking-[-0.22em] text-7xl text-white sm:text-8xl">T</span>
-        <span className="relative z-10 font-black italic tracking-[-0.24em] text-7xl text-[oklch(0.67_0.18_250)] sm:text-8xl">F</span>
-        <span className="absolute -right-1 top-1 h-14 w-2 rounded-full bg-[oklch(0.68_0.18_250)] shadow-[0_0_26px_oklch(0.67_0.18_250_/_0.4)] sm:h-16" />
-        <span className="absolute -right-3 top-7 h-6 w-6 border-r-2 border-t-2 border-[oklch(0.68_0.18_250)]" />
-      </div>
-      <div className="mt-2 flex items-center gap-2 font-mono text-[9px] font-medium uppercase tracking-[0.42em] text-slate-500 sm:text-[10px]">
-        <span className="h-px w-5 bg-[oklch(0.68_0.18_250_/_0.6)]" />
-        Trade Fusion
-        <span className="h-px w-5 bg-[oklch(0.68_0.18_250_/_0.6)]" />
-      </div>
-    </div>
-  );
-}
 
 function LaunchBackground() {
   return (
@@ -87,7 +46,7 @@ function IntroScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             className="mb-6"
           >
-            <StartupMark />
+            <TradeFusionBrand mode="launch" markSize="launch" />
           </motion.div>
           <div className="h-px w-24 overflow-hidden bg-white/[0.08]">
             <motion.div
@@ -115,10 +74,10 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
       style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}
     >
       <LaunchBackground />
-      <div className="absolute left-6 top-6 z-10"><BrandMark /></div>
+      <div className="absolute left-6 top-6 z-10"><TradeFusionBrand mode="compact" /></div>
       <div className="relative w-full px-6" style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
         <section className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-950/60 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
-          <BrandMark />
+          <TradeFusionBrand mode="compact" />
           <div className="mt-10">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-300/[0.22] bg-blue-400/[0.10] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-200">
               <Sparkles className="h-3.5 w-3.5" /> Private workspace

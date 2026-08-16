@@ -224,3 +224,8 @@
 - [x] Add responsive social placeholders and legal/privacy navigation without inventing external company claims.
 - [x] Test the completed Trade Fusion marketing footer.
 - [x] Save and publish the completed Trade Fusion marketing footer after 122-test validation.
+- [x] Audit every startup, sign-in, public, workspace, footer, and mobile logo render path for inconsistent Trade Fusion branding.
+- [x] Create and adopt one shared resilient Trade Fusion brand-mark component across the application.
+- [x] Repair startup-logo timing, visibility, and transition behavior without breaking reduced-motion support.
+- [x] Test the unified Trade Fusion brand-system correction.
+- [x] Save and publish the unified Trade Fusion brand-system correction after 122-test validation.

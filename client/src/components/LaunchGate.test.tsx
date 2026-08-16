@@ -17,8 +17,11 @@ describe("LaunchGate branding", () => {
     render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
     expect(screen.getByLabelText("Trade Fusion loading")).toBeTruthy();
     expect(screen.getByLabelText("Trade Fusion")).toBeTruthy();
+    expect(screen.getByTestId("trade-fusion-brand")).toBeTruthy();
+    expect(screen.getByTestId("trade-fusion-mark")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Sign in to Trade Fusion")).toBeTruthy());
-    expect(screen.getAllByText("Trade Journal")).toHaveLength(2);
+    expect(screen.getAllByTestId("trade-fusion-brand")).toHaveLength(2);
+    expect(screen.getAllByText("Trading Workspace")).toHaveLength(2);
   });
 });

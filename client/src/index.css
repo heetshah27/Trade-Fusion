@@ -186,6 +186,16 @@
   .tf-monogram-small .tf-monogram-f { transform: translate(3px, 1px); }
   .tf-monogram-small .tf-monogram-up { top: 4px; right: 4px; height: 4px; width: 1px; }
   .tf-monogram-small .tf-monogram-down { bottom: 4px; left: 4px; height: 3px; width: 1px; }
+  .tf-monogram-large { height: 3rem; width: 3rem; border-radius: 1rem; }
+  .tf-monogram-large .tf-monogram-t, .tf-monogram-large .tf-monogram-f { font-size: 1.38rem; }
+  .tf-monogram-large .tf-monogram-t { transform: translate(-4px, -2px); }
+  .tf-monogram-large .tf-monogram-f { transform: translate(5px, 3px); }
+  .tf-monogram-launch { height: 5.75rem; width: 5.75rem; border-radius: 1.65rem; border-color: oklch(0.70 0.18 145 / 0.34); box-shadow: 0 0 0 1px oklch(0.70 0.18 250 / 0.16), 0 24px 60px oklch(0.34 0.16 250 / 0.34); }
+  .tf-monogram-launch .tf-monogram-t, .tf-monogram-launch .tf-monogram-f { font-size: 2.75rem; }
+  .tf-monogram-launch .tf-monogram-t { transform: translate(-9px, -5px); }
+  .tf-monogram-launch .tf-monogram-f { transform: translate(10px, 6px); }
+  .tf-monogram-launch .tf-monogram-up { top: 15px; right: 16px; height: 13px; width: 3px; }
+  .tf-monogram-launch .tf-monogram-down { bottom: 15px; left: 16px; height: 11px; width: 3px; }
 
   .tf-nav-link {
     position: relative;

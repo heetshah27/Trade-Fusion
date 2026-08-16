@@ -4,6 +4,7 @@ import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, Chevr
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
+import { TradeFusionBrand, TradeFusionMark } from "@/components/TradeFusionBrand";
 
 import { trpc } from "@/lib/trpc";
 
@@ -118,27 +119,8 @@ const productSpotlights = [
   },
 ] as const;
 
-function TFMonogram({ size = "regular" }: { size?: "regular" | "small" }) {
-  return (
-    <div className={`tf-monogram ${size === "small" ? "tf-monogram-small" : ""}`} aria-label="Trade Fusion TF monogram" role="img">
-      <span className="tf-monogram-t">T</span>
-      <span className="tf-monogram-f">F</span>
-      <span className="tf-monogram-up" />
-      <span className="tf-monogram-down" />
-    </div>
-  );
-}
-
 function Brand() {
-  return (
-    <div className="group flex items-center gap-2.5" aria-label="Trade Fusion">
-      <TFMonogram />
-      <div className="leading-none">
-        <p className="text-sm font-bold tracking-[-0.045em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></p>
-        <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.27em] text-slate-400">Trading Workspace</p>
-      </div>
-    </div>
-  );
+  return <TradeFusionBrand />;
 }
 
 function WorkspacePreview() {
@@ -193,7 +175,7 @@ function WorkspacePreview() {
             {/* Sidebar */}
             <aside className="border-r border-white/[0.08] bg-[#071326] p-3 sm:p-5">
               <div className="flex items-center gap-2.5 text-xs font-semibold text-white">
-                <TFMonogram size="small" />
+                <TradeFusionMark size="small" />
                 <span className="hidden sm:inline tracking-tight">TRADEFUSION</span>
               </div>
               <div className="mt-8 space-y-2">
@@ -359,7 +341,7 @@ function SpotlightPreview({ kind }: { kind: "backtest" | "journal" | "analytics"
       <div className="relative overflow-hidden rounded-[1.65rem] border border-blue-200/[0.18] bg-[#050c18] p-2 shadow-[0_30px_90px_rgba(0,0,0,0.58)]">
         <div className="overflow-hidden rounded-[1.2rem] border border-white/[0.08] bg-[#08152a]">
           <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
-            <div className="flex items-center gap-2.5"><TFMonogram size="small" /><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400">Trade Fusion / {navLabel}</span></div>
+            <div className="flex items-center gap-2.5"><TradeFusionMark size="small" /><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400">Trade Fusion / {navLabel}</span></div>
             <div className="flex gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /><span className="h-1.5 w-1.5 rounded-full bg-blue-400" /><span className="h-1.5 w-1.5 rounded-full bg-slate-500" /></div>
           </div>
           <div className="grid min-h-[285px] grid-cols-[90px_1fr] sm:min-h-[330px] sm:grid-cols-[122px_1fr]">
