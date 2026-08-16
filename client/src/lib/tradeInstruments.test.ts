@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateTradePnl, getInstrumentProfile, inferInstrumentCategory } from "./tradeInstruments";
+import { calculateTradePnl, filterInstrumentPickerOptions, getInstrumentProfile, inferInstrumentCategory } from "./tradeInstruments";
 
 describe("instrument-aware P&L assistance", () => {
   it("infers common forex, metals, crypto, and index instruments", () => {
@@ -18,5 +18,13 @@ describe("instrument-aware P&L assistance", () => {
     const profile = getInstrumentProfile("NAS100", "indices");
     expect(profile.estimate).toBe(true);
     expect(profile.quantityLabel).toBe("Contracts");
+  });
+
+  it("matches listed instruments by ticker, market name, or trading alias", () => {
+    expect(filterInstrumentPickerOptions("xau").map((item) => item.symbol)).toContain("XAUUSD");
+    expect(filterInstrumentPickerOptions("gold").map((item) => item.symbol)).toContain("XAUUSD");
+    expect(filterInstrumentPickerOptions("bitcoin").map((item) => item.symbol)).toContain("BTCUSD");
+    expect(filterInstrumentPickerOptions("cable").map((item) => item.symbol)).toContain("GBPUSD");
+    expect(filterInstrumentPickerOptions("crude").map((item) => item.symbol)).toContain("USOIL");
   });
 });

@@ -67,4 +67,15 @@ describe("AddTradeModal structured manual logging", () => {
     await user.click(screen.getByRole("button", { name: /log trade/i }));
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ symbol: "XAUUSD", instrumentCategory: "metals" }));
   });
+
+  it("finds instruments from smart trading aliases in the visual picker", async () => {
+    const user = userEvent.setup();
+    render(<AddTradeModal open onClose={vi.fn()} onSave={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /choose an instrument/i }));
+    await user.type(screen.getByLabelText("Search instruments"), "gold");
+
+    expect(screen.getByRole("option", { name: /xauusd/i })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: /btcusd/i })).toBeNull();
+  });
 });

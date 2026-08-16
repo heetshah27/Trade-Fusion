@@ -6,6 +6,7 @@ import { InstrumentBadge } from "@/components/InstrumentBadge";
 import {
   INSTRUMENT_PICKER_GROUPS,
   INSTRUMENT_PICKER_OPTIONS,
+  filterInstrumentPickerOptions,
   getInstrumentProfile,
   type InstrumentCategory,
   type InstrumentPickerOption,
@@ -24,11 +25,9 @@ export function InstrumentPicker({ symbol, category, onSelect }: Props) {
   const selected = INSTRUMENT_PICKER_OPTIONS.find((instrument) => instrument.symbol === symbol.toUpperCase());
   const profile = getInstrumentProfile(symbol, category);
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return INSTRUMENT_PICKER_OPTIONS.filter((instrument) => {
+    return filterInstrumentPickerOptions(query).filter((instrument) => {
       const matchesGroup = group === "All" || instrument.group === group;
-      const matchesQuery = !normalized || `${instrument.symbol} ${instrument.name}`.toLowerCase().includes(normalized);
-      return matchesGroup && matchesQuery;
+      return matchesGroup;
     });
   }, [group, query]);
 
@@ -68,7 +67,7 @@ export function InstrumentPicker({ symbol, category, onSelect }: Props) {
         >
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
-            <Input autoFocus aria-label="Search instruments" placeholder="Search BTCUSD, Gold, NASDAQ…" value={query} onChange={(event) => setQuery(event.target.value)} className="h-9 border-0 bg-transparent px-0 text-sm focus-visible:ring-0" />
+            <Input autoFocus aria-label="Search instruments" placeholder="Search gold, xau, Bitcoin, NASDAQ…" value={query} onChange={(event) => setQuery(event.target.value)} className="h-9 border-0 bg-transparent px-0 text-sm focus-visible:ring-0" />
             <Button type="button" variant="ghost" size="icon" aria-label="Close instrument picker" onClick={() => setOpen(false)} className="h-8 w-8 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
           </div>
           <div role="tablist" aria-label="Instrument categories" className="mt-3 flex gap-1 overflow-x-auto pb-1">

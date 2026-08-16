@@ -309,3 +309,6 @@
 - [x] Build an accessible searchable instrument picker with category filters and shared badges.
 - [x] Connect picker selection to manual trade entry while preserving custom-symbol entry.
 - [x] Test keyboard access, responsive layouts, trade persistence, and publish the visual instrument picker.
+- [x] Review current picker search behavior and define supported ticker, market-name, and alias matching for each listed instrument.
+- [x] Implement normalized smart symbol search across visual picker choices without changing category filters or custom entry.
+- [x] Test alias results, category-filter interaction, custom fallback, and publish the smart search upgrade.
