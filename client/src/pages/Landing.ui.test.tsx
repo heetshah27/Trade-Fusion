@@ -5,11 +5,16 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } } } }));
 vi.mock("wouter", () => ({ Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a> }));
-vi.mock("framer-motion", () => ({
-  motion: { div: ({ children, initial: _initial, animate: _animate, transition: _transition, ...props }: React.HTMLAttributes<HTMLDivElement> & { initial?: unknown; animate?: unknown; transition?: unknown }) => <div {...props}>{children}</div> },
-  useInView: () => true,
-  useReducedMotion: () => true,
-}));
+vi.mock("framer-motion", () => {
+  const Motion = ({ children, initial: _initial, animate: _animate, transition: _transition, style: _style, ...props }: React.HTMLAttributes<HTMLElement> & { initial?: unknown; animate?: unknown; transition?: unknown }) => <div {...props}>{children}</div>;
+  return {
+    motion: { div: Motion, article: Motion },
+    useInView: () => true,
+    useReducedMotion: () => true,
+    useScroll: () => ({ scrollYProgress: 0 }),
+    useTransform: () => 0,
+  };
+});
 
 import Landing from "./Landing";
 
@@ -45,5 +50,12 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByText("Private Replay Workspace")).toBeTruthy();
     expect(screen.getByText(/Backtest sessions, zones, and simulated entries/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Backtest Lab" })).toBeTruthy();
+  });
+
+  it("includes scroll-linked depth treatment for the workspace preview and product spotlights", () => {
+    render(<Landing />);
+
+    expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
+    expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
   });
 });

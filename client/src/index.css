@@ -96,6 +96,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    position: relative;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;

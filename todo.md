@@ -235,3 +235,6 @@
 - [x] Diagnose why the Trade Fusion startup animation is not visibly appearing during website loading.
 - [x] Restore a reliably visible, accessible launch animation without disrupting sign-in or public landing access.
 - [x] Test and publish the repaired Trade Fusion startup animation flow.
+- [x] Review the supplied reference site’s scroll behavior and identify original Trade Fusion motion opportunities.
+- [x] Add smooth, original scroll-linked reveal and workstation-depth motion to the Trade Fusion landing page.
+- [x] Verify reduced-motion support, responsive performance, and publish the enhanced landing-page animation.

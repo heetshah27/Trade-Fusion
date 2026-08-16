@@ -1,7 +1,7 @@
 import { dashboardReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
 import { appRoutes } from "@/lib/appRoutes";
 import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight, Cloud, Crosshair, Globe2, Layers3, LockKeyhole, Menu, MessageSquare, ScanLine, ShieldCheck, Sparkles, Target, TrendingUp, X, Zap } from "lucide-react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { TradeFusionBrand, TradeFusionMark } from "@/components/TradeFusionBrand";
@@ -123,12 +123,66 @@ function Brand() {
   return <TradeFusionBrand />;
 }
 
+type ProductSpotlight = (typeof productSpotlights)[number];
+
+function ScrollSpotlight({ spotlight, index }: { spotlight: ProductSpotlight; index: number }) {
+  const spotlightRef = useRef<HTMLElement>(null);
+  const inView = useInView(spotlightRef, { amount: 0.24 });
+  const reducedMotion = useReducedMotion();
+  const shouldAnimate = shouldRunLandingMotion(reducedMotion, inView);
+  const { scrollYProgress } = useScroll({ target: spotlightRef, offset: ["start end", "end start"] });
+  const previewY = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [0, 0, 0] : [42, 0, -34]);
+  const previewScale = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.965, 1, 0.98]);
+  const copyY = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [0, 0, 0] : [16, 0, -12]);
+  const direction = index % 2 === 0 ? 1 : -1;
+
+  return (
+    <motion.article
+      ref={spotlightRef}
+      data-testid="scroll-linked-spotlight"
+      className="relative grid items-center gap-10 lg:grid-cols-2 lg:gap-16"
+      initial={reducedMotion ? false : { opacity: 0, y: 30 }}
+      animate={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+      transition={{ duration: 0.62, ease: [0.23, 1, 0.32, 1] }}
+    >
+      <motion.div
+        style={{ y: copyY }}
+        className={`${index % 2 === 1 ? "lg:order-2" : ""} max-w-xl`}
+        initial={reducedMotion ? false : { opacity: 0, x: -24 * direction }}
+        animate={shouldAnimate ? { opacity: 1, x: 0 } : undefined}
+        transition={{ duration: 0.58, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
+      >
+        <div className={`grid h-12 w-12 place-items-center rounded-2xl border ${spotlight.accent === "emerald" ? "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300" : spotlight.accent === "violet" ? "border-violet-400/20 bg-violet-400/[0.08] text-violet-300" : spotlight.accent === "sky" ? "border-sky-400/20 bg-sky-400/[0.08] text-sky-300" : "border-blue-400/20 bg-blue-400/[0.08] text-blue-300"}`}><spotlight.icon className="h-5 w-5" /></div>
+        <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.22em] text-blue-300">{spotlight.eyebrow}</p>
+        <h3 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.055em] text-white sm:text-4xl">{spotlight.title}</h3>
+        <p className="mt-5 text-base leading-7 text-slate-400">{spotlight.description}</p>
+        <ul className="mt-7 space-y-3">
+          {spotlight.bullets.map((bullet) => <li key={bullet} className="flex items-start gap-3 text-sm text-slate-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />{bullet}</li>)}
+        </ul>
+        <Link href={spotlight.href} className="mt-8 inline-flex items-center font-semibold text-blue-200 transition hover:text-white">{spotlight.action}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+      </motion.div>
+      <motion.div
+        style={{ y: previewY, scale: previewScale }}
+        className={index % 2 === 1 ? "lg:order-1" : ""}
+        initial={reducedMotion ? false : { opacity: 0, x: 30 * direction }}
+        animate={shouldAnimate ? { opacity: 1, x: 0 } : undefined}
+        transition={{ duration: 0.68, delay: 0.12, ease: [0.23, 1, 0.32, 1] }}
+      >
+        <SpotlightPreview kind={spotlight.key} />
+      </motion.div>
+    </motion.article>
+  );
+}
+
 function WorkspacePreview() {
   const [activeTab, setActiveTab] = useState<"journal" | "calendar" | "room" | "backtest">("journal");
   const previewRef = useRef<HTMLDivElement>(null);
   const inView = useInView(previewRef, { once: true, amount: 0.22 });
   const reducedMotion = useReducedMotion();
   const shouldAnimate = shouldRunLandingMotion(reducedMotion, inView);
+  const { scrollYProgress } = useScroll({ target: previewRef, offset: ["start end", "end start"] });
+  const previewY = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [0, 0, 0] : [34, 0, -28]);
+  const previewScale = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.975, 1, 0.985]);
 
   return (
     <motion.div
@@ -138,6 +192,7 @@ function WorkspacePreview() {
       animate={shouldAnimate ? dashboardReveal.visible : undefined}
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
     >
+      <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview">
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-preview-shell relative overflow-hidden rounded-[1.8rem] border border-blue-200/[0.20] bg-[#071328] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] sm:p-4">
         <div className="overflow-hidden rounded-[1.3rem] border border-white/[0.09] bg-[#0b1830]">
@@ -398,6 +453,7 @@ function WorkspacePreview() {
           </div>
         </div>
       </div>
+      </motion.div>
       <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>
     </motion.div>
   );
@@ -531,21 +587,7 @@ export default function Landing() {
           </div>
 
           <div className="mt-20 space-y-24 sm:mt-28 sm:space-y-32">
-            {productSpotlights.map((spotlight, index) => (
-              <article key={spotlight.key} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-                <div className={`${index % 2 === 1 ? "lg:order-2" : ""} max-w-xl`}>
-                  <div className={`grid h-12 w-12 place-items-center rounded-2xl border ${spotlight.accent === "emerald" ? "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300" : spotlight.accent === "violet" ? "border-violet-400/20 bg-violet-400/[0.08] text-violet-300" : spotlight.accent === "sky" ? "border-sky-400/20 bg-sky-400/[0.08] text-sky-300" : "border-blue-400/20 bg-blue-400/[0.08] text-blue-300"}`}><spotlight.icon className="h-5 w-5" /></div>
-                  <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.22em] text-blue-300">{spotlight.eyebrow}</p>
-                  <h3 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.055em] text-white sm:text-4xl">{spotlight.title}</h3>
-                  <p className="mt-5 text-base leading-7 text-slate-400">{spotlight.description}</p>
-                  <ul className="mt-7 space-y-3">
-                    {spotlight.bullets.map((bullet) => <li key={bullet} className="flex items-start gap-3 text-sm text-slate-300"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />{bullet}</li>)}
-                  </ul>
-                  <Link href={spotlight.href} className="mt-8 inline-flex items-center font-semibold text-blue-200 transition hover:text-white">{spotlight.action}<ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </div>
-                <div className={index % 2 === 1 ? "lg:order-1" : ""}><SpotlightPreview kind={spotlight.key} /></div>
-              </article>
-            ))}
+            {productSpotlights.map((spotlight, index) => <ScrollSpotlight key={spotlight.key} spotlight={spotlight} index={index} />)}
           </div>
         </div>
       </section>
