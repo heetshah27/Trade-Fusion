@@ -358,3 +358,8 @@
 - [x] Implement the approved Free limits of 15 new live trades and 10 new Trader’s Room threads per calendar month, with replies permitted and Journal entries linked to eligible trades.
 - [x] Verify the public pricing and member billing layouts at desktop and mobile breakpoints.
 - [ ] After claiming the Stripe sandbox, run the owner-approved end-to-end test-card checkout, webhook delivery, cancellation, renewal, and payment-history verification before accepting live payments.
+- [x] Audit the Dashboard stepped equity curve and replace it with a cleaner bar-based view of live-trade performance.
+- [x] Remove the user-identified technical and privacy-heavy headings from the public landing page without exposing the owner’s contact details.
+- [x] Test the Dashboard visual redesign and landing-page cleanup across desktop and mobile before publishing.
+- [x] Confirm desktop rendering removes the ticker source label and technical landing-page proof row while preserving the market tape and core landing flow.
+- [x] Confirm the simplified landing hero remains uncluttered and responsive on mobile without the removed technical labels.

@@ -15,7 +15,7 @@ import {
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { appRoutes } from "@/lib/appRoutes";
-import { buildEquityCurve, type EquityCurveTrade } from "@/lib/equityCurve";
+import { buildTradePerformanceBars, type TradePerformanceBarInput } from "@/lib/tradePerformanceBars";
 import { InstrumentBadge } from "@/components/InstrumentBadge";
 import { DirectionBadge } from "@/components/DirectionBadge";
 
@@ -60,26 +60,24 @@ function Metric({
   );
 }
 
-function PerformanceCurve({
+function PerformanceBars({
   trades,
   totalPnl,
   onLogTrade,
 }: {
-  trades: EquityCurveTrade[];
+  trades: TradePerformanceBarInput[];
   totalPnl: number;
   onLogTrade: () => void;
 }) {
-  const curve = useMemo(() => buildEquityCurve(trades), [trades]);
-  const curveTone = totalPnl >= 0 ? "#34d399" : "#fb7185";
-  const curveGlow = totalPnl >= 0 ? "#6ee7b7" : "#fda4af";
+  const { bars, maxAbsolutePnl } = useMemo(() => buildTradePerformanceBars(trades), [trades]);
 
-  if (!curve) {
+  if (!bars.length) {
     return (
       <div className="relative mt-5 grid h-52 place-items-center overflow-hidden rounded-xl border border-white/[.06] bg-[#070d18] sm:h-60">
         <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#31415b_1px,transparent_1px),linear-gradient(90deg,#31415b_1px,transparent_1px)] [background-size:72px_48px]" />
         <div className="relative text-center">
           <Gauge className="mx-auto h-6 w-6 text-slate-700" />
-          <p className="mt-3 text-sm text-slate-500">Log your first live trade to build the equity curve.</p>
+          <p className="mt-3 text-sm text-slate-500">Log your first live trade to see each execution’s P&amp;L.</p>
           <button type="button" onClick={onLogTrade} className="tf-press mt-3 font-mono text-[10px] uppercase tracking-[.16em] text-blue-300">
             Log trade <ArrowRight className="inline h-3.5 w-3.5" />
           </button>
@@ -93,39 +91,26 @@ function PerformanceCurve({
       <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#31415b_1px,transparent_1px),linear-gradient(90deg,#31415b_1px,transparent_1px)] [background-size:72px_48px]" />
       <div className="pointer-events-none absolute left-4 top-3 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.14em] text-slate-500">
         <span className="h-1.5 w-1.5 rounded-full bg-blue-300" />
-        Equity after each closed trade
+        Individual trade P&amp;L
       </div>
       <div className="pointer-events-none absolute right-4 top-3 rounded-md border border-white/[.08] bg-[#070d18]/85 px-2 py-1 font-mono text-[9px] text-slate-400">
-        {curve.points.length} execution{curve.points.length === 1 ? "" : "s"}
+        {bars.length} execution{bars.length === 1 ? "" : "s"}
       </div>
-      <svg viewBox="0 0 600 200" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-label="Stepped recorded live-trade equity curve">
-        <defs>
-          <linearGradient id="equity-area" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={curveTone} stopOpacity="0.28" />
-            <stop offset="100%" stopColor={curveTone} stopOpacity="0" />
-          </linearGradient>
-          <filter id="equity-glow" x="-20%" y="-40%" width="140%" height="180%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-        <line x1="28" x2="572" y1={curve.zeroY} y2={curve.zeroY} stroke="#64748b" strokeDasharray="4 5" strokeOpacity="0.5" />
-        <path d={curve.areaPath} fill="url(#equity-area)" />
-        <path d={curve.linePath} fill="none" stroke={curveGlow} strokeOpacity="0.24" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d={curve.linePath} fill="none" stroke={curveTone} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" filter="url(#equity-glow)" />
-        {curve.points.map((point, index) => {
-          const pointTone = point.pnl >= 0 ? "#34d399" : "#fb7185";
-          return (
-            <g key={`${point.date}-${point.id ?? index}`}>
-              <circle cx={point.x} cy={point.y} r="6" fill="#070d18" stroke={pointTone} strokeWidth="2" />
-              <circle cx={point.x} cy={point.y} r="2" fill={pointTone} />
-              <title>{`${point.date}: ${money(point.pnl)} · running P&L ${money(point.balance)}`}</title>
-            </g>
-          );
-        })}
-      </svg>
+      <div role="img" aria-label="Live-trade profit and loss bars" className="absolute inset-x-7 bottom-9 top-12">
+        <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-slate-500/50" />
+        <div className="absolute inset-0 flex items-stretch justify-around gap-1.5 sm:gap-3">
+          {bars.map((bar, index) => {
+            const height = `${Math.max(4, (Math.abs(bar.pnl) / maxAbsolutePnl) * 42)}%`;
+            const positive = bar.pnl >= 0;
+            return <div key={`${bar.date}-${bar.id ?? index}`} className="group relative h-full flex-1" title={`${bar.symbol ? `${bar.symbol} · ` : ""}${bar.date}: ${money(bar.pnl)}`}>
+              <div className={`absolute left-1/2 w-[min(26px,68%)] -translate-x-1/2 rounded-sm border ${positive ? "bottom-1/2 border-emerald-300/45 bg-emerald-400/80 shadow-[0_0_18px_rgba(52,211,153,.22)]" : "top-1/2 border-rose-300/45 bg-rose-400/80 shadow-[0_0_18px_rgba(251,113,133,.18)]"}`} style={{ height }} />
+              <span className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[8px] text-slate-600">{index + 1}</span>
+            </div>;
+          })}
+        </div>
+      </div>
       <div className="pointer-events-none absolute bottom-3 left-3 rounded-md border border-white/[.08] bg-[#070d18]/90 px-2 py-1 font-mono text-[9px] text-slate-400">Live trades only</div>
-      <div className="pointer-events-none absolute bottom-3 right-3 font-mono text-[9px] text-slate-500">Start {money(0)} · Net {money(totalPnl)}</div>
+      <div className="pointer-events-none absolute bottom-3 right-3 font-mono text-[9px] text-slate-500">Net {money(totalPnl)}</div>
     </div>
   );
 }
@@ -202,7 +187,7 @@ export default function Home() {
               </div>
               <span className="rounded-md border border-blue-400/15 bg-blue-500/[.06] px-2 py-1 font-mono text-[9px] text-blue-200">LIVE JOURNAL</span>
             </div>
-            <PerformanceCurve trades={trades} totalPnl={overview.totalPnl} onLogTrade={logTrade} />
+            <PerformanceBars trades={trades} totalPnl={overview.totalPnl} onLogTrade={logTrade} />
           </section>
 
           <section className="rounded-2xl border border-white/[.07] bg-[#0a111f] p-4 shadow-[0_18px_38px_rgba(0,0,0,.2)] sm:p-5">

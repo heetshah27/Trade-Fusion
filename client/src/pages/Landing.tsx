@@ -1,8 +1,8 @@
 import { dashboardReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
 import { appRoutes } from "@/lib/appRoutes";
-import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight, Cloud, Crosshair, Globe2, Layers3, LockKeyhole, Mail, Menu, MessageSquare, ScanLine, Send, ShieldCheck, Sparkles, Target, TrendingUp, UserRound, X, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight, Cloud, Crosshair, Globe2, Layers3, LockKeyhole, Mail, Menu, MessageSquare, ScanLine, Send, ShieldCheck, Sparkles, Target, TrendingUp, UserRound, X } from "lucide-react";
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link } from "wouter";
 import { TradeFusionBrand, TradeFusionMark } from "@/components/TradeFusionBrand";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -533,15 +533,12 @@ function SpotlightPreview({ kind }: { kind: "backtest" | "journal" | "analytics"
 
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [clock, setClock] = useState(() => Date.now());
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "", website: "" });
   const { data: tickerData } = trpc.ticker.quotes.useQuery(undefined, {
     refetchInterval: 6_000,
     refetchIntervalInBackground: true,
   });
   const tickers = tickerData?.items ?? fallbackTickers;
-  const hasLiveQuotes = tickerData?.source === "kraken";
-  const quoteAgeSeconds = tickerData ? Math.max(0, Math.floor((clock - tickerData.asOf) / 1_000)) : null;
   const contactSubmit = trpc.contact.submit.useMutation({
     onSuccess: () => setContactForm({ name: "", email: "", message: "", website: "" }),
   });
@@ -551,20 +548,12 @@ export default function Landing() {
     contactSubmit.mutate(contactForm);
   };
 
-  useEffect(() => {
-    const interval = window.setInterval(() => setClock(Date.now()), 1_000);
-    return () => window.clearInterval(interval);
-  }, []);
-
   return (
     <main className="min-h-screen overflow-hidden bg-[#061023] text-white">
       {/* Live Market Ticker Tape with Automatic Marquee */}
       <div className="relative z-30 border-b border-white/[0.08] bg-[#050d1a] py-2.5 overflow-hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 overflow-hidden whitespace-nowrap lg:px-8">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-blue-400 shrink-0 bg-[#050d1a] pr-3 sticky left-0 z-20 shadow-[12px_0_16px_-4px_rgba(5,13,26,0.95)]">
-            <Zap className={`h-3.5 w-3.5 shrink-0 ${hasLiveQuotes ? "text-emerald-400 animate-pulse" : "text-amber-400"}`} /> <span className="hidden sm:inline">{hasLiveQuotes ? `Kraken Crypto · ${quoteAgeSeconds === 0 ? "just updated" : `${quoteAgeSeconds}s ago`}:` : "Reference Quotes:"}</span><span className="sm:hidden">{hasLiveQuotes ? "Kraken:" : "Ref:"}</span>
-          </div>
-          <div className="relative overflow-hidden w-full">
+        <div className="mx-auto max-w-7xl overflow-hidden px-4 whitespace-nowrap lg:px-8">
+          <div className="relative w-full overflow-hidden">
             <div className="animate-ticker flex items-center gap-8 text-xs font-mono">
               {[...tickers, ...tickers].map((t, idx) => (
                 <div key={`${t.symbol}-${idx}`} className="flex items-center gap-2 shrink-0">
@@ -612,10 +601,7 @@ export default function Landing() {
       )}
 
       <section className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-16 text-center sm:pb-28 sm:pt-20 lg:px-8 lg:pt-24">
-        <div className="tf-signal-chip mx-auto inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-blue-200">
-          <Sparkles className="h-3.5 w-3.5 text-blue-400" /> Private Trading Performance System · Built for Deliberate Review
-        </div>
-        <h1 className="tf-rise tf-rise-delay-1 mx-auto mt-7 max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
+        <h1 className="tf-rise tf-rise-delay-1 mx-auto max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
           Turn every execution into <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-sky-300 bg-clip-text text-transparent">your next edge.</span>
         </h1>
         <p className="tf-rise tf-rise-delay-2 mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
@@ -624,11 +610,6 @@ export default function Landing() {
         <div className="tf-rise tf-rise-delay-3 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 px-7 text-base font-semibold shadow-xl !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
           <a href="#platform" className="tf-cta-secondary h-12 px-7 text-base">Explore platform <ChevronRight className="ml-1 h-4 w-4" /></a>
-        </div>
-        <div className="tf-rise tf-rise-delay-4 mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-400 font-mono">
-          <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Private neon database</span>
-          <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Cross-device cloud sync</span>
-          <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> ForexFactory live feed</span>
         </div>
         <WorkspacePreview />
       </section>
@@ -705,18 +686,7 @@ export default function Landing() {
           <div className="max-w-xl">
             <p className="tf-signal-chip inline-flex px-3 py-1 font-mono text-[9px] uppercase tracking-[0.22em] text-blue-200">Get in touch</p>
             <h2 className="mt-5 text-3xl font-semibold tracking-[-0.055em] text-white sm:text-5xl">Start a focused conversation.</h2>
-            <p className="mt-5 text-base leading-7 text-slate-400">Questions about Trade Fusion, private journaling, Backtest, or the upcoming signals service? Send a message and the project owner receives it through a private delivery route.</p>
-
-            <div className="mt-9 grid gap-3">
-              <div className="tf-hover-lift flex items-center gap-4 rounded-2xl border border-white/[0.09] bg-white/[0.025] p-4">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-400/[0.12] text-blue-200"><Mail className="h-5 w-5" /></div>
-                <div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Private inquiry route</p><p className="mt-1 text-sm font-medium text-slate-200">Message delivery stays off the public page.</p></div>
-              </div>
-              <div className="tf-hover-lift flex items-center gap-4 rounded-2xl border border-white/[0.09] bg-white/[0.025] p-4">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-400/[0.12] text-emerald-300"><ShieldCheck className="h-5 w-5" /></div>
-                <div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Privacy by design</p><p className="mt-1 text-sm font-medium text-slate-200">No WhatsApp number is displayed or embedded in this site.</p></div>
-              </div>
-            </div>
+            <p className="mt-5 text-base leading-7 text-slate-400">Questions about Trade Fusion, Backtest, or the upcoming signals service? Send a message and we will get back to you.</p>
           </div>
 
           <form onSubmit={submitContact} className="tf-contact-surface rounded-[2rem] border border-white/[0.10] bg-[linear-gradient(145deg,rgba(22,43,78,0.78),rgba(5,15,32,0.92))] p-6 shadow-2xl sm:p-8" data-testid="landing-contact-form">
@@ -730,7 +700,6 @@ export default function Landing() {
             {contactSubmit.isSuccess && <p role="status" className="mt-4 rounded-xl border border-emerald-300/20 bg-emerald-400/[0.08] px-4 py-3 text-sm text-emerald-200">Your message has been sent privately. Thank you.</p>}
             {contactSubmit.error && <p role="alert" className="mt-4 rounded-xl border border-red-300/20 bg-red-400/[0.08] px-4 py-3 text-sm text-red-200">{contactSubmit.error.message}</p>}
             <button disabled={contactSubmit.isPending} className="tf-cta-primary mt-6 h-12 w-full !bg-[oklch(0.66_0.18_250)] text-sm font-semibold !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)] disabled:cursor-not-allowed disabled:opacity-60" type="submit">{contactSubmit.isPending ? "Sending privately…" : <>Send message <Send className="ml-2 h-4 w-4" /></>}</button>
-            <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">Private inquiry form · no public phone number</p>
           </form>
         </div>
       </section>
@@ -792,7 +761,7 @@ export default function Landing() {
               <a href="#workflow" className="transition hover:text-white">How it works</a>
               <a href="#contact" className="transition hover:text-white">Contact</a>
               <a href="#faq" className="transition hover:text-white">Frequently asked questions</a>
-              <a href="#security" className="transition hover:text-white">Privacy by design</a>
+              <a href="#security" className="transition hover:text-white">Privacy</a>
             </nav>
           </div>
 

@@ -66,7 +66,7 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByRole("link", { name: /start 7-day pro trial/i })).toBeTruthy();
   });
 
-  it("adds a private landing contact form without exposing a phone number", () => {
+  it("adds a streamlined landing contact form without exposing the owner’s phone number", () => {
     render(<Landing />);
 
     expect(screen.getByRole("heading", { name: "Start a focused conversation." })).toBeTruthy();
@@ -74,7 +74,8 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByLabelText("Email")).toBeTruthy();
     expect(screen.getByLabelText("Message")).toBeTruthy();
     expect(screen.getByRole("button", { name: /send message/i })).toBeTruthy();
-    expect(screen.getByText("No WhatsApp number is displayed or embedded in this site.")).toBeTruthy();
+    expect(screen.queryByText(/WhatsApp number/i)).toBeNull();
+    expect(screen.queryByText("Private inquiry route")).toBeNull();
   });
 
   it("adds Backtest as an interactive first-class workspace-preview module", () => {

@@ -27,6 +27,7 @@ describe("Dashboard command center", () => {
     render(<Home />);
     expect(screen.getByText("Live-trade command center")).toBeTruthy();
     expect(screen.getByText("Recorded performance")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Live-trade profit and loss bars" })).toBeTruthy();
     expect(screen.getByText("Recent activity")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /log trade/i }));
     expect(mocks.setLocation).toHaveBeenCalled();
