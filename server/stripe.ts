@@ -98,6 +98,7 @@ export async function createProCheckout(userId: number, req: Request) {
     line_items: [{ price: proPriceId, quantity: 1 }],
     payment_method_collection: "always",
     allow_promotion_codes: true,
+    managed_payments: { enabled: false },
     success_url: `${origin}/app/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/?checkout=cancelled#pricing`,
   });
