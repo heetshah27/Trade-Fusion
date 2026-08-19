@@ -91,4 +91,12 @@ describe("Account custom profile photo", () => {
     expect(mocks.checkout).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("status").textContent).toContain("Preparing secure Stripe Checkout");
   });
+
+  it("places concise billing answers alongside the Pro checkout decision", async () => {
+    const user = userEvent.setup();
+    render(<Account />);
+    expect(screen.getByRole("heading", { name: "Before you start" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "What happens after the 7-day trial?" }));
+    expect(screen.getByText(/renews at \$10 USD per month/i)).toBeTruthy();
+  });
 });

@@ -371,3 +371,6 @@
 - [x] Audit checkout entry points and define payment-safe motion that does not delay or obscure the Stripe redirect.
 - [x] Add polished accessible checkout-opening feedback and Pro plan emphasis across pricing, Account, and Backtest entry points.
 - [x] Test checkout animation states, reduced-motion behavior, and responsive payment controls before publishing.
+- [x] Review the Account billing panel and define accurate concise FAQ answers for the Pro checkout decision.
+- [x] Add an accessible compact billing FAQ beside the Account checkout action without interrupting the secure Stripe flow.
+- [x] Test FAQ interaction, billing content accuracy, checkout coexistence, and responsive layout before publishing.

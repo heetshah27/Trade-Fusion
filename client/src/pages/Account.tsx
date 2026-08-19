@@ -1,13 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Archive, ArchiveRestore, BadgeCheck, Check, CircleUserRound, CreditCard, ImagePlus, Layers3, LoaderCircle, LockKeyhole, Mail, Pencil, Plus, ReceiptText, Save, ShieldCheck, Sparkles, Trash2, UserRound, X } from "lucide-react";
+import { Archive, ArchiveRestore, BadgeCheck, Check, CircleHelp, CircleUserRound, CreditCard, ImagePlus, Layers3, LoaderCircle, LockKeyhole, Mail, Pencil, Plus, ReceiptText, Save, ShieldCheck, Sparkles, Trash2, UserRound, X } from "lucide-react";
 
 const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const billingFaqs = [
+  { question: "What does Pro include?", answer: "Pro includes unlimited live trades, private Journal entries, Trader’s Room threads and replies, plus the full Backtest workspace." },
+  { question: "What happens after the 7-day trial?", answer: "Your subscription renews at $10 USD per month unless you cancel before the trial ends." },
+  { question: "Can I cancel and keep my work?", answer: "Yes. You can cancel from Stripe’s billing portal. Your Backtest history stays private and is preserved; after the paid period, it becomes read-only before any future renewal restores editing." },
+  { question: "Are payments refundable?", answer: "Payments are non-refundable for unused time, except where applicable law requires otherwise." },
+] as const;
 
 export default function Account() {
   const { user } = useAuth();
@@ -182,7 +189,10 @@ export default function Account() {
         <Card className="mt-5 overflow-hidden border-violet-300/[0.18] bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_34rem),linear-gradient(145deg,#152647,#101c33)] p-5 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-300/25 bg-violet-400/10 text-violet-200">{isPro ? <BadgeCheck className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}</span><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-violet-200">Plan & billing</p><h2 className="mt-1 text-lg font-semibold text-white">{billingLoading ? "Checking membership…" : isPro ? "Trade Fusion Pro" : backtestReadOnly ? "Backtest history preserved" : "Trade Fusion Free"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{isPro ? "Unlimited journal and Trader’s Room access plus the full private Backtest workspace." : backtestReadOnly ? "Your private Backtest history is retained in read-only mode. Renew Pro to create, edit, or remove strategy data." : "Your Free plan includes the private core workspace. Upgrade when you are ready for unlimited review and the Backtest lab."}</p></div></div>
-            <div className="flex flex-wrap gap-2 lg:justify-end">{isPro ? <Button type="button" onClick={() => openBillingPortal.mutate()} disabled={openBillingPortal.isPending || !billing?.billingReady} className="tf-press tf-action-glow bg-violet-400 text-slate-950 hover:bg-violet-300"><CreditCard className="mr-2 h-4 w-4" />{openBillingPortal.isPending ? "Opening…" : "Manage billing"}</Button> : <Button type="button" onClick={startCheckout} disabled={checkout.isPending || checkoutState === "opening" || !billing?.billingReady} data-checkout-state={checkoutState} className="tf-press tf-action-glow tf-checkout-cta bg-violet-400 text-slate-950 hover:bg-violet-300"><Sparkles className={`mr-2 h-4 w-4 ${checkoutState === "opening" ? "tf-checkout-spinner" : ""}`} />{checkoutState === "opening" ? "Preparing secure checkout…" : checkoutState === "opened" ? "Checkout opened" : "Start 7-day Pro trial"}</Button>}</div>
+            <div className="w-full max-w-md lg:w-[23rem]">
+              <div className="flex flex-wrap gap-2 lg:justify-end">{isPro ? <Button type="button" onClick={() => openBillingPortal.mutate()} disabled={openBillingPortal.isPending || !billing?.billingReady} className="tf-press tf-action-glow bg-violet-400 text-slate-950 hover:bg-violet-300"><CreditCard className="mr-2 h-4 w-4" />{openBillingPortal.isPending ? "Opening…" : "Manage billing"}</Button> : <Button type="button" onClick={startCheckout} disabled={checkout.isPending || checkoutState === "opening" || !billing?.billingReady} data-checkout-state={checkoutState} className="tf-press tf-action-glow tf-checkout-cta bg-violet-400 text-slate-950 hover:bg-violet-300"><Sparkles className={`mr-2 h-4 w-4 ${checkoutState === "opening" ? "tf-checkout-spinner" : ""}`} />{checkoutState === "opening" ? "Preparing secure checkout…" : checkoutState === "opened" ? "Checkout opened" : "Start 7-day Pro trial"}</Button>}</div>
+              {!isPro && <section aria-labelledby="billing-faq-heading" className="mt-3 rounded-xl border border-violet-200/[0.14] bg-[#0a1427]/64 px-4 py-3 shadow-inner shadow-black/10"><div className="flex items-center gap-2"><CircleHelp className="h-3.5 w-3.5 text-violet-200" /><h3 id="billing-faq-heading" className="font-mono text-[9px] uppercase tracking-[0.16em] text-violet-100">Before you start</h3></div><Accordion type="single" collapsible className="mt-2" data-testid="billing-faq">{billingFaqs.map((faq, index) => <AccordionItem key={faq.question} value={`billing-faq-${index}`} className="border-violet-200/[0.10]"><AccordionTrigger className="py-2 text-left text-xs font-medium text-slate-200 hover:no-underline">{faq.question}</AccordionTrigger><AccordionContent className="pr-5 text-xs leading-5 text-slate-400">{faq.answer}</AccordionContent></AccordionItem>)}</Accordion></section>}
+            </div>
           </div>
 
           {!isPro && checkoutState !== "idle" && <div id="checkout-status" role="status" aria-live="polite" className="tf-checkout-notice mt-5 flex items-center gap-3 rounded-xl border border-violet-200/[0.16] bg-[#0a1427]/72 px-4 py-3 text-xs leading-5 text-violet-100"><LoaderCircle className={`h-4 w-4 shrink-0 text-violet-200 ${checkoutState === "opening" ? "tf-checkout-spinner" : ""}`} />{checkoutState === "opening" ? "Preparing secure Stripe Checkout. Your workspace stays open while the payment page opens separately." : "Stripe Checkout opened in a new tab. Complete the secure trial there, then return here for updated Pro access."}</div>}
