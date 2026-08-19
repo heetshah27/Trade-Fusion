@@ -147,6 +147,13 @@
   .tf-press { will-change: transform; transition: transform 160ms var(--tf-ease-out), background 160ms var(--tf-ease-out), border-color 160ms var(--tf-ease-out), box-shadow 160ms var(--tf-ease-out), color 160ms var(--tf-ease-out); }
   .tf-press:active { transform: scale(0.97); }
 
+  .tf-checkout-cta { position: relative; isolation: isolate; overflow: hidden; }
+  .tf-checkout-cta::after { position: absolute; inset: 0 auto 0 -52%; z-index: 0; width: 42%; content: ""; pointer-events: none; opacity: 0; transform: skewX(-18deg); background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.34), transparent); }
+  .tf-checkout-cta[data-checkout-state="opening"]::after { opacity: 1; animation: tf-checkout-sweep 900ms var(--tf-ease-in-out) infinite; }
+  .tf-checkout-spinner { animation: tf-checkout-orbit 700ms var(--tf-ease-in-out) infinite; }
+  .tf-checkout-notice { animation: tf-checkout-notice-in 220ms var(--tf-ease-out) both; }
+  .tf-pro-plan { transition: transform 190ms var(--tf-ease-out), border-color 190ms var(--tf-ease-out), box-shadow 190ms var(--tf-ease-out); }
+
   .tf-hover-lift, .tf-ledger-row, .tf-interactive-card {
     will-change: transform;
     transition: transform 190ms var(--tf-ease-out), border-color 190ms var(--tf-ease-out), box-shadow 190ms var(--tf-ease-out), background 190ms var(--tf-ease-out);
@@ -178,6 +185,7 @@
     .tf-action-glow:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px oklch(0.44 0.16 250 / 0.36); }
     .tf-action-glow:hover .tf-icon-action { transform: translateX(2px) rotate(-4deg); }
     .tf-ledger-row:hover { transform: translateY(-1px); }
+    .tf-pro-plan:hover { transform: translateY(-4px); border-color: oklch(0.78 0.15 300 / 0.48); box-shadow: 0 28px 60px rgb(0 0 0 / 0.32), 0 0 0 1px oklch(0.72 0.15 300 / 0.11); }
     .tf-ledger-row:hover > td { background: oklch(0.66 0.18 250 / 0.045); }
     .tf-ledger-row:hover > td:first-child { box-shadow: inset 2px 0 0 oklch(0.66 0.18 250 / 0.72); }
     main section[class*="rounded-2xl"][class*="bg-[#0a111f]"] {
@@ -330,11 +338,14 @@
 
   @keyframes tf-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes tf-breathe { 0%, 100% { box-shadow: 0 0 0 0 oklch(0.66 0.18 250 / 0); } 50% { box-shadow: 0 0 0 7px oklch(0.66 0.18 250 / 0.08); } }
+  @keyframes tf-checkout-sweep { from { left: -52%; } to { left: 120%; } }
+  @keyframes tf-checkout-orbit { 0%, 100% { transform: rotate(0deg) scale(0.92); opacity: 0.72; } 50% { transform: rotate(180deg) scale(1); opacity: 1; } }
+  @keyframes tf-checkout-notice-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .tf-signal-chip, .tf-rise { animation: none; }
-    .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card, .tf-press, .tf-hover-lift, .tf-ledger-row, .tf-interactive-card, .tf-action-glow, .tf-icon-action { transition: none; }
-    .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover, .tf-press:hover, .tf-hover-lift:hover, .tf-ledger-row:hover, .tf-interactive-card:hover, .tf-action-glow:hover { transform: none; }
+    .tf-signal-chip, .tf-rise, .tf-checkout-cta[data-checkout-state="opening"]::after, .tf-checkout-spinner, .tf-checkout-notice { animation: none; }
+    .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card, .tf-press, .tf-hover-lift, .tf-ledger-row, .tf-interactive-card, .tf-action-glow, .tf-icon-action, .tf-pro-plan { transition: none; }
+    .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover, .tf-press:hover, .tf-hover-lift:hover, .tf-ledger-row:hover, .tf-interactive-card:hover, .tf-action-glow:hover, .tf-pro-plan:hover { transform: none; }
   }
 
   @media (max-width: 767px) {

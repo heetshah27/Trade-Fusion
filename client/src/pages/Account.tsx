@@ -26,6 +26,7 @@ export default function Account() {
   const [editingSetupName, setEditingSetupName] = useState("");
   const [editingSetupDescription, setEditingSetupDescription] = useState("");
   const [setupError, setSetupError] = useState<string | null>(null);
+  const [checkoutState, setCheckoutState] = useState<"idle" | "opening" | "opened">("idle");
   const initial = (profile?.name || user?.name || "T").charAt(0).toUpperCase();
   const { data: setups = [], isLoading: setupsLoading } = trpc.setups.list.useQuery();
 
@@ -72,9 +73,10 @@ export default function Account() {
   const checkout = trpc.billing.createCheckout.useMutation({
     onSuccess: ({ url, trialApplied }) => {
       window.open(url, "_blank");
+      setCheckoutState("opened");
       setUploadError(trialApplied ? "Your 7-day Pro trial checkout opened in a new tab." : "Your Pro checkout opened in a new tab.");
     },
-    onError: error => setUploadError(error.message),
+    onError: error => { setCheckoutState("idle"); setUploadError(error.message); },
   });
   const openBillingPortal = trpc.billing.createPortal.useMutation({
     onSuccess: ({ url }) => window.open(url, "_blank"),
@@ -114,6 +116,7 @@ export default function Account() {
   const isPro = billing?.tier === "pro";
   const backtestReadOnly = billing?.backtestAccess === "read_only";
   const formatInvoiceAmount = (amount: number, currencyCode: string) => new Intl.NumberFormat("en-US", { style: "currency", currency: currencyCode.toUpperCase(), maximumFractionDigits: 2 }).format(amount / 100);
+  const startCheckout = () => { setUploadError(null); setCheckoutState("opening"); checkout.mutate(); };
   const startSetupEdit = (setup: typeof setups[number]) => {
     setEditingSetupId(setup.id);
     setEditingSetupName(setup.name);
@@ -179,8 +182,10 @@ export default function Account() {
         <Card className="mt-5 overflow-hidden border-violet-300/[0.18] bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_34rem),linear-gradient(145deg,#152647,#101c33)] p-5 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-300/25 bg-violet-400/10 text-violet-200">{isPro ? <BadgeCheck className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}</span><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-violet-200">Plan & billing</p><h2 className="mt-1 text-lg font-semibold text-white">{billingLoading ? "Checking membership…" : isPro ? "Trade Fusion Pro" : backtestReadOnly ? "Backtest history preserved" : "Trade Fusion Free"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{isPro ? "Unlimited journal and Trader’s Room access plus the full private Backtest workspace." : backtestReadOnly ? "Your private Backtest history is retained in read-only mode. Renew Pro to create, edit, or remove strategy data." : "Your Free plan includes the private core workspace. Upgrade when you are ready for unlimited review and the Backtest lab."}</p></div></div>
-            <div className="flex flex-wrap gap-2 lg:justify-end">{isPro ? <Button type="button" onClick={() => openBillingPortal.mutate()} disabled={openBillingPortal.isPending || !billing?.billingReady} className="bg-violet-400 text-slate-950 hover:bg-violet-300"><CreditCard className="mr-2 h-4 w-4" />{openBillingPortal.isPending ? "Opening…" : "Manage billing"}</Button> : <Button type="button" onClick={() => checkout.mutate()} disabled={checkout.isPending || !billing?.billingReady} className="bg-violet-400 text-slate-950 hover:bg-violet-300"><Sparkles className="mr-2 h-4 w-4" />{checkout.isPending ? "Opening checkout…" : "Start 7-day Pro trial"}</Button>}</div>
+            <div className="flex flex-wrap gap-2 lg:justify-end">{isPro ? <Button type="button" onClick={() => openBillingPortal.mutate()} disabled={openBillingPortal.isPending || !billing?.billingReady} className="tf-press tf-action-glow bg-violet-400 text-slate-950 hover:bg-violet-300"><CreditCard className="mr-2 h-4 w-4" />{openBillingPortal.isPending ? "Opening…" : "Manage billing"}</Button> : <Button type="button" onClick={startCheckout} disabled={checkout.isPending || checkoutState === "opening" || !billing?.billingReady} data-checkout-state={checkoutState} className="tf-press tf-action-glow tf-checkout-cta bg-violet-400 text-slate-950 hover:bg-violet-300"><Sparkles className={`mr-2 h-4 w-4 ${checkoutState === "opening" ? "tf-checkout-spinner" : ""}`} />{checkoutState === "opening" ? "Preparing secure checkout…" : checkoutState === "opened" ? "Checkout opened" : "Start 7-day Pro trial"}</Button>}</div>
           </div>
+
+          {!isPro && checkoutState !== "idle" && <div id="checkout-status" role="status" aria-live="polite" className="tf-checkout-notice mt-5 flex items-center gap-3 rounded-xl border border-violet-200/[0.16] bg-[#0a1427]/72 px-4 py-3 text-xs leading-5 text-violet-100"><LoaderCircle className={`h-4 w-4 shrink-0 text-violet-200 ${checkoutState === "opening" ? "tf-checkout-spinner" : ""}`} />{checkoutState === "opening" ? "Preparing secure Stripe Checkout. Your workspace stays open while the payment page opens separately." : "Stripe Checkout opened in a new tab. Complete the secure trial there, then return here for updated Pro access."}</div>}
 
           {!billingLoading && <div className="mt-6 grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/[0.09] bg-[#0a1427]/80 p-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Live trade allowance</p><p className="mt-2 text-sm font-semibold text-white">{isPro ? "Unlimited" : `${billing?.usage.trades.remaining ?? 0} remaining this month`}</p>{!isPro && <p className="mt-1 text-xs text-slate-500">{billing?.usage.trades.used ?? 0} of {billing?.usage.trades.limit ?? 15} new live trades used. Resets monthly at 00:00 UTC.</p>}</div><div className="rounded-xl border border-white/[0.09] bg-[#0a1427]/80 p-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">Trader’s Room threads</p><p className="mt-2 text-sm font-semibold text-white">{isPro ? "Unlimited" : `${billing?.usage.threads.remaining ?? 0} remaining this month`}</p>{!isPro && <p className="mt-1 text-xs text-slate-500">{billing?.usage.threads.used ?? 0} of {billing?.usage.threads.limit ?? 10} new threads used. Replies stay open.</p>}</div></div>}
           <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-slate-500"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-300" />Pro is $10 USD per month, monthly billing only. The first Pro trial lasts seven days and requires a card. Payments are non-refundable for unused time, except where applicable law requires otherwise.</p>

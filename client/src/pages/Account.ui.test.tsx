@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ invalidate: vi.fn(), setupsInvalidate: vi.fn(), upload: vi.fn(), remove: vi.fn(), updateName: vi.fn(), createSetup: vi.fn(), updateSetup: vi.fn(), archiveSetup: vi.fn() }));
+const mocks = vi.hoisted(() => ({ invalidate: vi.fn(), setupsInvalidate: vi.fn(), upload: vi.fn(), remove: vi.fn(), updateName: vi.fn(), createSetup: vi.fn(), updateSetup: vi.fn(), archiveSetup: vi.fn(), checkout: vi.fn() }));
 
 vi.mock("@/_core/hooks/useAuth", () => ({ useAuth: () => ({ user: { name: "Avery Trader" } }) }));
 vi.mock("@/lib/trpc", () => ({
@@ -25,7 +25,7 @@ vi.mock("@/lib/trpc", () => ({
     billing: {
       status: { useQuery: () => ({ data: { tier: "free", backtestAccess: "locked", billingReady: true, usage: { trades: { used: 2, limit: 15, remaining: 13 }, threads: { used: 1, limit: 10, remaining: 9 } } }, isLoading: false }) },
       history: { useQuery: () => ({ data: [] }) },
-      createCheckout: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      createCheckout: { useMutation: () => ({ mutate: mocks.checkout, isPending: false }) },
       createPortal: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
     },
   },
@@ -82,5 +82,13 @@ describe("Account custom profile photo", () => {
     await user.type(name, "London continuation");
     await user.click(screen.getByLabelText("Save setup edits"));
     expect(mocks.updateSetup).toHaveBeenCalledWith({ id: 7, name: "London continuation", description: "Break and retest" });
+  });
+
+  it("shows immediate accessible feedback while secure checkout is being prepared", async () => {
+    const user = userEvent.setup();
+    render(<Account />);
+    await user.click(screen.getByRole("button", { name: /start 7-day pro trial/i }));
+    expect(mocks.checkout).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("status").textContent).toContain("Preparing secure Stripe Checkout");
   });
 });

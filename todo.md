@@ -368,3 +368,6 @@
 - [x] Test the Dashboard visual redesign and landing-page cleanup across desktop and mobile before publishing.
 - [x] Confirm desktop rendering removes the ticker source label and technical landing-page proof row while preserving the market tape and core landing flow.
 - [x] Confirm the simplified landing hero remains uncluttered and responsive on mobile without the removed technical labels.
+- [x] Audit checkout entry points and define payment-safe motion that does not delay or obscure the Stripe redirect.
+- [x] Add polished accessible checkout-opening feedback and Pro plan emphasis across pricing, Account, and Backtest entry points.
+- [x] Test checkout animation states, reduced-motion behavior, and responsive payment controls before publishing.
