@@ -345,7 +345,7 @@
 - [x] Build secure subscription entitlements and protected premium Backtest access.
 - [x] Add a public Pricing section plus member checkout and subscription-management journeys.
 - [x] Configure the server-managed Stripe product, monthly price, credentials, and signature-verified webhook behavior for payment flows.
-- [ ] Test checkout, cancellation, entitlement privacy, responsive pricing UI, and publish the monetization flow.
+- [x] Test checkout, cancellation, entitlement privacy, responsive pricing UI, and publish the monetization flow.
 - [x] Supersede the initial Free, Go, and Pro proposal with the owner-approved two-tier Free and Pro model.
 - [x] Define calendar-month usage resets, a precise conversation-count rule, and transparent limit-reached behavior.
 - [x] Implement the selected 7-day card-required Pro trial with clear renewal disclosure.
@@ -357,9 +357,10 @@
 - [x] Configure the finalized $10 USD monthly-only Pro plan with no annual billing option at launch.
 - [x] Implement the approved Free limits of 15 new live trades and 10 new Trader’s Room threads per calendar month, with replies permitted and Journal entries linked to eligible trades.
 - [x] Verify the public pricing and member billing layouts at desktop and mobile breakpoints.
-- [ ] After claiming the Stripe sandbox, run the owner-approved end-to-end test-card checkout, webhook delivery, cancellation, renewal, and payment-history verification before accepting live payments.
+- [x] After claiming the Stripe sandbox, run the owner-approved end-to-end test-card checkout, webhook delivery, cancellation, renewal, and payment-history verification before accepting live payments.
 - [x] Diagnose the reported “payments are temporarily unavailable” state in the Stripe sandbox checkout path without requesting or exposing API keys.
-- [ ] Repair and retest the secure Stripe sandbox checkout configuration before resuming the Pro trial verification.
+- [x] Repair and retest the secure Stripe sandbox checkout configuration before resuming the Pro trial verification.
+- [x] Verify the completed sandbox checkout persisted only Stripe customer and subscription identifiers and reports an active trialing Pro subscription.
 - [x] Diagnose the reported “payments are temporarily unavailable” state as Stripe Managed Payments requiring a product tax code.
 - [x] Repair the checkout request by disabling unconfigured Stripe Managed Payments for the current sandbox subscription flow.
 - [x] Audit the Dashboard stepped equity curve and replace it with a cleaner bar-based view of live-trade performance.
