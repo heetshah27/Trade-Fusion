@@ -102,6 +102,7 @@ describe("Expanded Trade Fusion landing page", () => {
     render(<Landing />);
 
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
+    expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
     expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
   });

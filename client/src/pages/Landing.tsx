@@ -298,8 +298,11 @@ function WorkspacePreview() {
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
     >
       <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview">
+      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop">
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
-      <div className="tf-preview-shell relative overflow-hidden rounded-[1.8rem] border border-blue-200/[0.20] bg-[#071328] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] sm:p-4">
+      <div className="tf-laptop-lid relative">
+      <div aria-hidden="true" className="tf-laptop-camera"><span /></div>
+      <div className="tf-preview-shell tf-laptop-screen relative overflow-hidden rounded-[1.8rem] border border-blue-200/[0.20] bg-[#071328] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] sm:p-4">
         <div className="overflow-hidden rounded-[1.3rem] border border-white/[0.09] bg-[#0b1830]">
           {/* Top Bar with Interactive Tab Switcher */}
           <div className="flex flex-col gap-2.5 border-b border-white/[0.08] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6">
@@ -561,6 +564,10 @@ function WorkspacePreview() {
             </motion.div>
           </div>
         </div>
+      </div>
+      </div>
+      <div aria-hidden="true" className="tf-laptop-hinge" />
+      <div aria-hidden="true" className="tf-laptop-base"><div className="tf-laptop-trackpad" /></div>
       </div>
       </motion.div>
       <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>

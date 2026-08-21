@@ -382,3 +382,6 @@
 - [x] Add a compact accessible mobile landing-section progress indicator with optional section jump controls.
 - [x] Verify the Tradespad-inspired original landing motion and Account billing FAQ remain active alongside the new mobile indicator.
 - [x] Test narrow mobile viewports, reduced-motion behavior, and responsive navigation before publishing.
+- [x] Audit the existing interactive workspace preview and define the original Trade Fusion laptop-frame composition.
+- [x] Add a responsive laptop bezel, display surround, lower chassis, and restrained depth treatment around the hero workspace preview.
+- [x] Test desktop and mobile framing, preview tab interaction, motion preferences, and visual overflow before publishing.
