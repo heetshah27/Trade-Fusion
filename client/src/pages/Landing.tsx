@@ -1,4 +1,4 @@
-import { dashboardReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
+import { dashboardReveal, previewPanelReveal, shouldRunLandingMotion } from "@/lib/landingMotion";
 import { appRoutes } from "@/lib/appRoutes";
 import { ArrowRight, BarChart3, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight, Cloud, Crosshair, Globe2, Layers3, LockKeyhole, Mail, Menu, MessageSquare, ScanLine, Send, ShieldCheck, Sparkles, Target, TrendingUp, UserRound, X } from "lucide-react";
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
@@ -159,6 +159,23 @@ function Brand() {
   return <TradeFusionBrand />;
 }
 
+function LandingScrollCompass() {
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+
+  if (reducedMotion) return null;
+
+  return (
+    <div aria-hidden="true" className="tf-scroll-compass pointer-events-none fixed bottom-7 right-7 z-40 hidden h-12 w-12 place-items-center rounded-2xl border border-blue-200/[0.14] xl:grid">
+      <svg viewBox="0 0 42 42" className="h-8 w-8 -rotate-90">
+        <circle cx="21" cy="21" r="16" fill="none" stroke="rgba(148,163,184,0.18)" strokeWidth="2.3" />
+        <motion.circle cx="21" cy="21" r="16" fill="none" stroke="rgb(96 165 250)" strokeWidth="2.3" strokeLinecap="round" pathLength={scrollYProgress} />
+      </svg>
+      <span className="absolute font-mono text-[7px] tracking-[0.14em] text-blue-100">TF</span>
+    </div>
+  );
+}
+
 type ProductSpotlight = (typeof productSpotlights)[number];
 
 function ScrollSpotlight({ spotlight, index }: { spotlight: ProductSpotlight; index: number }) {
@@ -312,7 +329,7 @@ function WorkspacePreview() {
             </aside>
 
             {/* Main Content Area based on Tab */}
-            <div className="min-w-0 p-4 sm:p-6 md:p-7">
+            <motion.div key={activeTab} data-testid="workspace-preview-tab-panel" className="min-w-0 p-4 sm:p-6 md:p-7" initial={reducedMotion ? false : previewPanelReveal.hidden} animate={reducedMotion ? undefined : previewPanelReveal.visible} transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}>
               {activeTab === "journal" && (
                 <div className="space-y-5 sm:space-y-6">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -489,7 +506,7 @@ function WorkspacePreview() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -550,6 +567,7 @@ export default function Landing() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#061023] text-white">
+      <LandingScrollCompass />
       {/* Live Market Ticker Tape with Automatic Marquee */}
       <div className="relative z-30 border-b border-white/[0.08] bg-[#050d1a] py-2.5 overflow-hidden">
         <div className="mx-auto max-w-7xl overflow-hidden px-4 whitespace-nowrap lg:px-8">

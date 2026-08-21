@@ -103,5 +103,6 @@ describe("Expanded Trade Fusion landing page", () => {
 
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
+    expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
   });
 });

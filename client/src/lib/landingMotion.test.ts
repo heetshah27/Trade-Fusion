@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dashboardReveal, shouldRunLandingMotion } from "./landingMotion";
+import { dashboardReveal, previewPanelReveal, shouldRunLandingMotion } from "./landingMotion";
 
 describe("landing dashboard reveal", () => {
   it("starts the dashboard slightly below and softened before revealing it", () => {
@@ -11,5 +11,10 @@ describe("landing dashboard reveal", () => {
     expect(shouldRunLandingMotion(false, true)).toBe(true);
     expect(shouldRunLandingMotion(true, true)).toBe(false);
     expect(shouldRunLandingMotion(false, false)).toBe(false);
+  });
+
+  it("uses a short opacity and vertical transition for preview-tab changes", () => {
+    expect(previewPanelReveal.hidden).toEqual({ opacity: 0, y: 14 });
+    expect(previewPanelReveal.visible).toEqual({ opacity: 1, y: 0 });
   });
 });

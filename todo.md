@@ -374,3 +374,7 @@
 - [x] Review the Account billing panel and define accurate concise FAQ answers for the Pro checkout decision.
 - [x] Add an accessible compact billing FAQ beside the Account checkout action without interrupting the secure Stripe flow.
 - [x] Test FAQ interaction, billing content accuracy, checkout coexistence, and responsive layout before publishing.
+- [x] Review the referenced Tradespad website’s scrolling, reveal, and interaction motion patterns.
+- [x] Define an original Trade Fusion adaptation that fits the existing landing-page content and brand system.
+- [x] Implement accessible scroll-driven motion, interaction refinements, and reduced-motion fallbacks.
+- [x] Test desktop/mobile motion performance, accessibility, and responsive behavior before publishing.
