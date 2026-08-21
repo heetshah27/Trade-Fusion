@@ -303,6 +303,7 @@ function WorkspacePreview() {
       <div className="tf-laptop-lid relative">
       <div aria-hidden="true" className="tf-laptop-camera"><span /></div>
       <div className="tf-preview-shell tf-laptop-screen relative overflow-hidden rounded-[1.8rem] border border-blue-200/[0.20] bg-[#071328] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] sm:p-4">
+        <span aria-hidden="true" data-testid="laptop-screen-reflection" className="tf-laptop-reflection" />
         <div className="overflow-hidden rounded-[1.3rem] border border-white/[0.09] bg-[#0b1830]">
           {/* Top Bar with Interactive Tab Switcher */}
           <div className="flex flex-col gap-2.5 border-b border-white/[0.08] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6">

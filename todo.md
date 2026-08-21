@@ -385,3 +385,6 @@
 - [x] Audit the existing interactive workspace preview and define the original Trade Fusion laptop-frame composition.
 - [x] Add a responsive laptop bezel, display surround, lower chassis, and restrained depth treatment around the hero workspace preview.
 - [x] Test desktop and mobile framing, preview tab interaction, motion preferences, and visual overflow before publishing.
+- [x] Review laptop-frame layering and define a readability-safe animated screen-reflection treatment.
+- [x] Add a pointer-safe subtle screen reflection with reduced-motion support.
+- [x] Test screen legibility, workspace tab interaction, desktop/mobile scaling, and motion preferences before publishing.

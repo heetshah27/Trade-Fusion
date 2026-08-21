@@ -13,3 +13,5 @@ The landing page retains its product narrative and existing previews at desktop 
 The live review confirms the existing product spotlight reveals, workspace depth treatment, animated preview tabs, and public Pro entry point remain present after the mobile-navigation enhancement. The new mobile progress control is isolated to narrow viewports and does not alter desktop navigation.
 
 The workspace preview now uses an original Trade Fusion laptop treatment: a dark metallic bezel, centered camera detail, hinge, lower chassis, and understated trackpad surround the live interactive preview. Desktop review shows the full composition anchors the hero without replacing the workspace interaction. On a 375px viewport, the frame scales down and remains within the landing flow, while the mobile section-progress control continues to sit above the lower viewport without covering primary hero actions.
+
+The added reflection is a pointer-safe, low-opacity display overlay using only transform and opacity motion. It remains visually behind no interactive controls, does not alter tab selection, and becomes static for reduced-motion preferences.
