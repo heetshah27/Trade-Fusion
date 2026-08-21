@@ -9,3 +9,5 @@ All additions will remain optional under reduced-motion preferences, will only a
 ## Validation Notes
 
 The landing page retains its product narrative and existing previews at desktop and narrow mobile breakpoints. The scroll compass is intentionally desktop-only so it does not obstruct small-screen content, while anchor links retain smooth travel on standard motion settings and revert to immediate navigation for reduced-motion preferences. The workspace preview now gives each module change a short opacity-and-position transition, without delaying navigation or changing member-facing functionality.
+
+The live review confirms the existing product spotlight reveals, workspace depth treatment, animated preview tabs, and public Pro entry point remain present after the mobile-navigation enhancement. The new mobile progress control is isolated to narrow viewports and does not alter desktop navigation.

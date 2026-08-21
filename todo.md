@@ -378,3 +378,7 @@
 - [x] Define an original Trade Fusion adaptation that fits the existing landing-page content and brand system.
 - [x] Implement accessible scroll-driven motion, interaction refinements, and reduced-motion fallbacks.
 - [x] Test desktop/mobile motion performance, accessibility, and responsive behavior before publishing.
+- [x] Audit the existing landing scroll animations, mobile navigation, and Account billing FAQ placement for the requested combined release.
+- [x] Add a compact accessible mobile landing-section progress indicator with optional section jump controls.
+- [x] Verify the Tradespad-inspired original landing motion and Account billing FAQ remain active alongside the new mobile indicator.
+- [x] Test narrow mobile viewports, reduced-motion behavior, and responsive navigation before publishing.

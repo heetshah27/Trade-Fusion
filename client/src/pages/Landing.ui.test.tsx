@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } }, contact: { submit: { useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false, error: null }) } } } }));
@@ -104,5 +104,15 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
     expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
+  });
+
+  it("offers a compact mobile section-progress control with accessible landing shortcuts", () => {
+    render(<Landing />);
+    const progress = screen.getByTestId("mobile-section-progress");
+    const trigger = within(progress).getByRole("button", { name: /current section: start/i });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(within(progress).getByRole("link", { name: /pricing/i }).getAttribute("href")).toBe("#pricing");
   });
 });
