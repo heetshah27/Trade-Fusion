@@ -94,8 +94,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </SidebarMenu>
 
-          <div className="mt-8 rounded-xl border border-emerald-300/[0.12] bg-gradient-to-br from-emerald-400/[0.08] to-transparent p-3 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><ShieldCheck className="h-3.5 w-3.5 text-emerald-300" /> Private data</div>
+          <div className="mt-8 rounded-xl border border-blue-300/[0.14] bg-gradient-to-br from-blue-400/[0.09] to-transparent p-3 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><ShieldCheck className="h-3.5 w-3.5 text-blue-300" /> Private data</div>
             <p className="mt-1.5 text-[11px] leading-4 text-slate-600">Your executions and notes remain account-specific.</p>
           </div>
         </SidebarContent>
@@ -125,15 +125,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="mt-0.5 text-xs text-slate-400">Private live-trade workspace</p>
             </div>
           </div>
-          <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-emerald-300/[0.16] bg-emerald-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-emerald-200"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_oklch(0.70_0.18_145)]" /> Secure sync</div></div>
+          <div className="flex items-center gap-2"><NotificationMenu /><div className="flex items-center gap-2 rounded-full border border-blue-300/[0.18] bg-blue-400/[0.09] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-200"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.19_255)]" /> Secure sync</div></div>
         </header>
         <main className="min-w-0 tf-mobile-safe-bottom">{children}</main>
         <nav aria-label="Mobile workspace navigation" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 rounded-2xl border border-white/[0.12] bg-[#0b162a]/95 p-1.5 shadow-[0_18px_50px_rgba(0,0,0,.42)] backdrop-blur-xl md:hidden">
           {mobileMenuItems.map((item) => {
             const isActive = location === item.path;
-            return <button key={item.path} type="button" onClick={() => setLocation(item.path)} className={`tf-press flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[9px] font-medium ${isActive ? "bg-emerald-400/[0.14] text-emerald-200" : "text-slate-500"}`}><item.icon className="h-4 w-4" /><span className="max-w-full truncate">{item.label.replace("Trader’s ", "")}</span></button>;
+            return <button key={item.path} type="button" onClick={() => setLocation(item.path)} className={`tf-press flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[9px] font-medium ${isActive ? "bg-blue-400/[0.16] text-blue-100" : "text-slate-500"}`}><item.icon className="h-4 w-4" /><span className="max-w-full truncate">{item.label.replace("Trader’s ", "")}</span></button>;
           })}
-          <button type="button" onClick={() => { setLocation(appRoutes.trades); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-400 px-1 py-1.5 text-[9px] font-bold text-[#092117] shadow-[0_8px_20px_oklch(0.36_0.15_145_/_0.34)]"><Plus className="h-4 w-4" /><span>Log</span></button>
+          <button type="button" onClick={() => { setLocation(appRoutes.trades); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 px-1 py-1.5 text-[9px] font-bold text-white shadow-[0_8px_20px_oklch(0.40_0.18_255_/_0.38)]"><Plus className="h-4 w-4" /><span>Log</span></button>
         </nav>
       </SidebarInset>
     </SidebarProvider>

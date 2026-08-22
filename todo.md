@@ -1,5 +1,13 @@
 # Project TODO
 
+- [x] Audit shared near-black backgrounds, existing primary action colors, and semantic trading-color exceptions.
+- [x] Apply a cohesive near-black background foundation and blue primary-action palette across public and authenticated UI.
+- [x] Validate contrast, profit/loss and risk semantics, desktop/mobile cohesion, and preserve the previous checkpoint as rollback option.
+
+- [x] Convert remaining Account, billing, and Backtest primary-action controls to explicit blue treatments while preserving semantic status colors.
+- [x] Remove the broad emerald-button override in favor of intentional component-level primary action styling.
+- [x] Add route-level palette coverage for Landing, Dashboard, Account, Backtest, and mobile navigation before publishing.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.

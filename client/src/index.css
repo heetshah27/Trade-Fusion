@@ -45,25 +45,25 @@
 :root {
   /* Trade Fusion — premium signal-first trading-product theme */
   --radius: 0.85rem;
-  --background: oklch(0.13 0.032 252);
-  --foreground: oklch(0.94 0.008 252);
-  --card: oklch(0.19 0.035 252);
-  --card-foreground: oklch(0.94 0.008 252);
-  --popover: oklch(0.19 0.035 252);
-  --popover-foreground: oklch(0.94 0.008 252);
-  --primary: oklch(0.70 0.18 145);
-  --primary-foreground: oklch(0.12 0.028 150);
-  --secondary: oklch(0.23 0.038 252);
-  --secondary-foreground: oklch(0.82 0.012 252);
-  --muted: oklch(0.23 0.03 252);
-  --muted-foreground: oklch(0.63 0.02 252);
-  --accent: oklch(0.25 0.055 252);
-  --accent-foreground: oklch(0.95 0.008 252);
+  --background: oklch(0.095 0.014 258);
+  --foreground: oklch(0.95 0.007 258);
+  --card: oklch(0.145 0.020 258);
+  --card-foreground: oklch(0.95 0.007 258);
+  --popover: oklch(0.145 0.020 258);
+  --popover-foreground: oklch(0.95 0.007 258);
+  --primary: oklch(0.64 0.20 255);
+  --primary-foreground: oklch(0.985 0.004 255);
+  --secondary: oklch(0.18 0.024 258);
+  --secondary-foreground: oklch(0.84 0.012 258);
+  --muted: oklch(0.18 0.020 258);
+  --muted-foreground: oklch(0.64 0.016 258);
+  --accent: oklch(0.22 0.055 255);
+  --accent-foreground: oklch(0.96 0.006 255);
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.31 0.035 252 / 0.85);
-  --input: oklch(0.21 0.034 252);
-  --ring: oklch(0.70 0.18 145);
+  --border: oklch(0.28 0.026 258 / 0.88);
+  --input: oklch(0.17 0.022 258);
+  --ring: oklch(0.66 0.19 255);
   /* Profit/Loss semantic colors */
   --profit: oklch(0.72 0.18 145);
   --profit-bg: oklch(0.72 0.18 145 / 0.12);
@@ -71,13 +71,13 @@
   --loss: oklch(0.65 0.22 25);
   --loss-bg: oklch(0.65 0.22 25 / 0.12);
   --loss-border: oklch(0.65 0.22 25 / 0.35);
-  --sidebar: oklch(0.15 0.033 252);
-  --sidebar-foreground: oklch(0.92 0.008 252);
-  --sidebar-primary: oklch(0.70 0.18 145);
-  --sidebar-primary-foreground: oklch(0.12 0.028 150);
-  --sidebar-accent: oklch(0.24 0.055 252);
-  --sidebar-accent-foreground: oklch(0.92 0.008 252);
-  --sidebar-border: oklch(0.31 0.035 252 / 0.85);
+  --sidebar: oklch(0.11 0.017 258);
+  --sidebar-foreground: oklch(0.93 0.008 258);
+  --sidebar-primary: oklch(0.64 0.20 255);
+  --sidebar-primary-foreground: oklch(0.985 0.004 255);
+  --sidebar-accent: oklch(0.20 0.052 255);
+  --sidebar-accent-foreground: oklch(0.93 0.008 258);
+  --sidebar-border: oklch(0.28 0.026 258 / 0.88);
   --sidebar-ring: oklch(0.66 0.18 250);
   --chart-1: oklch(0.72 0.18 145);
   --chart-2: oklch(0.65 0.22 25);
@@ -90,8 +90,8 @@
 
 .dark {
   /* Dark mode = same as root for this terminal-dark app */
-  --background: oklch(0.13 0.032 252);
-  --foreground: oklch(0.94 0.008 252);
+  --background: oklch(0.095 0.014 258);
+  --foreground: oklch(0.95 0.007 258);
 }
 
 @layer base {
@@ -106,10 +106,10 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
     background-image:
-      radial-gradient(circle at 18% -8%, oklch(0.35 0.12 250 / 0.19), transparent 34rem),
-      radial-gradient(circle at 92% 12%, oklch(0.70 0.18 145 / 0.08), transparent 27rem),
-      linear-gradient(oklch(0.94 0.006 252 / 0.028) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.94 0.006 252 / 0.022) 1px, transparent 1px);
+      radial-gradient(circle at 18% -8%, oklch(0.36 0.14 255 / 0.18), transparent 34rem),
+      radial-gradient(circle at 92% 12%, oklch(0.30 0.12 245 / 0.10), transparent 27rem),
+      linear-gradient(oklch(0.94 0.006 258 / 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.94 0.006 258 / 0.018) 1px, transparent 1px);
     background-size: auto, auto, 42px 42px, 42px 42px;
     background-attachment: fixed;
   }
@@ -142,9 +142,17 @@
 }
 
 @layer components {
-  .tf-workspace-surface { border: 1px solid oklch(0.78 0.04 252 / 0.11); background: linear-gradient(145deg, oklch(0.20 0.035 252 / 0.92), oklch(0.15 0.030 252 / 0.92)); box-shadow: 0 18px 48px rgb(0 0 0 / 0.16); }
-  .tf-workspace-surface:hover { border-color: oklch(0.70 0.18 145 / 0.22); }
-  .tf-kpi-card { border: 1px solid oklch(0.78 0.04 252 / 0.12); background: linear-gradient(145deg, oklch(0.22 0.05 252 / 0.94), oklch(0.17 0.034 252 / 0.94)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025), 0 14px 30px rgb(0 0 0 / 0.14); }
+  .tf-workspace-surface { border: 1px solid oklch(0.78 0.035 258 / 0.10); background: linear-gradient(145deg, oklch(0.16 0.022 258 / 0.94), oklch(0.11 0.017 258 / 0.96)); box-shadow: 0 18px 48px rgb(0 0 0 / 0.22); }
+  .tf-workspace-surface:hover { border-color: oklch(0.66 0.19 255 / 0.28); }
+  .tf-kpi-card { border: 1px solid oklch(0.78 0.035 258 / 0.11); background: linear-gradient(145deg, oklch(0.18 0.030 258 / 0.96), oklch(0.125 0.020 258 / 0.98)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025), 0 14px 30px rgb(0 0 0 / 0.18); }
+  .tf-backtest-page [data-slot="button"][class*="bg-violet-"],
+  .tf-backtest-page [data-slot="button"][class*="bg-emerald-"] {
+    border-color: oklch(0.66 0.19 255 / 0.34) !important;
+    background-color: oklch(0.58 0.19 255) !important;
+    color: oklch(0.985 0.004 255) !important;
+  }
+  .tf-backtest-page [data-slot="button"][class*="bg-violet-"]:hover,
+  .tf-backtest-page [data-slot="button"][class*="bg-emerald-"]:hover { background-color: oklch(0.66 0.19 255) !important; }
   .tf-press { will-change: transform; transition: transform 160ms var(--tf-ease-out), background 160ms var(--tf-ease-out), border-color 160ms var(--tf-ease-out), box-shadow 160ms var(--tf-ease-out), color 160ms var(--tf-ease-out); }
   .tf-press:active { transform: scale(0.97); }
 
@@ -182,7 +190,7 @@
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .tf-press:hover { transform: translateY(-1px); }
     .tf-hover-lift:hover, .tf-interactive-card:hover { transform: translateY(-4px); border-color: oklch(0.70 0.15 250 / 0.30); box-shadow: 0 22px 46px rgb(0 0 0 / 0.24), 0 0 0 1px oklch(0.66 0.18 250 / 0.06); }
-    .tf-workspace-surface.tf-hover-lift:hover { border-color: oklch(0.70 0.18 145 / 0.27); box-shadow: 0 26px 58px rgb(0 0 0 / 0.26), 0 0 0 1px oklch(0.70 0.18 145 / 0.06); }
+    .tf-workspace-surface.tf-hover-lift:hover { border-color: oklch(0.66 0.19 255 / 0.30); box-shadow: 0 26px 58px rgb(0 0 0 / 0.28), 0 0 0 1px oklch(0.66 0.19 255 / 0.08); }
     .tf-action-glow:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 34px oklch(0.44 0.16 250 / 0.36); }
     .tf-action-glow:hover .tf-icon-action { transform: translateX(2px) rotate(-4deg); }
     .tf-ledger-row:hover { transform: translateY(-1px); }
@@ -299,9 +307,9 @@
   }
 
   .tf-cta-primary {
-    background: linear-gradient(135deg, oklch(0.72 0.18 145), oklch(0.65 0.17 160));
-    color: oklch(0.12 0.028 150);
-    box-shadow: 0 14px 30px oklch(0.36 0.15 150 / 0.32);
+    background: linear-gradient(135deg, oklch(0.68 0.20 255), oklch(0.56 0.19 258));
+    color: oklch(0.985 0.004 255);
+    box-shadow: 0 14px 30px oklch(0.38 0.18 255 / 0.34);
   }
 
   .tf-cta-primary::before {
@@ -313,7 +321,7 @@
     transition: transform 440ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .tf-cta-primary:hover { transform: translateY(-2px); background: oklch(0.77 0.17 145); box-shadow: 0 18px 38px oklch(0.36 0.15 150 / 0.42); }
+  .tf-cta-primary:hover { transform: translateY(-2px); background: oklch(0.74 0.18 255); box-shadow: 0 18px 38px oklch(0.38 0.18 255 / 0.46); }
   .tf-cta-primary:hover::before { transform: translateX(140%) skewX(-18deg); }
   .tf-cta-primary:active, .tf-cta-secondary:active { transform: scale(0.97); }
   .tf-cta-secondary { border: 1px solid rgb(255 255 255 / 0.11); background: rgb(255 255 255 / 0.035); color: oklch(0.9 0.01 250); }

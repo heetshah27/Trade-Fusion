@@ -52,7 +52,7 @@ function normalizedZoneGeometry(first: ChartAnchor, second: ChartAnchor): ZoneGe
 }
 
 function DrawingButton({ active, children, disabled = false, onClick, onSnapshot }: { active: boolean; children: React.ReactNode; disabled?: boolean; onClick: () => void; onSnapshot: () => void }) {
-  return <><Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`tf-press border-white/[0.12] ${active ? "border-emerald-300/30 bg-emerald-400/[0.12] text-emerald-100" : "bg-transparent text-slate-300 hover:bg-white/[0.06]"}`}>{children}</Button><Button type="button" size="sm" variant="outline" aria-label="Download private chart snapshot" onClick={onSnapshot} className="tf-press border-sky-300/30 bg-sky-400/10 text-sky-100 hover:bg-sky-400/20"><Camera className="mr-1 h-3.5 w-3.5" /> Snapshot</Button></>;
+  return <><Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClick} className={`tf-press border-white/[0.12] ${active ? "border-blue-300/35 bg-blue-400/[0.14] text-blue-100" : "bg-transparent text-slate-300 hover:bg-white/[0.06]"}`}>{children}</Button><Button type="button" size="sm" variant="outline" aria-label="Download private chart snapshot" onClick={onSnapshot} className="tf-press border-sky-300/30 bg-sky-400/10 text-sky-100 hover:bg-sky-400/20"><Camera className="mr-1 h-3.5 w-3.5" /> Snapshot</Button></>;
 }
 
 export function BacktestReplay({ session, readOnly = false }: { session: ReplaySession; readOnly?: boolean }) {
