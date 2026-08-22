@@ -289,6 +289,28 @@ function WorkspacePreview() {
   const previewY = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [0, 0, 0] : [34, 0, -28]);
   const previewScale = useTransform(scrollYProgress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.975, 1, 0.985]);
 
+  const updateLaptopTilt = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (reducedMotion || event.pointerType === "touch" || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    const frame = event.currentTarget;
+    const bounds = frame.getBoundingClientRect();
+    const horizontal = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+    const vertical = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+    frame.style.setProperty("--tf-tilt-x", `${Math.max(-2.4, Math.min(2.4, -vertical * 2.4)).toFixed(2)}deg`);
+    frame.style.setProperty("--tf-tilt-y", `${Math.max(-3.2, Math.min(3.2, horizontal * 3.2)).toFixed(2)}deg`);
+    frame.style.setProperty("--tf-pointer-x", `${Math.round(((event.clientX - bounds.left) / bounds.width) * 100)}%`);
+    frame.style.setProperty("--tf-pointer-y", `${Math.round(((event.clientY - bounds.top) / bounds.height) * 100)}%`);
+    frame.dataset.tiltActive = "true";
+  };
+
+  const resetLaptopTilt = (event: React.PointerEvent<HTMLDivElement>) => {
+    const frame = event.currentTarget;
+    frame.style.removeProperty("--tf-tilt-x");
+    frame.style.removeProperty("--tf-tilt-y");
+    frame.style.removeProperty("--tf-pointer-x");
+    frame.style.removeProperty("--tf-pointer-y");
+    delete frame.dataset.tiltActive;
+  };
+
   return (
     <motion.div
       ref={previewRef}
@@ -298,7 +320,7 @@ function WorkspacePreview() {
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
     >
       <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview">
-      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop">
+      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-laptop-lid relative">
       <div aria-hidden="true" className="tf-laptop-camera"><span /></div>

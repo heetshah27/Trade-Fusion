@@ -103,6 +103,7 @@ describe("Expanded Trade Fusion landing page", () => {
 
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
     expect(screen.getByTestId("cinematic-hero")).toBeTruthy();
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);

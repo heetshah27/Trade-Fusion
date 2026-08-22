@@ -324,8 +324,12 @@
   }
 
   .tf-preview-shell:hover { transform: translateY(-6px); border-color: oklch(0.7 0.14 250 / 0.42); box-shadow: 0 46px 100px rgb(0 0 0 / 0.56); }
-  .tf-laptop-stage { padding-bottom: clamp(1rem, 2.6vw, 1.8rem); }
-  .tf-laptop-lid { position: relative; border: 1px solid rgb(148 163 184 / 0.24); border-radius: clamp(1.35rem, 2.4vw, 2.35rem); padding: clamp(0.28rem, 0.7vw, 0.55rem); background: linear-gradient(145deg, rgb(71 85 105 / 0.72), rgb(15 23 42 / 0.92) 24%, rgb(51 65 85 / 0.70) 100%); box-shadow: 0 46px 100px rgb(0 0 0 / 0.58), inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -1px 0 rgb(0 0 0 / 0.75); }
+  .tf-laptop-stage { --tf-tilt-x: 0deg; --tf-tilt-y: 0deg; --tf-pointer-x: 50%; --tf-pointer-y: 50%; padding-bottom: clamp(1rem, 2.6vw, 1.8rem); perspective: 1800px; transform: perspective(1800px) rotateX(var(--tf-tilt-x)) rotateY(var(--tf-tilt-y)); transform-style: preserve-3d; transition: transform 260ms var(--tf-ease-out), filter 260ms var(--tf-ease-out); }
+  .tf-laptop-stage::after { position: absolute; z-index: 12; pointer-events: none; inset: 2.5rem 1rem 4rem; border-radius: 1.65rem; opacity: 0; background: radial-gradient(420px circle at var(--tf-pointer-x) var(--tf-pointer-y), rgb(186 230 253 / 0.13), transparent 48%); mix-blend-mode: screen; transition: opacity 180ms var(--tf-ease-out); content: ""; }
+  .tf-laptop-stage[data-tilt-active="true"] { filter: drop-shadow(0 34px 50px rgb(2 6 23 / 0.42)); transition-duration: 90ms; }
+  .tf-laptop-stage[data-tilt-active="true"]::after { opacity: 1; }
+  .tf-laptop-stage[data-tilt-active="true"] .tf-laptop-lid { transform: translateZ(12px); }
+  .tf-laptop-lid { position: relative; border: 1px solid rgb(148 163 184 / 0.24); border-radius: clamp(1.35rem, 2.4vw, 2.35rem); padding: clamp(0.28rem, 0.7vw, 0.55rem); background: linear-gradient(145deg, rgb(71 85 105 / 0.72), rgb(15 23 42 / 0.92) 24%, rgb(51 65 85 / 0.70) 100%); box-shadow: 0 46px 100px rgb(0 0 0 / 0.58), inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -1px 0 rgb(0 0 0 / 0.75); transition: transform 180ms var(--tf-ease-out); transform-style: preserve-3d; }
   .tf-laptop-screen { border-color: rgb(148 163 184 / 0.25); }
   .tf-laptop-reflection { position: absolute; z-index: 10; pointer-events: none; inset: -28% -44%; width: 58%; transform: translate3d(-24%, 0, 0) rotate(14deg); opacity: 0.16; background: linear-gradient(90deg, transparent 14%, rgb(191 219 254 / 0.15) 44%, rgb(255 255 255 / 0.26) 50%, rgb(147 197 253 / 0.12) 58%, transparent 86%); mix-blend-mode: screen; animation: tf-laptop-reflection-sweep 9s var(--tf-ease-in-out) infinite alternate; }
   .tf-hero-deep-space { background: radial-gradient(ellipse 55% 37% at 50% 24%, oklch(0.55 0.19 250 / 0.36), transparent 72%), radial-gradient(ellipse 34% 29% at 17% 45%, oklch(0.38 0.16 245 / 0.20), transparent 74%), radial-gradient(ellipse 31% 27% at 86% 58%, oklch(0.43 0.14 275 / 0.15), transparent 76%), linear-gradient(180deg, rgb(4 13 29 / 0.14), rgb(2 8 20 / 0.30) 76%, transparent); }
@@ -370,9 +374,12 @@
     .tf-signal-chip, .tf-rise, .tf-checkout-cta[data-checkout-state="opening"]::after, .tf-checkout-spinner, .tf-checkout-notice, .tf-mobile-section-shortcuts, .tf-laptop-reflection { animation: none; }
     .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card, .tf-press, .tf-hover-lift, .tf-ledger-row, .tf-interactive-card, .tf-action-glow, .tf-icon-action, .tf-pro-plan { transition: none; }
     .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover, .tf-press:hover, .tf-hover-lift:hover, .tf-ledger-row:hover, .tf-interactive-card:hover, .tf-action-glow:hover, .tf-pro-plan:hover { transform: none; }
+    .tf-laptop-stage, .tf-laptop-lid { transform: none !important; transition: none; }
+    .tf-laptop-stage::after { display: none; }
   }
 
   @media (max-width: 767px) {
+    .tf-laptop-stage { transform: none; }
     .tf-mobile-safe-bottom { padding-bottom: 6.25rem; }
   }
 

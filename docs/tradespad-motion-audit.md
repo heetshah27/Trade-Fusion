@@ -17,3 +17,5 @@ The workspace preview now uses an original Trade Fusion laptop treatment: a dark
 The added reflection is a pointer-safe, low-opacity display overlay using only transform and opacity motion. It remains visually behind no interactive controls, does not alter tab selection, and becomes static for reduced-motion preferences.
 
 The cinematic hero refinement creates more deliberate space between navigation, the value proposition, and the staged laptop preview. Desktop review confirms the larger composition keeps primary actions prominent against deeper ambient gradients and orbit lines. On a 375px viewport, the heading, explanation, and stacked actions remain legible and the mobile section-progress control stays below the primary conversion actions.
+
+The desktop laptop frame now accepts a fine-pointer hover response: it uses a constrained 2.4° vertical and 3.2° horizontal tilt, adds a small depth lift, and follows the pointer with a low-opacity light bloom. The visual treatment is disabled for narrow/mobile layouts and reduced-motion preferences, preserving the existing static preview and all tab controls.

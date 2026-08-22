@@ -391,3 +391,6 @@
 - [x] Audit the existing landing hero and define the selected original cinematic Trade Fusion visual direction.
 - [x] Add larger hero breathing room, a staged laptop reveal, layered background depth, and refined premium surfaces.
 - [x] Test hero readability, workspace interactions, reduced-motion behavior, and desktop/mobile composition before publishing.
+- [x] Audit the laptop-frame structure and define a safe desktop-only pointer-hover tilt interaction.
+- [x] Add a subtle pointer-responsive laptop tilt, depth lift, and reflection shift while preserving workspace interaction.
+- [x] Test desktop hover, touch fallback, reduced-motion behavior, keyboard navigation, and preview usability before publishing.
