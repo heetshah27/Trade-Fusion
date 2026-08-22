@@ -27,6 +27,10 @@
 - [x] Preserve desktop laptop preview presentation while sharing accessible preview-tab state across mobile and desktop presentations.
 - [x] Validate mobile card hierarchy, tab interaction, progress-control clearance, and desktop isolation before publishing.
 
+- [x] Audit remaining mobile landing blue-grid and glow treatments against the requested near-black foundation.
+- [x] Reduce mobile background blue saturation while retaining blue primary actions and active preview accents.
+- [x] Validate portrait near-black contrast, semantic green/rose/amber colors, and desktop palette consistency before publishing.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.

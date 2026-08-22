@@ -110,6 +110,7 @@ describe("Expanded Trade Fusion landing page", () => {
   it("includes scroll-linked depth treatment for the workspace preview and product spotlights", () => {
     render(<Landing />);
 
+    expect(screen.getByRole("main").getAttribute("data-mobile-palette")).toBe("near-black");
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");

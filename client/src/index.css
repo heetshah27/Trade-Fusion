@@ -45,17 +45,17 @@
 :root {
   /* Trade Fusion — premium signal-first trading-product theme */
   --radius: 0.85rem;
-  --background: oklch(0.095 0.014 258);
+  --background: oklch(0.075 0.006 258);
   --foreground: oklch(0.95 0.007 258);
-  --card: oklch(0.145 0.020 258);
+  --card: oklch(0.125 0.010 258);
   --card-foreground: oklch(0.95 0.007 258);
-  --popover: oklch(0.145 0.020 258);
+  --popover: oklch(0.125 0.010 258);
   --popover-foreground: oklch(0.95 0.007 258);
   --primary: oklch(0.64 0.20 255);
   --primary-foreground: oklch(0.985 0.004 255);
-  --secondary: oklch(0.18 0.024 258);
+  --secondary: oklch(0.16 0.012 258);
   --secondary-foreground: oklch(0.84 0.012 258);
-  --muted: oklch(0.18 0.020 258);
+  --muted: oklch(0.16 0.010 258);
   --muted-foreground: oklch(0.64 0.016 258);
   --accent: oklch(0.22 0.055 255);
   --accent-foreground: oklch(0.96 0.006 255);
@@ -71,7 +71,7 @@
   --loss: oklch(0.65 0.22 25);
   --loss-bg: oklch(0.65 0.22 25 / 0.12);
   --loss-border: oklch(0.65 0.22 25 / 0.35);
-  --sidebar: oklch(0.11 0.017 258);
+  --sidebar: oklch(0.09 0.008 258);
   --sidebar-foreground: oklch(0.93 0.008 258);
   --sidebar-primary: oklch(0.64 0.20 255);
   --sidebar-primary-foreground: oklch(0.985 0.004 255);
@@ -90,7 +90,7 @@
 
 .dark {
   /* Dark mode = same as root for this terminal-dark app */
-  --background: oklch(0.095 0.014 258);
+  --background: oklch(0.075 0.006 258);
   --foreground: oklch(0.95 0.007 258);
 }
 
@@ -106,8 +106,8 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
     background-image:
-      radial-gradient(circle at 18% -8%, oklch(0.36 0.14 255 / 0.18), transparent 34rem),
-      radial-gradient(circle at 92% 12%, oklch(0.30 0.12 245 / 0.10), transparent 27rem),
+      radial-gradient(circle at 18% -8%, oklch(0.25 0.05 255 / 0.10), transparent 34rem),
+      radial-gradient(circle at 92% 12%, oklch(0.20 0.035 245 / 0.06), transparent 27rem),
       linear-gradient(oklch(0.94 0.006 258 / 0.022) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.94 0.006 258 / 0.018) 1px, transparent 1px);
     background-size: auto, auto, 42px 42px, 42px 42px;
@@ -340,9 +340,9 @@
   .tf-laptop-lid { position: relative; border: 1px solid rgb(148 163 184 / 0.24); border-radius: clamp(1.35rem, 2.4vw, 2.35rem); padding: clamp(0.28rem, 0.7vw, 0.55rem); background: linear-gradient(145deg, rgb(71 85 105 / 0.72), rgb(15 23 42 / 0.92) 24%, rgb(51 65 85 / 0.70) 100%); box-shadow: 0 46px 100px rgb(0 0 0 / 0.58), inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -1px 0 rgb(0 0 0 / 0.75); transition: transform 180ms var(--tf-ease-out); transform-style: preserve-3d; }
   .tf-laptop-screen { border-color: rgb(148 163 184 / 0.25); }
   .tf-laptop-reflection { position: absolute; z-index: 10; pointer-events: none; inset: -28% -44%; width: 58%; transform: translate3d(-24%, 0, 0) rotate(14deg); opacity: 0.16; background: linear-gradient(90deg, transparent 14%, rgb(191 219 254 / 0.15) 44%, rgb(255 255 255 / 0.26) 50%, rgb(147 197 253 / 0.12) 58%, transparent 86%); mix-blend-mode: screen; animation: tf-laptop-reflection-sweep 9s var(--tf-ease-in-out) infinite alternate; }
-  .tf-hero-deep-space { background: radial-gradient(ellipse 55% 37% at 50% 24%, oklch(0.55 0.19 250 / 0.36), transparent 72%), radial-gradient(ellipse 34% 29% at 17% 45%, oklch(0.38 0.16 245 / 0.20), transparent 74%), radial-gradient(ellipse 31% 27% at 86% 58%, oklch(0.43 0.14 275 / 0.15), transparent 76%), linear-gradient(180deg, rgb(4 13 29 / 0.14), rgb(2 8 20 / 0.30) 76%, transparent); }
-  .tf-hero-grid { opacity: 0.10; background-image: linear-gradient(oklch(0.8 0.02 250) 1px, transparent 1px), linear-gradient(90deg, oklch(0.8 0.02 250) 1px, transparent 1px); background-size: 56px 56px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
-  .tf-hero-orbit { top: clamp(13rem, 31vw, 25rem); height: clamp(18rem, 35vw, 33rem); width: clamp(18rem, 35vw, 33rem); border: 1px solid oklch(0.71 0.13 250 / 0.15); border-radius: 999px; filter: drop-shadow(0 0 2rem oklch(0.58 0.18 250 / 0.14)); }
+  .tf-hero-deep-space { background: radial-gradient(ellipse 55% 37% at 50% 24%, oklch(0.28 0.08 250 / 0.16), transparent 72%), radial-gradient(ellipse 34% 29% at 17% 45%, oklch(0.20 0.05 245 / 0.10), transparent 74%), radial-gradient(ellipse 31% 27% at 86% 58%, oklch(0.20 0.04 275 / 0.07), transparent 76%), linear-gradient(180deg, rgb(4 5 8 / 0.24), rgb(2 3 5 / 0.72) 76%, transparent); }
+  .tf-hero-grid { opacity: 0.055; background-image: linear-gradient(oklch(0.8 0.02 250) 1px, transparent 1px), linear-gradient(90deg, oklch(0.8 0.02 250) 1px, transparent 1px); background-size: 56px 56px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
+  .tf-hero-orbit { top: clamp(13rem, 31vw, 25rem); height: clamp(18rem, 35vw, 33rem); width: clamp(18rem, 35vw, 33rem); border: 1px solid oklch(0.71 0.13 250 / 0.09); border-radius: 999px; filter: drop-shadow(0 0 2rem oklch(0.58 0.18 250 / 0.08)); }
   .tf-hero-orbit-left { left: -12rem; transform: rotate(-27deg); }
   .tf-hero-orbit-right { right: -14rem; transform: rotate(31deg); }
   .tf-cinematic-hero { --tf-hero-near-x: 0px; --tf-hero-near-y: 0px; --tf-hero-far-x: 0px; --tf-hero-far-y: 0px; --tf-hero-tilt-x: 0deg; --tf-hero-tilt-y: 0deg; isolation: isolate; perspective: 1800px; transform-style: preserve-3d; }
@@ -359,7 +359,7 @@
   .tf-cinematic-hero[data-depth-active="true"] .tf-3d-hero-orbit { border-color: rgb(186 230 253 / 0.40); }
   .tf-cinematic-hero[data-depth-active="true"] .tf-3d-hero-beacon { border-color: rgb(147 197 253 / 0.40); box-shadow: 0 22px 40px rgb(0 0 0 / 0.30), 0 0 2rem rgb(59 130 246 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14); }
   .tf-cinematic-copy { max-width: 67rem; padding: clamp(0.75rem, 2vw, 1.5rem) 0; }
-  .tf-cinematic-copy::before { position: absolute; z-index: -1; inset: -2.5rem -4rem -3rem; border: 1px solid rgb(148 163 184 / 0.08); border-radius: 2rem; background: linear-gradient(145deg, rgb(30 58 138 / 0.07), transparent 54%, rgb(56 189 248 / 0.04)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035); content: ""; }
+  .tf-cinematic-copy::before { position: absolute; z-index: -1; inset: -2.5rem -4rem -3rem; border: 1px solid rgb(148 163 184 / 0.07); border-radius: 2rem; background: linear-gradient(145deg, rgb(30 58 138 / 0.035), transparent 54%, rgb(56 189 248 / 0.018)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025); content: ""; }
   .tf-laptop-reveal::before { position: absolute; z-index: -1; left: 8%; right: 8%; bottom: 0.7rem; height: 4rem; border-radius: 50%; background: radial-gradient(ellipse, oklch(0.47 0.16 250 / 0.38), transparent 69%); filter: blur(1.5rem); content: ""; }
   .tf-hero-workflow { background: linear-gradient(145deg, rgb(16 39 76 / 0.78), rgb(5 15 32 / 0.82) 58%, rgb(10 23 47 / 0.78)); box-shadow: 0 20px 44px rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.04); }
   .tf-hero-workflow::before { position: absolute; inset: 0; pointer-events: none; opacity: 0.72; background: radial-gradient(circle at 14% 50%, rgb(110 231 183 / 0.08), transparent 22%), radial-gradient(circle at 50% 50%, rgb(96 165 250 / 0.08), transparent 24%), radial-gradient(circle at 86% 50%, rgb(196 181 253 / 0.08), transparent 22%); content: ""; }
@@ -408,6 +408,10 @@
   }
 
   @media (max-width: 767px) {
+    body { background-color: #050609; background-image: linear-gradient(rgb(148 163 184 / 0.024) 1px, transparent 1px), linear-gradient(90deg, rgb(148 163 184 / 0.024) 1px, transparent 1px); background-size: 52px 52px; background-attachment: scroll; }
+    .tf-hero-deep-space { background: radial-gradient(ellipse 75% 34% at 50% 28%, oklch(0.20 0.05 250 / 0.10), transparent 72%), linear-gradient(180deg, rgb(4 5 8 / 0.18), rgb(2 3 5 / 0.88) 82%, transparent); }
+    .tf-hero-grid { opacity: 0.035; }
+    .tf-hero-orbit { border-color: oklch(0.71 0.13 250 / 0.055); filter: none; }
     .tf-laptop-stage { transform: none; }
     .tf-laptop-reveal [data-mobile-safe-bottom="true"] { margin-bottom: 4.75rem; }
     .tf-native-mobile-preview { transform: none !important; }

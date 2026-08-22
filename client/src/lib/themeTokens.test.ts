@@ -10,10 +10,12 @@ const backtest = readFileSync(new URL("../pages/Backtest.tsx", import.meta.url),
 
 describe("Trade Fusion palette tokens", () => {
   it("uses a near-black foundation with blue primary actions", () => {
-    expect(css).toContain("--background: oklch(0.095 0.014 258)");
+    expect(css).toContain("--background: oklch(0.075 0.006 258)");
     expect(css).toContain("--primary: oklch(0.64 0.20 255)");
     expect(css).toContain(".tf-cta-primary {");
     expect(css).toContain("oklch(0.68 0.20 255)");
+    expect(css).toContain("body { background-color: #050609;");
+    expect(css).toContain(".tf-hero-grid { opacity: 0.035; }");
   });
 
   it("keeps profit, loss, and caution colors separate from the primary action system", () => {
@@ -24,6 +26,7 @@ describe("Trade Fusion palette tokens", () => {
   });
 
   it("uses explicit blue primary actions across the reviewed route surfaces", () => {
+    expect(landing).toContain('data-mobile-palette="near-black"');
     expect(landing).toContain("!bg-[oklch(0.66_0.18_250)]");
     expect(dashboard).toContain("bg-blue-500");
     expect(layout).toContain("from-blue-400 to-blue-600");
