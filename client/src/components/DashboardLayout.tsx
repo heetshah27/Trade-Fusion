@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { BarChart3, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, LayoutDashboard, LogOut, MessagesSquare, Plus, ShieldCheck, UserRound, WalletCards } from "lucide-react";
+import { BarChart3, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ChevronRight, CircleUserRound, FlaskConical, Instagram, LayoutDashboard, LogOut, MessagesSquare, Plus, ShieldCheck, UserRound, WalletCards } from "lucide-react";
 import { type CSSProperties } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -28,13 +28,14 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", subtitle: "Command center", path: appRoutes.dashboard },
   { icon: WalletCards, label: "Trades", subtitle: "Manual trade ledger", path: appRoutes.trades },
   { icon: BookOpenCheck, label: "Journal", subtitle: "Ideas and reviews", path: appRoutes.journal },
+  { icon: Instagram, label: "Content Studio", subtitle: "Weekly trade stories", path: appRoutes.content },
   { icon: BarChart3, label: "Setup Analytics", subtitle: "Live trade patterns", path: appRoutes.analytics },
   { icon: FlaskConical, label: "Backtest", subtitle: "Simulated strategy lab", path: appRoutes.backtest },
   { icon: CalendarDays, label: "Market Calendar", subtitle: "Macro events", path: appRoutes.calendar },
   { icon: MessagesSquare, label: "Trader’s Room", subtitle: "Member discussion", path: appRoutes.community },
   { icon: UserRound, label: "Account", subtitle: "Profile and privacy", path: appRoutes.account },
 ];
-const mobileMenuItems = [menuItems[0], menuItems[1], menuItems[2], menuItems[4], menuItems[5]];
+const mobileMenuItems = [menuItems[0], menuItems[1], menuItems[3], menuItems[2], menuItems[5]];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user, logout } = useAuth();

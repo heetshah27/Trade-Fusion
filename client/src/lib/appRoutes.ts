@@ -8,4 +8,5 @@ export const appRoutes = {
   account: "/app/account",
   backtest: "/app/backtest",
   analytics: "/app/analytics",
+  content: "/app/content",
 } as const;

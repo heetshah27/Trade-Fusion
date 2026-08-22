@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Download, ListFilter, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { ArrowUpRight, Download, Instagram, ListFilter, Pencil, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -136,6 +136,7 @@ export default function Trades() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={!cloudTrades.length} className="h-9 rounded-xl border-white/[.08] bg-white/[.025] text-slate-300 hover:bg-white/[.06]"><Download className="mr-1.5 h-3.5 w-3.5" />Export CSV</Button>
+            <Button variant="outline" size="sm" onClick={() => setLocation(appRoutes.content)} className="h-9 rounded-xl border-blue-400/20 bg-blue-500/[.06] text-blue-100 hover:bg-blue-500/[.12]"><Instagram className="mr-1.5 h-3.5 w-3.5" />Weekly recap</Button>
             <Button variant="outline" size="sm" onClick={() => setLocation(appRoutes.journal)} className="h-9 rounded-xl border-blue-400/20 bg-blue-500/[.06] text-blue-100 hover:bg-blue-500/[.12]">Trade Journal <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" /></Button>
             <Button size="sm" onClick={() => { setEditTrade(null); setModalOpen(true); }} className="tf-press h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-white"><Plus className="mr-1.5 h-4 w-4" />Add Trade</Button>
           </div>

@@ -15,6 +15,7 @@ import Backtest from "./pages/Backtest";
 import Analytics from "./pages/Analytics";
 import Trades from "./pages/Trades";
 import TradeJournal from "./pages/TradeJournal";
+import ContentStudio from "./pages/ContentStudio";
 import { appRoutes } from "./lib/appRoutes";
 
 function WorkspaceRouter() {
@@ -30,6 +31,7 @@ function WorkspaceRouter() {
           <Route path={appRoutes.account} component={Account} />
           <Route path={appRoutes.backtest} component={Backtest} />
           <Route path={appRoutes.analytics} component={Analytics} />
+          <Route path={appRoutes.content} component={ContentStudio} />
           <Route component={NotFound} />
         </Switch>
       </DashboardLayout>
@@ -56,6 +58,7 @@ function Router() {
       <Route path={appRoutes.dashboard} component={WorkspaceRouter} />
       <Route path={appRoutes.trades} component={WorkspaceRouter} />
       <Route path={appRoutes.journal} component={WorkspaceRouter} />
+      <Route path={appRoutes.content} component={WorkspaceRouter} />
       <Route path={appRoutes.landing} component={LandingRouter} />
       <Route component={NotFound} />
     </Switch>
