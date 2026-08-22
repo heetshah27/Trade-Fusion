@@ -106,6 +106,10 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
     expect(screen.getByTestId("cinematic-hero")).toBeTruthy();
+    expect(screen.getByTestId("hero-workflow-strip")).toBeTruthy();
+    expect(screen.getByTestId("hero-workflow-step-capture").textContent).toContain("Capture");
+    expect(screen.getByTestId("hero-workflow-step-review").textContent).toContain("Review");
+    expect(screen.getByTestId("hero-workflow-step-rehearse").textContent).toContain("Rehearse");
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
     expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
   });

@@ -598,6 +598,48 @@ function WorkspacePreview() {
   );
 }
 
+const heroWorkflowSteps = [
+  { key: "capture", number: "01", icon: BookOpenCheck, title: "Capture", detail: "Log the live execution and attach the decision behind it.", accent: "text-emerald-200" },
+  { key: "review", number: "02", icon: BarChart3, title: "Review", detail: "Connect setups to performance and find the patterns worth repeating.", accent: "text-blue-200" },
+  { key: "rehearse", number: "03", icon: Crosshair, title: "Rehearse", detail: "Use private Backtest practice before the next live decision.", accent: "text-violet-200" },
+] as const;
+
+function HeroWorkflowStrip() {
+  const stripRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(stripRef, { once: true, amount: 0.35 });
+  const reducedMotion = useReducedMotion();
+  const shouldAnimate = shouldRunLandingMotion(reducedMotion, inView);
+
+  return (
+    <div ref={stripRef} className="tf-hero-workflow relative mx-auto mt-8 max-w-5xl overflow-hidden rounded-[1.5rem] border border-blue-200/[0.12] px-4 py-4 text-left sm:mt-10 sm:px-5 sm:py-5" data-testid="hero-workflow-strip">
+      <div aria-hidden="true" className="tf-hero-workflow-line absolute left-[16.7%] right-[16.7%] top-[3.2rem] hidden h-px sm:block" />
+      <div className="grid gap-2 sm:grid-cols-3 sm:gap-0">
+        {heroWorkflowSteps.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <motion.article
+              key={step.key}
+              data-testid={`hero-workflow-step-${step.key}`}
+              initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+              animate={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
+              transition={{ duration: 0.42, delay: index * 0.07, ease: [0.23, 1, 0.32, 1] }}
+              className="tf-hero-workflow-step relative rounded-xl px-3 py-3 sm:px-4 sm:py-2.5"
+            >
+              <div className="relative flex items-start gap-3">
+                <div className={`tf-hero-workflow-icon grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/[0.10] bg-[#0b1b35] ${step.accent}`}><Icon className="h-4 w-4" /></div>
+                <div>
+                  <div className="flex items-center gap-2"><span className="font-mono text-[9px] tracking-[0.16em] text-slate-500">{step.number}</span><h3 className="text-sm font-semibold text-white">{step.title}</h3></div>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{step.detail}</p>
+                </div>
+              </div>
+            </motion.article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function SpotlightPreview({ kind }: { kind: "backtest" | "journal" | "analytics" | "room" }) {
   const navLabel = { backtest: "Backtest Lab", journal: "Performance Journal", analytics: "Setup Analytics", room: "Trader’s Room" }[kind];
 
@@ -718,6 +760,7 @@ export default function Landing() {
         </div>
         </div>
         <WorkspacePreview />
+        <HeroWorkflowStrip />
       </section>
 
       <section id="platform" className="relative z-10 border-y border-white/[0.08] bg-[#050e1d] py-24 sm:py-32">
