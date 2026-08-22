@@ -115,10 +115,9 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByRole("main").getAttribute("data-mobile-palette")).toBe("near-black");
     expect(screen.getByTestId("market-ticker-rail").getAttribute("data-full-bleed")).toBe("true");
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
-    expect(screen.getByTestId("macbook-scroll").getAttribute("data-scroll-presentation")).toBe("true");
-    expect(screen.getByTestId("macbook-scroll").getAttribute("data-motion")).toBe("enabled");
-    expect(screen.getByTestId("macbook-scroll-device")).toBeTruthy();
-    expect(screen.getByAltText(/user-supplied backtest chart reference/i)).toBeTruthy();
+    expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("desktop-laptop");
     expect(screen.getByTestId("native-mobile-workspace-preview").getAttribute("data-layout")).toBe("native-card");
     expect(screen.getByTestId("cinematic-hero").getAttribute("data-depth-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("hero-3d-scene").getAttribute("aria-hidden")).toBe("true");
@@ -177,7 +176,6 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("hero-3d-scene").getAttribute("data-motion")).toBe("disabled");
     expect(screen.getByTestId("market-ticker-rail").getAttribute("data-motion")).toBe("disabled");
     expect(screen.getByTestId("market-ticker-rail").querySelector(".animate-ticker")).toBeNull();
-    expect(screen.getByTestId("macbook-scroll").getAttribute("data-motion")).toBe("disabled");
     expect(screen.getByRole("heading", { name: /turn every execution into your next edge/i })).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /get started free/i }).length).toBeGreaterThan(0);
   });
