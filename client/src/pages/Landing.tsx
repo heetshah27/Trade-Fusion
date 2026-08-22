@@ -261,17 +261,14 @@ function MobileSectionProgress() {
   }, []);
 
   return (
-    <aside className="fixed inset-x-0 bottom-4 z-40 px-4 md:hidden" aria-label="Landing page section progress" data-testid="mobile-section-progress">
-      <div className="mx-auto max-w-sm">
-        <div className="tf-mobile-section-progress relative overflow-hidden rounded-2xl border border-blue-200/[0.14] px-4 py-3 shadow-2xl backdrop-blur-xl">
-          <button type="button" aria-expanded={isOpen} aria-controls="mobile-section-shortcuts" aria-label={`Current section: ${activeLabel}. Open section navigation.`} onClick={() => setIsOpen(open => !open)} className="flex w-full items-center gap-3 text-left">
+    <aside className="fixed bottom-4 right-4 z-40 w-auto md:hidden" aria-label="Landing page section progress" data-testid="mobile-section-progress" data-state={isOpen ? "open" : "compact"}>
+      <div className={`tf-mobile-section-progress relative overflow-hidden rounded-2xl border border-blue-200/[0.14] shadow-2xl backdrop-blur-xl transition-[width,padding] duration-200 ${isOpen ? "w-[min(20rem,calc(100vw-2rem))] px-4 py-3" : "w-12 p-1.5"}`}>
+          <button type="button" aria-expanded={isOpen} aria-controls="mobile-section-shortcuts" aria-label={`Current section: ${activeLabel}. Open section navigation.`} onClick={() => setIsOpen(open => !open)} className={`flex items-center text-left ${isOpen ? "w-full gap-3" : "h-9 w-9 justify-center"}`}>
             <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-blue-200/[0.13] bg-blue-400/[0.10] font-mono text-[9px] text-blue-100">{String(activeIndex + 1).padStart(2, "0")}</span>
-            <span className="min-w-0 flex-1"><span className="block font-mono text-[8px] uppercase tracking-[0.16em] text-slate-500">Landing progress</span><span className="mt-0.5 block truncate text-xs font-semibold text-slate-100">{activeLabel}</span></span>
-            <span className={`font-mono text-[10px] text-blue-200 transition-transform duration-200 ${isOpen ? "rotate-45" : ""}`}>+</span>
+            <span className={isOpen ? "min-w-0 flex-1" : "sr-only"}><span className="block font-mono text-[8px] uppercase tracking-[0.16em] text-slate-500">Landing progress</span><span className="mt-0.5 block truncate text-xs font-semibold text-slate-100">{activeLabel}</span></span>
+            <span className={isOpen ? `font-mono text-[10px] text-blue-200 transition-transform duration-200 ${isOpen ? "rotate-45" : ""}` : "sr-only"}>+</span>
           </button>
-          <div className="mt-3 h-px overflow-hidden bg-white/[0.09]"><span className="block h-full origin-left bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-300 transition-transform duration-200" style={{ transform: `scaleX(${progress})` }} /></div>
-          {isOpen && <nav id="mobile-section-shortcuts" className="tf-mobile-section-shortcuts mt-3 grid grid-cols-2 gap-1.5 border-t border-white/[0.08] pt-3" aria-label="Landing section shortcuts">{mobileLandingSections.map((section, index) => <a key={section.id} href={`#${section.id}`} aria-current={section.id === activeSection ? "location" : undefined} onClick={() => setIsOpen(false)} className={`rounded-lg px-2.5 py-2 font-mono text-[9px] uppercase tracking-[0.1em] transition ${section.id === activeSection ? "bg-blue-400/[0.13] text-blue-100" : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"}`}><span className="mr-1.5 text-slate-600">{String(index + 1).padStart(2, "0")}</span>{section.label}</a>)}</nav>}
-        </div>
+          {isOpen && <><div className="mt-3 h-px overflow-hidden bg-white/[0.09]"><span className="block h-full origin-left bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-300 transition-transform duration-200" style={{ transform: `scaleX(${progress})` }} /></div><nav id="mobile-section-shortcuts" className="tf-mobile-section-shortcuts mt-3 grid grid-cols-2 gap-1.5 border-t border-white/[0.08] pt-3" aria-label="Landing section shortcuts">{mobileLandingSections.map((section, index) => <a key={section.id} href={`#${section.id}`} aria-current={section.id === activeSection ? "location" : undefined} onClick={() => setIsOpen(false)} className={`rounded-lg px-2.5 py-2 font-mono text-[9px] uppercase tracking-[0.1em] transition ${section.id === activeSection ? "bg-blue-400/[0.13] text-blue-100" : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"}`}><span className="mr-1.5 text-slate-600">{String(index + 1).padStart(2, "0")}</span>{section.label}</a>)}</nav></>}
       </div>
     </aside>
   );
@@ -368,8 +365,8 @@ function WorkspacePreview() {
       animate={shouldAnimate ? dashboardReveal.visible : undefined}
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
     >
-      <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview">
-      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
+      <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview" data-mobile-safe-bottom="true">
+      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-mobile-preview="compact" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-laptop-lid relative">
       <div aria-hidden="true" className="tf-laptop-camera"><span /></div>
@@ -384,39 +381,39 @@ function WorkspacePreview() {
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
               <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400">Trade Fusion workspace preview</span>
             </div>
-            <div className="grid w-full grid-cols-2 gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1 sm:flex sm:w-auto sm:items-center sm:gap-1.5">
+            <div className="grid w-full grid-cols-4 gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1 sm:flex sm:w-auto sm:items-center sm:gap-1.5">
               <button
                 onClick={() => setActiveTab("journal")}
                 aria-pressed={activeTab === "journal"}
-                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "journal" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                className={`min-w-0 rounded-lg px-1 py-2 font-mono text-[8px] uppercase tracking-[0.05em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "journal" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Journal
               </button>
               <button
                 onClick={() => setActiveTab("calendar")}
                 aria-pressed={activeTab === "calendar"}
-                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "calendar" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                className={`min-w-0 rounded-lg px-1 py-2 font-mono text-[8px] uppercase tracking-[0.05em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "calendar" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Calendar
               </button>
               <button
                 onClick={() => setActiveTab("backtest")}
                 aria-pressed={activeTab === "backtest"}
-                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "backtest" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                className={`min-w-0 rounded-lg px-1 py-2 font-mono text-[8px] uppercase tracking-[0.05em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "backtest" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
                 Backtest
               </button>
               <button
                 onClick={() => setActiveTab("room")}
                 aria-pressed={activeTab === "room"}
-                className={`min-w-0 rounded-lg px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "room" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                className={`min-w-0 rounded-lg px-1 py-2 font-mono text-[8px] uppercase tracking-[0.05em] transition sm:px-3 sm:py-1 sm:text-[10px] sm:tracking-[0.12em] ${activeTab === "room" ? "bg-[oklch(0.66_0.18_250)] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
               >
-                Trader’s Room
+                <span className="sm:hidden">Room</span><span className="hidden sm:inline">Trader’s Room</span>
               </button>
             </div>
           </div>
 
-          <div className="min-h-[380px] md:grid md:grid-cols-[210px_minmax(0,1fr)] md:min-h-[460px]">
+          <div className="min-h-0 md:grid md:grid-cols-[210px_minmax(0,1fr)] md:min-h-[460px]">
             {/* Sidebar */}
             <aside className="hidden border-r border-white/[0.08] bg-[#071326] p-5 md:block">
               <div className="flex items-center gap-2.5 text-xs font-semibold text-white">
@@ -458,33 +455,33 @@ function WorkspacePreview() {
             {/* Main Content Area based on Tab */}
             <motion.div key={activeTab} data-testid="workspace-preview-tab-panel" className="min-w-0 p-4 sm:p-6 md:p-7" initial={reducedMotion ? false : previewPanelReveal.hidden} animate={reducedMotion ? undefined : previewPanelReveal.visible} transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}>
               {activeTab === "journal" && (
-                <div className="space-y-5 sm:space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[oklch(0.70_0.16_250)]">Verified Performance</p>
-                      <h3 className="text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Executive Trading Ledger</h3>
+                      <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-[oklch(0.70_0.16_250)] sm:text-[9px] sm:tracking-[0.2em]">Verified Performance</p>
+                      <h3 className="text-lg font-semibold tracking-[-0.03em] text-white sm:text-2xl">Executive Trading Ledger</h3>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-[10px] text-emerald-400">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-mono text-[9px] text-emerald-400 sm:px-3 sm:text-[10px]">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live Sync Active
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
                     {[
                       ["Net P&L", "+$14,820.50", "text-emerald-400", "+18.4% MoM"],
                       ["Win Rate", "71.4%", "text-blue-300", "28 Wins / 11 Losses"],
                       ["Profit Factor", "2.38", "text-emerald-300", "Top 5% Tier"],
                       ["Sharpe Ratio", "2.12", "text-slate-200", "Low Volatility"],
                     ].map(([label, value, color, sub]) => (
-                      <div key={label} className="group rounded-2xl border border-blue-200/[0.12] bg-gradient-to-b from-[#13284d] to-[#0c1a32] p-4 transition duration-300 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-500/10">
-                        <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-400">{label}</p>
-                        <p className={`mt-2 font-mono text-lg font-bold sm:text-xl ${color}`}>{value}</p>
-                        <p className="mt-1 font-mono text-[9px] text-slate-500">{sub}</p>
+                      <div key={label} className="group rounded-xl border border-blue-200/[0.12] bg-gradient-to-b from-[#13284d] to-[#0c1a32] p-3 transition duration-300 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-500/10 sm:rounded-2xl sm:p-4">
+                        <p className="font-mono text-[8px] uppercase tracking-[0.13em] text-slate-400 sm:text-[9px] sm:tracking-[0.16em]">{label}</p>
+                        <p className={`mt-1.5 font-mono text-base font-bold sm:mt-2 sm:text-xl ${color}`}>{value}</p>
+                        <p className="mt-1 hidden font-mono text-[9px] text-slate-500 sm:block">{sub}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#09152b]">
+                  <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#09152b] sm:rounded-2xl">
                     <div className="hidden grid-cols-[1.2fr_1fr_1fr_0.8fr] border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 font-mono text-[8px] uppercase tracking-[0.18em] text-slate-400 sm:grid">
                       <span>Session</span><span>Instrument</span><span>Setup</span><span>Net Result</span>
                     </div>
@@ -493,8 +490,8 @@ function WorkspacePreview() {
                       ["London · Morning", "XAU/USD", "Liquidity Sweep", "+$895.50", "text-emerald-400"],
                       ["New York · Power Hour", "NAS100", "Trend Continuation", "-$310.00", "text-red-400"],
                     ].map(([session, inst, setup, res, color]) => (
-                      <div key={`${session}-${inst}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/[0.05] px-3 py-3 font-mono text-xs text-slate-300 last:border-0 hover:bg-white/[0.02] sm:grid-cols-[1.2fr_1fr_1fr_0.8fr] sm:px-4 sm:py-3.5">
-                        <span className="min-w-0 sm:text-slate-400"><span className="block truncate font-semibold text-white sm:hidden">{inst}</span><span className="block truncate text-slate-400">{session}</span><span className="mt-0.5 block truncate text-[10px] text-slate-500 sm:hidden">{setup}</span></span>
+                      <div key={`${session}-${inst}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-white/[0.05] px-3 py-2.5 font-mono text-xs text-slate-300 last:border-0 hover:bg-white/[0.02] sm:grid-cols-[1.2fr_1fr_1fr_0.8fr] sm:px-4 sm:py-3.5">
+                        <span className="min-w-0 sm:text-slate-400"><span className="block truncate font-semibold text-white sm:hidden">{inst}</span><span className="block truncate text-slate-400">{session}</span><span className="mt-0.5 hidden truncate text-[10px] text-slate-500 sm:block">{setup}</span></span>
                         <span className="hidden font-semibold text-white sm:block">{inst}</span>
                         <span className="hidden text-slate-400 sm:block">{setup}</span>
                         <span className={`text-right font-bold ${color}`}>{res}</span>

@@ -112,6 +112,7 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("compact");
     expect(screen.getByTestId("cinematic-hero").getAttribute("data-depth-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("hero-3d-scene").getAttribute("aria-hidden")).toBe("true");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
@@ -205,10 +206,24 @@ describe("Expanded Trade Fusion landing page", () => {
   it("offers a compact mobile section-progress control with accessible landing shortcuts", () => {
     render(<Landing />);
     const progress = screen.getByTestId("mobile-section-progress");
+    expect(progress.getAttribute("data-state")).toBe("compact");
     const trigger = within(progress).getByRole("button", { name: /current section: start/i });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(progress.getAttribute("data-state")).toBe("open");
     expect(within(progress).getByRole("link", { name: /pricing/i }).getAttribute("href")).toBe("#pricing");
+  });
+
+  it("keeps the portrait workspace preview compact, tab-accessible, and reserved above the fixed progress control", () => {
+    render(<Landing />);
+
+    const preview = screen.getByTestId("scroll-linked-workspace-preview");
+    expect(preview.getAttribute("data-mobile-safe-bottom")).toBe("true");
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("compact");
+    expect(screen.getByTestId("mobile-section-progress").getAttribute("data-state")).toBe("compact");
+
+    fireEvent.click(screen.getByRole("button", { name: "Calendar" }));
+    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
   });
 });

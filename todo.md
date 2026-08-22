@@ -17,6 +17,12 @@
 - [x] Add a reduced-motion landing regression proving the decorative 3D scene is disabled while the core hero remains available.
 - [x] Expose and test a reduced-motion-specific disabled state for the decorative 3D scene while preserving hero conversion content.
 
+- [x] Audit the portrait mobile landing screenshot’s workspace-preview density and landing-progress overlap.
+- [x] Redesign the workspace preview for narrow vertical screens with compact tabs, a concise metric treatment, and reduced preview height.
+- [x] Reserve safe space for the fixed mobile landing-progress panel without hiding preview context or the next section.
+- [x] Add mobile regression coverage for compact preview hierarchy, tab access, and protected bottom spacing before publishing.
+- [x] Expose and test a portrait-preview safe-space signal proving the compact progress control cannot overlap the workspace preview.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.

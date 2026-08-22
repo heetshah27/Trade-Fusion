@@ -409,6 +409,8 @@
 
   @media (max-width: 767px) {
     .tf-laptop-stage { transform: none; }
+    .tf-laptop-reveal [data-mobile-safe-bottom="true"] { margin-bottom: 5.75rem; }
+    .tf-mobile-section-progress[data-state="compact"] { box-shadow: 0 16px 34px rgb(0 0 0 / 0.34), inset 0 1px 0 rgb(255 255 255 / 0.06); }
     .tf-3d-hero-beacon { display: none; }
     .tf-3d-hero-grid-plane { bottom: -14rem; opacity: 0.24; }
     .tf-3d-hero-orbit { opacity: 0.28; }
