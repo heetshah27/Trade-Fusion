@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { TradeFusionBrand, TradeFusionMark } from "@/components/TradeFusionBrand";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { MacbookScroll } from "@/components/ui/macbook-scroll";
 
 import { trpc } from "@/lib/trpc";
 
@@ -398,7 +399,7 @@ function WorkspacePreview() {
     >
       <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview" data-mobile-safe-bottom="true">
       <MobileWorkspacePreview activeTab={activeTab} onSelect={setActiveTab} />
-      <div className="hidden md:block">
+      <div className="hidden">
       <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-mobile-preview="desktop-laptop" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-laptop-lid relative">
@@ -672,8 +673,17 @@ function WorkspacePreview() {
       <div aria-hidden="true" className="tf-laptop-base"><div className="tf-laptop-trackpad" /></div>
       </div>
       </div>
+      <div className="hidden md:block">
+        <MacbookScroll
+          title={<><p className="font-mono text-[10px] uppercase tracking-[0.24em] text-blue-200">Backtest replay</p><h3 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-white">Plan the execution.<br /><span className="text-blue-300">Review the move.</span></h3></>}
+          badge={<span className="inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-blue-400/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-100"><TradeFusionMark size="small" /> Private XAU/USD replay</span>}
+          src="/manus-storage/trade-fusion-backtest-chart-reference_26bb10ef.webp"
+          alt="User-supplied Backtest chart reference displayed in the Trade Fusion MacBook preview"
+          showGradient={false}
+        />
+      </div>
       </motion.div>
-      <p className="mt-4 hidden text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 md:block">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>
+      <p className="mt-4 hidden text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 md:block">Scroll-driven Trade Fusion Backtest preview · User-supplied chart reference shown inside an original MacBook frame</p>
     </motion.div>
   );
 }

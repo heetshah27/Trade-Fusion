@@ -43,6 +43,11 @@
 - [x] Disable decorative ticker marquee movement when the visitor prefers reduced motion and expose a deterministic state for regression coverage.
 - [x] Re-run focused and full validation after adding reduced-motion ticker support.
 
+- [x] Audit the current landing workspace preview and available MacbookScroll component implementation before replacement.
+- [x] Build a Trade Fusion–branded scroll-driven MacBook reveal using the Backtest candlestick chart reference as screen content.
+- [x] Keep the supplied chart asset out of the project bundle and preserve responsive plus reduced-motion fallbacks.
+- [x] Add regression coverage and verify the MacBook presentation on desktop and portrait mobile before publishing.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.
