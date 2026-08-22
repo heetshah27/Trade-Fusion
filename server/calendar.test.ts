@@ -65,6 +65,22 @@ describe("ForexFactory calendar parser", () => {
     expect(response.events.some(event => event.impact === "high" && event.event === "Retail Sales m/m")).toBe(true);
   });
 
+  it("deduplicates concurrent source reads so multiple calendar viewers share one upstream request", async () => {
+    let resolveFetch: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn().mockImplementation(() => new Promise<Response>(resolve => { resolveFetch = resolve; }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const first = getLiveCalendarEvents();
+    const second = getLiveCalendarEvents();
+    await Promise.resolve();
+    resolveFetch?.(new Response(SAMPLE_FOREX_FACTORY_JSON, { headers: { "content-type": "application/json" } }));
+
+    const [firstResponse, secondResponse] = await Promise.all([first, second]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(firstResponse.events).toHaveLength(2);
+    expect(secondResponse.events).toHaveLength(2);
+  });
+
   it("rejects an HTML challenge rather than parsing it as an empty calendar", async () => {
     vi.stubGlobal(
       "fetch",

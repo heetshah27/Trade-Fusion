@@ -1,10 +1,14 @@
 import { publicProcedure, router } from "./_core/trpc";
+import { eq } from "drizzle-orm";
+import { calendarCache } from "../drizzle/schema";
+import { getDb } from "./db";
 
 const FOREX_FACTORY_FEED_URL =
   "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-// ForexFactory updates this export at most hourly and can rate-limit repeated reads.
+// ForexFactory updates this export at most hourly and can rate-limit repeated reads; a durable cache keeps cold instances responsive.
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const STALE_RETRY_TTL_MS = 15 * 60 * 1000;
+const CALENDAR_CACHE_KEY = "forexfactory_thisweek";
 
 // The structured JSON export includes a New York offset in each timestamp.
 // Preserve that source time rather than applying a second offset in the client.
@@ -45,10 +49,14 @@ type ForexFactoryJsonRecord = {
 
 let cachedCalendar: CalendarResponse | null = null;
 let cachedAt = 0;
+let inFlightCalendarRequest: Promise<CalendarResponse> | null = null;
+let bypassDurableCacheForTest = false;
 
 export function resetCalendarCacheForTest() {
   cachedCalendar = null;
   cachedAt = 0;
+  inFlightCalendarRequest = null;
+  bypassDurableCacheForTest = true;
 }
 
 function decodeXml(value: string): string {
@@ -232,11 +240,51 @@ export function calendarFallback(cached: CalendarResponse | null, message: strin
   };
 }
 
-export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
-  const now = Date.now();
-  const ttl = cachedCalendar?.sourceStatus === "live" ? CACHE_TTL_MS : STALE_RETRY_TTL_MS;
-  if (cachedCalendar && now - cachedAt < ttl) return cachedCalendar;
+function isCalendarResponse(value: unknown): value is CalendarResponse {
+  if (!value || typeof value !== "object") return false;
+  const response = value as Partial<CalendarResponse>;
+  return Array.isArray(response.events)
+    && (response.sourceStatus === "live" || response.sourceStatus === "stale" || response.sourceStatus === "unavailable")
+    && typeof response.refreshedAt === "string";
+}
 
+function cacheTtl(response: CalendarResponse) {
+  return response.sourceStatus === "live" ? CACHE_TTL_MS : STALE_RETRY_TTL_MS;
+}
+
+async function readDurableCalendarCache(): Promise<CalendarResponse | null> {
+  if (bypassDurableCacheForTest || process.env.NODE_ENV === "test") return null;
+  try {
+    const db = await getDb();
+    if (!db) return null;
+    const [row] = await db.select().from(calendarCache).where(eq(calendarCache.key, CALENDAR_CACHE_KEY)).limit(1);
+    return row && isCalendarResponse(row.payload) ? row.payload : null;
+  } catch (error) {
+    console.warn("[Calendar] Durable cache read failed:", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
+async function writeDurableCalendarCache(response: CalendarResponse) {
+  if (bypassDurableCacheForTest || process.env.NODE_ENV === "test") return;
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.insert(calendarCache).values({
+      key: CALENDAR_CACHE_KEY,
+      payload: response,
+      refreshedAt: new Date(response.refreshedAt),
+      updatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: calendarCache.key,
+      set: { payload: response, refreshedAt: new Date(response.refreshedAt), updatedAt: new Date() },
+    });
+  } catch (error) {
+    console.warn("[Calendar] Durable cache write failed:", error instanceof Error ? error.message : error);
+  }
+}
+
+async function retrieveCalendarFromSource(): Promise<CalendarResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12_000);
 
@@ -261,7 +309,7 @@ export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
 
     const coverage = getCalendarCoverage(events);
     const coverageIsCurrent = hasCurrentCalendarCoverage(events);
-    cachedCalendar = {
+    const calendarResponse: CalendarResponse = {
       events,
       sourceStatus: coverageIsCurrent ? "live" : "stale",
       refreshedAt: new Date().toISOString(),
@@ -272,8 +320,7 @@ export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
             message: `ForexFactory's weekly export currently ends ${coverage.coverageEnd ?? "before today"}. Trade Fusion will retry shortly and will not label stale dates as upcoming coverage.`,
           }),
     };
-    cachedAt = now;
-    return cachedCalendar;
+    return calendarResponse;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to retrieve the ForexFactory calendar.";
     console.error("[Calendar] ForexFactory retrieval failed:", message);
@@ -283,6 +330,34 @@ export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
     );
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+export async function getLiveCalendarEvents(): Promise<CalendarResponse> {
+  const now = Date.now();
+  if (cachedCalendar && now - cachedAt < cacheTtl(cachedCalendar)) return cachedCalendar;
+
+  const durableCache = await readDurableCalendarCache();
+  if (durableCache) {
+    const durableAge = now - new Date(durableCache.refreshedAt).getTime();
+    if (durableAge < cacheTtl(durableCache)) {
+      cachedCalendar = durableCache;
+      cachedAt = now;
+      return durableCache;
+    }
+    cachedCalendar = durableCache;
+  }
+
+  if (inFlightCalendarRequest) return inFlightCalendarRequest;
+  inFlightCalendarRequest = retrieveCalendarFromSource();
+  try {
+    const response = await inFlightCalendarRequest;
+    cachedCalendar = response;
+    cachedAt = Date.now();
+    await writeDurableCalendarCache(response);
+    return response;
+  } finally {
+    inFlightCalendarRequest = null;
   }
 }
 

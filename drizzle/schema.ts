@@ -1,4 +1,4 @@
-import { boolean, decimal, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, decimal, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
@@ -79,6 +79,14 @@ export const contactInquiries = pgTable(
 );
 
 export type ContactInquiry = typeof contactInquiries.$inferSelect;
+
+/** Shared, source-backed macro calendar cache. It contains no member data. */
+export const calendarCache = pgTable("calendar_cache", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  payload: jsonb("payload").$type<unknown>().notNull(),
+  refreshedAt: timestamp("refreshedAt", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+});
 
 /** A member-owned setup library used by manual live-trade logging and analytics. */
 export const tradeSetups = pgTable(

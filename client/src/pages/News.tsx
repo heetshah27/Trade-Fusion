@@ -55,21 +55,17 @@ const getImpactIcon = (impact: string) => {
 export default function News() {
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const { data: calendar, isLoading, isFetching, refetch } = trpc.calendar.getEvents.useQuery();
+  const { data: calendar, isLoading, isFetching, isError, error, refetch } = trpc.calendar.getEvents.useQuery(undefined, {
+    staleTime: 4 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
   const response = calendar as CalendarResponse | undefined;
   const events = response?.events ?? [];
   const coverageLabel = response?.coverageStart && response?.coverageEnd
     ? `${formatCoverageDate(response.coverageStart)} – ${formatCoverageDate(response.coverageEnd)}`
     : 'This week';
-
-  // Auto-refresh every 5 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      void refetch();
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => clearInterval(interval);
-  }, [refetch]);
 
   useEffect(() => {
     if (response?.refreshedAt) {
@@ -175,7 +171,14 @@ export default function News() {
               </div>
             </Card>
           )}
-          {isLoading && events.length === 0 ? (
+          {isError && events.length === 0 ? (
+            <Card className="border-amber-500/30 bg-gradient-to-b from-[#152647] to-[#101c33] p-8 text-center" role="alert">
+              <AlertCircle className="mx-auto mb-3 h-7 w-7 text-amber-400" />
+              <p className="font-medium text-white">Live calendar update could not finish</p>
+              <p className="mt-2 text-sm text-slate-400">{error instanceof Error ? error.message : 'The source did not respond. No substitute events are shown.'}</p>
+              <Button onClick={handleRefresh} disabled={isFetching} className="mt-5 rounded-xl bg-blue-500 text-white hover:bg-blue-400">Try again</Button>
+            </Card>
+          ) : isLoading && events.length === 0 ? (
             <Card className="overflow-hidden border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-0">
               <div className="grid grid-cols-[130px_1fr_120px] gap-4 border-b border-blue-200/[0.08] px-6 py-3 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600">
                 <span>Time · ET</span><span>Event</span><span>Impact</span>
@@ -208,6 +211,7 @@ export default function News() {
 
               return <Card
                 key={event.id}
+                data-testid={`calendar-event-${event.id}`}
                 className="rounded-2xl border-blue-200/[0.10] bg-gradient-to-b from-[#152647] to-[#101c33] p-6 shadow-[0_14px_30px_rgba(1,8,24,0.22)] transition-colors hover:border-blue-200/[0.20]"
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">

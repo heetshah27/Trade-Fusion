@@ -1,5 +1,20 @@
 # Project TODO
 
+- [x] Inspect the live Market Calendar request, server logs, source response, and UI error state for the reported malfunction.
+- [x] Repair the confirmed calendar data or presentation defect without introducing fabricated events.
+- [x] Validate current source-backed events, Eastern Time formatting, and desktop/mobile calendar states before publishing.
+
+- [x] Render the repaired Market Calendar in an isolated data-backed context and verify current source events visibly replace the loading state.
+- [x] Capture explicit desktop and mobile proof of rendered ET-formatted calendar events before publishing.
+
+- [x] Add focused UI coverage asserting successful calendar responses render source event cards, coverage, and Eastern Time labels.
+- [x] Record observable desktop and mobile event-card rendering evidence before publishing.
+
+- [x] Add separate desktop and mobile UI assertions for calendar coverage, event cards, flags, and Eastern Time labels.
+- [x] Preserve independently verifiable visual rendering evidence for the live calendar before publishing.
+
+- [x] Document reproducible automated desktop and mobile calendar rendering coverage instead of relying on retained screenshots.
+
 - [x] Audit the protected dashboard launch transition and Add Trade form tag fields shown in the screenshot.
 - [x] Add a smooth, reduced-motion-safe post-login dashboard loading handoff.
 - [x] Remove the optional saved setup, session, category, trade-quality, and trading-plan inputs from manual Add Trade.
