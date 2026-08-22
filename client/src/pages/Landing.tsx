@@ -292,7 +292,7 @@ function WorkspacePreview() {
   return (
     <motion.div
       ref={previewRef}
-      className="relative mx-auto mt-14 max-w-6xl px-1 sm:px-4"
+      className="tf-laptop-reveal relative mx-auto mt-16 max-w-6xl px-1 sm:mt-20 sm:px-4"
       initial={reducedMotion ? false : dashboardReveal.hidden}
       animate={shouldAnimate ? dashboardReveal.visible : undefined}
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
@@ -646,8 +646,10 @@ export default function Landing() {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,oklch(0.58_0.18_250_/_0.26),transparent_30rem),radial-gradient(circle_at_8%_65%,oklch(0.36_0.14_245_/_0.18),transparent_32rem)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.09] [background-image:linear-gradient(oklch(0.8_0.02_250)_1px,transparent_1px),linear-gradient(90deg,oklch(0.8_0.02_250)_1px,transparent_1px)] [background-size:56px_56px]" />
+      <div aria-hidden="true" className="tf-hero-deep-space pointer-events-none absolute inset-0" />
+      <div aria-hidden="true" className="tf-hero-grid pointer-events-none absolute inset-0" />
+      <div aria-hidden="true" className="tf-hero-orbit tf-hero-orbit-left pointer-events-none absolute" />
+      <div aria-hidden="true" className="tf-hero-orbit tf-hero-orbit-right pointer-events-none absolute" />
 
       <header className="relative z-20 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Brand />
@@ -679,8 +681,10 @@ export default function Landing() {
         </div>
       )}
 
-      <section id="start" className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-16 text-center sm:pb-28 sm:pt-20 lg:px-8 lg:pt-24">
-        <h1 className="tf-rise tf-rise-delay-1 mx-auto max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
+      <section id="start" data-testid="cinematic-hero" className="tf-cinematic-hero relative z-10 mx-auto max-w-7xl px-5 pb-24 pt-20 text-center sm:pb-32 sm:pt-28 lg:px-8 lg:pt-32">
+        <div className="tf-cinematic-copy relative mx-auto">
+        <p className="tf-rise font-mono text-[9px] uppercase tracking-[0.3em] text-blue-200/80 sm:text-[10px]">Private performance workspace</p>
+        <h1 className="tf-rise tf-rise-delay-1 mx-auto mt-5 max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
           Turn every execution into <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-sky-300 bg-clip-text text-transparent">your next edge.</span>
         </h1>
         <p className="tf-rise tf-rise-delay-2 mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
@@ -689,6 +693,7 @@ export default function Landing() {
         <div className="tf-rise tf-rise-delay-3 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 px-7 text-base font-semibold shadow-xl !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
           <a href="#platform" className="tf-cta-secondary h-12 px-7 text-base">Explore platform <ChevronRight className="ml-1 h-4 w-4" /></a>
+        </div>
         </div>
         <WorkspacePreview />
       </section>

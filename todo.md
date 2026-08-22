@@ -388,3 +388,6 @@
 - [x] Review laptop-frame layering and define a readability-safe animated screen-reflection treatment.
 - [x] Add a pointer-safe subtle screen reflection with reduced-motion support.
 - [x] Test screen legibility, workspace tab interaction, desktop/mobile scaling, and motion preferences before publishing.
+- [x] Audit the existing landing hero and define the selected original cinematic Trade Fusion visual direction.
+- [x] Add larger hero breathing room, a staged laptop reveal, layered background depth, and refined premium surfaces.
+- [x] Test hero readability, workspace interactions, reduced-motion behavior, and desktop/mobile composition before publishing.
