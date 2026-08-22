@@ -275,6 +275,7 @@ function MobileSectionProgress() {
 }
 
 type ProductSpotlight = (typeof productSpotlights)[number];
+type PreviewTab = "journal" | "calendar" | "room" | "backtest";
 
 function ScrollSpotlight({ spotlight, index }: { spotlight: ProductSpotlight; index: number }) {
   const spotlightRef = useRef<HTMLElement>(null);
@@ -325,8 +326,38 @@ function ScrollSpotlight({ spotlight, index }: { spotlight: ProductSpotlight; in
   );
 }
 
+function MobileWorkspacePreview({ activeTab, onSelect }: { activeTab: PreviewTab; onSelect: (tab: PreviewTab) => void }) {
+  const tabs: Array<{ key: PreviewTab; label: string }> = [
+    { key: "journal", label: "Journal" },
+    { key: "calendar", label: "Calendar" },
+    { key: "backtest", label: "Replay" },
+    { key: "room", label: "Room" },
+  ];
+
+  return (
+    <section data-testid="native-mobile-workspace-preview" data-layout="native-card" className="tf-native-mobile-preview mx-auto w-full max-w-[22rem] px-3 md:hidden">
+      <div className="overflow-hidden rounded-[1.6rem] border border-blue-200/[0.16] bg-[#08172d]/95 p-3 shadow-[0_24px_56px_rgba(0,0,0,0.38)] backdrop-blur-xl">
+        <div className="flex items-center justify-between px-1 pb-3">
+          <div className="flex items-center gap-2"><TradeFusionMark size="small" /><span className="font-mono text-[8px] uppercase tracking-[0.16em] text-slate-400">Private workspace</span></div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-2 py-1 font-mono text-[8px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> synced</span>
+        </div>
+        <div className="grid grid-cols-4 gap-1 rounded-xl border border-white/[0.08] bg-black/10 p-1" aria-label="Workspace preview tabs">
+          {tabs.map(tab => <button key={tab.key} type="button" aria-pressed={activeTab === tab.key} onClick={() => onSelect(tab.key)} className={`rounded-lg px-1 py-2 font-mono text-[8px] uppercase tracking-[0.04em] transition ${activeTab === tab.key ? "bg-blue-500 text-white shadow-md shadow-blue-950/40" : "text-slate-400"}`}>{tab.label}</button>)}
+        </div>
+        <div className="mt-3 min-h-[205px] rounded-xl border border-white/[0.07] bg-[#071225] p-3">
+          {activeTab === "journal" && <div className="space-y-3"><div className="flex items-start justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.17em] text-blue-300">Today’s journal</p><h3 className="mt-1 text-base font-semibold tracking-[-0.03em] text-white">Execution review</h3></div><span className="font-mono text-[9px] text-slate-500">3 trades</span></div><div className="grid grid-cols-3 gap-2"><div className="rounded-lg border border-emerald-400/15 bg-emerald-400/[0.06] p-2"><p className="font-mono text-[7px] text-slate-500">NET P&L</p><p className="mt-1 font-mono text-sm font-bold text-emerald-300">+$1,842</p></div><div className="rounded-lg border border-blue-300/15 bg-blue-400/[0.06] p-2"><p className="font-mono text-[7px] text-slate-500">WIN RATE</p><p className="mt-1 font-mono text-sm font-bold text-blue-200">71%</p></div><div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-2"><p className="font-mono text-[7px] text-slate-500">FOCUS</p><p className="mt-1 font-mono text-sm font-bold text-white">A+</p></div></div><div className="space-y-1.5">{[["EUR/USD", "+$1,420", "text-emerald-300"], ["XAU/USD", "+$896", "text-emerald-300"], ["NAS100", "-$310", "text-rose-300"]].map(([symbol, result, tone]) => <div key={symbol} className="flex items-center justify-between rounded-lg bg-white/[0.025] px-2.5 py-2 font-mono text-[9px]"><span className="font-semibold text-slate-200">{symbol}</span><span className={tone}>{result}</span></div>)}</div></div>}
+          {activeTab === "calendar" && <div className="space-y-3"><div className="flex items-start justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.17em] text-blue-300">Macro focus</p><h3 className="mt-1 text-base font-semibold text-white">Today’s risk</h3></div><span className="font-mono text-[8px] text-slate-500">ET</span></div>{[["08:30", "Core Retail Sales", "HIGH", "text-rose-300 border-rose-400/25 bg-rose-400/[0.07]"], ["10:00", "FOMC Speaker", "MED", "text-amber-200 border-amber-300/25 bg-amber-300/[0.07]"], ["14:00", "Rate Decision", "HIGH", "text-rose-300 border-rose-400/25 bg-rose-400/[0.07]"]].map(([time, event, impact, tone]) => <div key={event} className="flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 py-2.5"><span className="font-mono text-[9px] text-blue-200">{time}</span><span className="min-w-0 flex-1 truncate text-xs text-slate-200">{event}</span><span className={`rounded-full border px-1.5 py-0.5 font-mono text-[7px] ${tone}`}>{impact}</span></div>)}</div>}
+          {activeTab === "backtest" && <div className="space-y-3"><div className="flex items-start justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.17em] text-blue-300">Private replay</p><h3 className="mt-1 text-base font-semibold text-white">XAU/USD · 15m</h3></div><span className="rounded-full bg-blue-400/[0.10] px-2 py-1 font-mono text-[8px] text-blue-200">SIMULATED</span></div><div className="relative h-20 overflow-hidden rounded-lg border border-white/[0.07] bg-[#050b16]"><div className="absolute inset-0 opacity-20 [background-image:linear-gradient(#3b82f6_1px,transparent_1px),linear-gradient(90deg,#3b82f6_1px,transparent_1px)] [background-size:24px_24px]" /><svg viewBox="0 0 400 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full"><polyline fill="none" stroke="#60a5fa" strokeWidth="2.5" points="0,72 30,60 60,65 90,30 120,46 150,22 180,55 210,41 240,67 270,38 300,48 330,25 360,44 400,18" /><line x1="0" x2="400" y1="59" y2="59" stroke="#34d399" strokeDasharray="5 5" opacity="0.8" /></svg></div><div className="grid grid-cols-3 gap-2"><div className="rounded-lg bg-white/[0.025] p-2"><p className="font-mono text-[7px] text-slate-500">ENTRY</p><p className="mt-1 font-mono text-[9px] text-white">2,381.20</p></div><div className="rounded-lg bg-white/[0.025] p-2"><p className="font-mono text-[7px] text-slate-500">RISK</p><p className="mt-1 font-mono text-[9px] text-white">0.50%</p></div><div className="rounded-lg bg-blue-500/[0.10] p-2"><p className="font-mono text-[7px] text-blue-300">PLAN</p><p className="mt-1 font-mono text-[9px] text-blue-100">LONG</p></div></div></div>}
+          {activeTab === "room" && <div className="space-y-3"><div className="flex items-start justify-between"><div><p className="font-mono text-[8px] uppercase tracking-[0.17em] text-sky-300">Member discussion</p><h3 className="mt-1 text-base font-semibold text-white">Trader’s Room</h3></div><span className="font-mono text-[8px] text-emerald-300">LIVE</span></div>{[["Execution", "Keeping CPI risk controlled", "4 replies"], ["Ideas", "Mapping London liquidity", "11 insights"]].map(([tag, title, activity]) => <div key={title} className="rounded-lg border border-white/[0.07] bg-white/[0.025] p-2.5"><div className="flex justify-between font-mono text-[8px] text-sky-300"><span>{tag}</span><span className="text-slate-500">{activity}</span></div><p className="mt-1.5 text-xs font-medium text-slate-100">{title}</p></div>)}</div>}
+        </div>
+        <p className="px-1 pt-3 font-mono text-[8px] uppercase tracking-[0.14em] text-slate-500">Tap a tab to explore the workflow</p>
+      </div>
+    </section>
+  );
+}
+
 function WorkspacePreview() {
-  const [activeTab, setActiveTab] = useState<"journal" | "calendar" | "room" | "backtest">("journal");
+  const [activeTab, setActiveTab] = useState<PreviewTab>("journal");
   const previewRef = useRef<HTMLDivElement>(null);
   const inView = useInView(previewRef, { once: true, amount: 0.22 });
   const reducedMotion = useReducedMotion();
@@ -366,7 +397,9 @@ function WorkspacePreview() {
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
     >
       <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview" data-mobile-safe-bottom="true">
-      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-mobile-preview="compact" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
+      <MobileWorkspacePreview activeTab={activeTab} onSelect={setActiveTab} />
+      <div className="hidden md:block">
+      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-mobile-preview="desktop-laptop" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-laptop-lid relative">
       <div aria-hidden="true" className="tf-laptop-camera"><span /></div>
@@ -638,8 +671,9 @@ function WorkspacePreview() {
       <div aria-hidden="true" className="tf-laptop-hinge" />
       <div aria-hidden="true" className="tf-laptop-base"><div className="tf-laptop-trackpad" /></div>
       </div>
+      </div>
       </motion.div>
-      <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>
+      <p className="mt-4 hidden text-center font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 md:block">Interactive Trade Fusion workspace preview · Click tabs to explore Journal, Calendar, Backtest, and Trader’s Room</p>
     </motion.div>
   );
 }

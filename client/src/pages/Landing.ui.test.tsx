@@ -89,7 +89,7 @@ describe("Expanded Trade Fusion landing page", () => {
   it("adds Backtest as an interactive first-class workspace-preview module", () => {
     render(<Landing />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Backtest" }));
+    fireEvent.click(within(screen.getByTestId("native-mobile-workspace-preview")).getByRole("button", { name: "Replay" }));
 
     expect(screen.getByText("Backtest Lab · XAU/USD")).toBeTruthy();
     expect(screen.getByText("Private Replay Workspace")).toBeTruthy();
@@ -100,10 +100,11 @@ describe("Expanded Trade Fusion landing page", () => {
   it("keeps the preview module switcher keyboard-readable with explicit active-tab state", () => {
     render(<Landing />);
 
-    const journalTab = screen.getByRole("button", { name: "Journal" });
+    const nativePreview = screen.getByTestId("native-mobile-workspace-preview");
+    const journalTab = within(nativePreview).getByRole("button", { name: "Journal" });
     expect(journalTab.getAttribute("aria-pressed")).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: "Calendar" }));
-    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(within(nativePreview).getByRole("button", { name: "Calendar" }));
+    expect(within(nativePreview).getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("includes scroll-linked depth treatment for the workspace preview and product spotlights", () => {
@@ -112,7 +113,8 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
-    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("compact");
+    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("desktop-laptop");
+    expect(screen.getByTestId("native-mobile-workspace-preview").getAttribute("data-layout")).toBe("native-card");
     expect(screen.getByTestId("cinematic-hero").getAttribute("data-depth-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("hero-3d-scene").getAttribute("aria-hidden")).toBe("true");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
@@ -220,10 +222,11 @@ describe("Expanded Trade Fusion landing page", () => {
 
     const preview = screen.getByTestId("scroll-linked-workspace-preview");
     expect(preview.getAttribute("data-mobile-safe-bottom")).toBe("true");
-    expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-mobile-preview")).toBe("compact");
+    const nativePreview = screen.getByTestId("native-mobile-workspace-preview");
+    expect(nativePreview.getAttribute("data-layout")).toBe("native-card");
     expect(screen.getByTestId("mobile-section-progress").getAttribute("data-state")).toBe("compact");
 
-    fireEvent.click(screen.getByRole("button", { name: "Calendar" }));
-    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(within(nativePreview).getByRole("button", { name: "Calendar" }));
+    expect(within(nativePreview).getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
   });
 });
