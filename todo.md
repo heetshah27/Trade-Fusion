@@ -1,5 +1,12 @@
 # Project TODO
 
+- [x] Trace why a Get Started sign-in can return to the public landing page instead of the private dashboard.
+- [x] Persist the intended protected dashboard return path across secure authentication.
+- [x] Add direct-return regression coverage and validate the repaired flow before publishing.
+
+- [x] Add a mocked successful OAuth callback test that asserts the dashboard redirect response.
+- [x] Verify the Get Started authentication return path reaches the protected dashboard route in focused coverage.
+
 - [x] Audit the current Get Started navigation and protected launch-gate motion path.
 - [x] Add clear loading feedback and a smooth transition from primary Get Started controls to login or sign up.
 - [x] Test reduced-motion behavior, keyboard access, and desktop/mobile transition states before publishing.
