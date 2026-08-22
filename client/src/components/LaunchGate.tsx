@@ -83,8 +83,8 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-300/[0.22] bg-blue-400/[0.10] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-blue-200">
               <Sparkles className="h-3.5 w-3.5" /> Private workspace
             </div>
-            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Review. Refine. Repeat.</h1>
-            <p className="mt-3 leading-6 text-slate-400">Sign in to open your private, cross-device trading journal and market calendar.</p>
+            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">Welcome to Trade Fusion.</h1>
+            <p className="mt-3 leading-6 text-slate-400">Log in or create your account to enter your private, cross-device trading workspace.</p>
           </div>
           <div className="mt-8 space-y-3 text-sm text-slate-400">
             <div className="flex items-center gap-3"><ShieldCheck className="h-4 w-4 text-[oklch(0.70_0.16_250)]" /> Your trades remain linked to your account.</div>
@@ -95,9 +95,9 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
             disabled={checkingAuth}
             className="mt-9 h-11 w-full bg-[oklch(0.66_0.18_250)] font-semibold text-white hover:bg-[oklch(0.72_0.18_250)]"
           >
-            {checkingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in to Trade Fusion"}
+            {checkingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue to login or sign up"}
           </Button>
-          <p className="mt-4 text-center text-xs leading-5 text-slate-500">Secure access is required before your journal loads.</p>
+          <p className="mt-4 text-center text-xs leading-5 text-slate-500">After secure access, you will enter your Trade Fusion dashboard.</p>
         </section>
       </div>
     </motion.main>

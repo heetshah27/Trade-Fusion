@@ -17,6 +17,7 @@ vi.mock("framer-motion", () => {
 });
 
 import Landing from "./Landing";
+import { appRoutes } from "@/lib/appRoutes";
 
 describe("Expanded Trade Fusion landing page", () => {
   afterEach(cleanup);
@@ -112,6 +113,14 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("hero-workflow-step-rehearse").textContent).toContain("Rehearse");
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
     expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
+  });
+
+  it("sends primary Get Started controls to the member dashboard for the login-or-sign-up handoff", () => {
+    render(<Landing />);
+
+    const getStartedLinks = screen.getAllByRole("link", { name: /get started/i });
+    expect(getStartedLinks.length).toBeGreaterThan(0);
+    getStartedLinks.forEach(link => expect(link.getAttribute("href")).toBe(appRoutes.dashboard));
   });
 
   it("offers a compact mobile section-progress control with accessible landing shortcuts", () => {

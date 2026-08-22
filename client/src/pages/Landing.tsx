@@ -726,8 +726,8 @@ export default function Landing() {
           <a className="tf-nav-link text-slate-300 hover:text-white transition" href="#security">Privacy</a>
         </nav>
         <div className="hidden items-center gap-3 md:flex">
-          <Link href={appRoutes.journal} className="text-xs font-mono text-slate-300 hover:text-white transition px-3 py-2">Sign in</Link>
-          <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] px-4 py-2.5 text-sm inline-flex !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          <Link href={appRoutes.dashboard} className="text-xs font-mono text-slate-300 hover:text-white transition px-3 py-2">Sign in</Link>
+          <Link href={appRoutes.dashboard} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] px-4 py-2.5 text-sm inline-flex !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </div>
         <button onClick={() => setMobileOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.10] bg-white/[0.04] text-slate-300 md:hidden" aria-label="Toggle navigation">{mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}</button>
       </header>
@@ -740,7 +740,7 @@ export default function Landing() {
             <a href="#pricing" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Pricing</a>
             <a href="#faq" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">FAQ</a>
             <a href="#contact" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2 hover:bg-white/[0.05]">Contact</a>
-            <Link href={appRoutes.journal} className="mt-2 inline-flex items-center justify-center rounded-xl bg-[oklch(0.66_0.18_250)] px-4 py-3 font-semibold text-white">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Link href={appRoutes.dashboard} className="mt-2 inline-flex items-center justify-center rounded-xl bg-[oklch(0.66_0.18_250)] px-4 py-3 font-semibold text-white">Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </div>
         </div>
       )}
@@ -755,7 +755,7 @@ export default function Landing() {
           Trade Fusion brings together manual journaling, private saved setups, setup analytics, market context, replay practice, and peer discussion in one disciplined workflow.
         </p>
         <div className="tf-rise tf-rise-delay-3 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 px-7 text-base font-semibold shadow-xl !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          <Link href={appRoutes.dashboard} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 px-7 text-base font-semibold shadow-xl !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
           <a href="#platform" className="tf-cta-secondary h-12 px-7 text-base">Explore platform <ChevronRight className="ml-1 h-4 w-4" /></a>
         </div>
         </div>
@@ -781,7 +781,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="flex flex-col justify-between gap-7 rounded-[2rem] border border-blue-300/[0.15] bg-[linear-gradient(125deg,rgba(20,55,109,0.42),rgba(5,18,38,0.78))] p-7 sm:flex-row sm:items-center sm:p-10">
             <div className="max-w-2xl"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-300">One clear workflow</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">Capture the execution. Review the pattern. Prepare the next decision.</h2><p className="mt-3 text-sm leading-6 text-slate-400">Your live journal, saved setups, and analytics remain private; Backtest stays a separate rehearsal space.</p></div>
-            <Link href={appRoutes.journal} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 shrink-0 px-6 !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Build your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Link href={appRoutes.dashboard} className="tf-cta-primary !bg-[oklch(0.66_0.18_250)] h-12 shrink-0 px-6 !shadow-blue-500/20 hover:!bg-[oklch(0.72_0.15_250)]">Build your workspace <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </div>
         </div>
       </section>
@@ -800,7 +800,7 @@ export default function Landing() {
               <div className="flex items-start justify-between gap-4"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">Free</p><h3 className="mt-3 text-2xl font-semibold text-white">Build the review habit.</h3></div><span className="rounded-full border border-slate-300/15 bg-white/[0.05] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-300">$0</span></div>
               <p className="mt-5 max-w-md text-sm leading-6 text-slate-400">A structured starting point for documenting real decisions and participating in the member community.</p>
               <ul className="mt-7 grid gap-3 text-sm text-slate-200"><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Up to 15 new live trades per calendar month</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Private Journal entries linked to eligible trades</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Market Calendar and Setup Analytics</li><li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />Up to 10 new Trader’s Room threads per month; replies remain open</li></ul>
-              <Link href={appRoutes.journal} className="tf-press mt-8 inline-flex h-11 items-center rounded-xl border border-white/[0.14] px-5 text-sm font-semibold text-slate-100 transition hover:bg-white/[0.06]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href={appRoutes.dashboard} className="tf-press mt-8 inline-flex h-11 items-center rounded-xl border border-white/[0.14] px-5 text-sm font-semibold text-slate-100 transition hover:bg-white/[0.06]">Get started free <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </article>
 
             <article className="tf-pro-plan relative overflow-hidden rounded-[1.75rem] border border-violet-300/35 bg-[radial-gradient(circle_at_top_right,rgba(167,139,250,0.24),transparent_38%),linear-gradient(150deg,rgba(30,32,71,0.98),rgba(9,15,34,0.98))] p-6 shadow-[0_20px_70px_rgba(99,102,241,0.18)] sm:p-8">

@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Audit the public Get Started controls and current login/sign-up redirect behavior.
+- [x] Route successful Login or Sign up into the authenticated Trade Fusion workspace.
+- [x] Add regression coverage and validate the conversion flow on desktop and mobile before publishing.
+
 - [x] Replace all fallback and mock calendar entries with live ForexFactory-only results.
 - [x] Improve ForexFactory retrieval and parsing with a clear unavailable-data state.
 - [x] Correct calendar dates and display all event times in 12-hour AM/PM format.

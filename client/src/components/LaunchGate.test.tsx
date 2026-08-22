@@ -22,7 +22,8 @@ describe("LaunchGate branding", () => {
     expect(screen.getByTestId("trade-fusion-brand")).toBeTruthy();
     expect(screen.getByTestId("trade-fusion-mark")).toBeTruthy();
 
-    await waitFor(() => expect(screen.getByText("Sign in to Trade Fusion")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Continue to login or sign up")).toBeTruthy());
+    expect(screen.getByText("After secure access, you will enter your Trade Fusion dashboard.")).toBeTruthy();
     expect(screen.getAllByTestId("trade-fusion-brand")).toHaveLength(2);
     expect(screen.getAllByText("Trading Workspace")).toHaveLength(2);
   });
@@ -32,6 +33,6 @@ describe("LaunchGate branding", () => {
 
     expect(screen.getByLabelText("Trade Fusion loading")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Public landing page")).toBeTruthy());
-    expect(screen.queryByText("Sign in to Trade Fusion")).toBeNull();
+    expect(screen.queryByText("Continue to login or sign up")).toBeNull();
   });
 });
