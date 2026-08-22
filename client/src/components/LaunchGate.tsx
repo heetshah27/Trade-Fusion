@@ -22,7 +22,7 @@ function LaunchBackground() {
   );
 }
 
-function IntroScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
+function IntroScreen({ reduceMotion, status }: { reduceMotion: boolean | null; status: string }) {
   return (
     <motion.main
       key="intro"
@@ -57,7 +57,7 @@ function IntroScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
               className="h-full w-1/3 bg-[oklch(0.68_0.18_250)]"
             />
           </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-600">Launching private workspace</p>
+          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-600">{status}</p>
         </motion.div>
       </div>
     </motion.main>
@@ -108,6 +108,23 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
   const [introComplete, setIntroComplete] = useState(false);
   const { loading, isAuthenticated } = useAuth();
   const reduceMotion = useReducedMotion();
+  const [isOnboardingEntry] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.sessionStorage.getItem("trade-fusion:onboarding-entry") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (!isOnboardingEntry) return;
+    try {
+      window.sessionStorage.removeItem("trade-fusion:onboarding-entry");
+    } catch {
+      // The launch gate remains usable where browser storage is unavailable.
+    }
+  }, [isOnboardingEntry]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setIntroComplete(true), reduceMotion ? 0 : INTRO_DURATION_MS);
@@ -120,7 +137,7 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
 
   return (
     <AnimatePresence mode="wait">
-      {state === "intro" && <IntroScreen reduceMotion={reduceMotion} />}
+      {state === "intro" && <IntroScreen reduceMotion={reduceMotion} status={isOnboardingEntry && mode === "workspace" ? "Preparing secure sign-in" : "Launching private workspace"} />}
       {state === "checking-auth" && <SignInScreen checkingAuth onSignIn={startLogin} />}
       {state === "sign-in" && <SignInScreen checkingAuth={false} onSignIn={startLogin} />}
       {state === "app" && <motion.div key="app" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>{children}</motion.div>}

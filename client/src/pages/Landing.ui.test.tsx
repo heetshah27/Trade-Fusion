@@ -3,14 +3,16 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+const { setLocationMock } = vi.hoisted(() => ({ setLocationMock: vi.fn() }));
+
 vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } }, contact: { submit: { useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false, error: null }) } } } }));
-vi.mock("wouter", () => ({ Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a> }));
+vi.mock("wouter", () => ({ Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a>, useLocation: () => ["/", setLocationMock] }));
 vi.mock("framer-motion", () => {
   const Motion = ({ children, initial: _initial, animate: _animate, transition: _transition, style: _style, ...props }: React.HTMLAttributes<HTMLElement> & { initial?: unknown; animate?: unknown; transition?: unknown }) => <div {...props}>{children}</div>;
   return {
-    motion: { div: Motion, article: Motion },
+    motion: { div: Motion, article: Motion, circle: Motion },
     useInView: () => true,
-    useReducedMotion: () => true,
+    useReducedMotion: () => false,
     useScroll: () => ({ scrollYProgress: 0 }),
     useTransform: () => 0,
   };
@@ -20,7 +22,11 @@ import Landing from "./Landing";
 import { appRoutes } from "@/lib/appRoutes";
 
 describe("Expanded Trade Fusion landing page", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    setLocationMock.mockReset();
+    vi.useRealTimers();
+  });
 
   it("explains Backtest, journaling, setup analytics, community, and the private workflow", () => {
     render(<Landing />);
@@ -121,6 +127,30 @@ describe("Expanded Trade Fusion landing page", () => {
     const getStartedLinks = screen.getAllByRole("link", { name: /get started/i });
     expect(getStartedLinks.length).toBeGreaterThan(0);
     getStartedLinks.forEach(link => expect(link.getAttribute("href")).toBe(appRoutes.dashboard));
+  });
+
+  it("shows immediate loading feedback before moving a member from Get Started to secure sign-in", () => {
+    render(<Landing />);
+
+    fireEvent.click(screen.getAllByRole("link", { name: /get started free/i })[0]!);
+    const pendingCta = screen.getByRole("link", { name: /preparing secure sign-in/i });
+    expect(pendingCta.getAttribute("aria-busy")).toBe("true");
+    expect(pendingCta.getAttribute("data-onboarding-transition")).toBe("preparing");
+  });
+
+  it("supports keyboard activation for the Get Started loading handoff", () => {
+    vi.useFakeTimers();
+    render(<Landing />);
+
+    const getStarted = screen.getAllByRole("link", { name: /get started free/i })[0]!;
+    getStarted.focus();
+    expect(document.activeElement).toBe(getStarted);
+    expect(getStarted.classList.contains("tf-focus-ring")).toBe(true);
+    fireEvent.keyDown(getStarted, { key: "Enter" });
+
+    expect(screen.getByRole("link", { name: /preparing secure sign-in/i }).getAttribute("aria-busy")).toBe("true");
+    vi.advanceTimersByTime(220);
+    expect(setLocationMock).toHaveBeenCalledWith(appRoutes.dashboard);
   });
 
   it("offers a compact mobile section-progress control with accessible landing shortcuts", () => {

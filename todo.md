@@ -1,5 +1,15 @@
 # Project TODO
 
+- [x] Audit the current Get Started navigation and protected launch-gate motion path.
+- [x] Add clear loading feedback and a smooth transition from primary Get Started controls to login or sign up.
+- [x] Test reduced-motion behavior, keyboard access, and desktop/mobile transition states before publishing.
+
+- [x] Add regression coverage for keyboard activation of the Get Started onboarding link and its loading state.
+- [x] Re-verify keyboard focus visibility and routing behavior before publishing the onboarding transition.
+
+- [x] Verify Enter activation routes through the protected dashboard entry after the onboarding loading state.
+- [x] Add a verifiable focus-visible check for the primary onboarding CTA before publishing.
+
 - [x] Audit the public Get Started controls and current login/sign-up redirect behavior.
 - [x] Route successful Login or Sign up into the authenticated Trade Fusion workspace.
 - [x] Add regression coverage and validate the conversion flow on desktop and mobile before publishing.

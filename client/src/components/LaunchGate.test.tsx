@@ -35,4 +35,11 @@ describe("LaunchGate branding", () => {
     await waitFor(() => expect(screen.getByText("Public landing page")).toBeTruthy());
     expect(screen.queryByText("Continue to login or sign up")).toBeNull();
   });
+
+  it("uses the onboarding-specific secure sign-in loading message after Get Started", () => {
+    window.sessionStorage.setItem("trade-fusion:onboarding-entry", "true");
+    render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
+
+    expect(screen.getByText("Preparing secure sign-in")).toBeTruthy();
+  });
 });
