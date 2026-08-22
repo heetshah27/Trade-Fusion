@@ -95,6 +95,8 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByText("Private Replay Workspace")).toBeTruthy();
     expect(screen.getByText(/Backtest sessions, zones, and simulated entries/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Backtest Lab" })).toBeTruthy();
+    expect(screen.getByTestId("mobile-execution-chart").getAttribute("data-chart-style")).toBe("candlestick-execution");
+    expect(screen.getByTestId("backtest-execution-chart").getAttribute("data-chart-style")).toBe("candlestick-execution");
   });
 
   it("keeps the preview module switcher keyboard-readable with explicit active-tab state", () => {
@@ -118,6 +120,7 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("native-mobile-workspace-preview").getAttribute("data-layout")).toBe("native-card");
     expect(screen.getByTestId("cinematic-hero").getAttribute("data-depth-interactive")).toBe("desktop-only");
     expect(screen.getByTestId("hero-3d-scene").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByTestId("hero-3d-scene").getAttribute("data-glow-style")).toBe("edge-light");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
     expect(screen.getByTestId("cinematic-hero")).toBeTruthy();
     expect(screen.getByTestId("hero-workflow-strip")).toBeTruthy();

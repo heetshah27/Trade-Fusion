@@ -31,6 +31,12 @@
 - [x] Reduce mobile background blue saturation while retaining blue primary actions and active preview accents.
 - [x] Validate portrait near-black contrast, semantic green/rose/amber colors, and desktop palette consistency before publishing.
 
+- [x] Define original TradingView-inspired chart cues for the landing Backtest preview without reproducing third-party branding or interface.
+- [x] Add restrained 3D blue edge-lighting and glow layers that pop against the near-black landing foundation.
+- [x] Replace the landing Backtest preview chart with an original candlestick execution view containing setup zones, price guides, risk/reward context, and volume.
+- [x] Validate responsive chart legibility, 3D motion preferences, and desktop/mobile visual balance before publishing.
+- [x] Capture and record a fresh portrait review of the enhanced 3D scene and Backtest candlestick preview before publishing.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.
