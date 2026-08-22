@@ -3,7 +3,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { setLocationMock } = vi.hoisted(() => ({ setLocationMock: vi.fn() }));
+const { setLocationMock, motionPreference } = vi.hoisted(() => ({ setLocationMock: vi.fn(), motionPreference: { reduced: false } }));
 
 vi.mock("@/lib/trpc", () => ({ trpc: { ticker: { quotes: { useQuery: () => ({ data: undefined }) } }, contact: { submit: { useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false, error: null }) } } } }));
 vi.mock("wouter", () => ({ Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a>, useLocation: () => ["/", setLocationMock] }));
@@ -12,7 +12,7 @@ vi.mock("framer-motion", () => {
   return {
     motion: { div: Motion, article: Motion, circle: Motion },
     useInView: () => true,
-    useReducedMotion: () => false,
+    useReducedMotion: () => motionPreference.reduced,
     useScroll: () => ({ scrollYProgress: 0 }),
     useTransform: () => 0,
   };
@@ -25,6 +25,7 @@ describe("Expanded Trade Fusion landing page", () => {
   afterEach(() => {
     cleanup();
     setLocationMock.mockReset();
+    motionPreference.reduced = false;
     vi.useRealTimers();
   });
 
@@ -111,6 +112,8 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
+    expect(screen.getByTestId("cinematic-hero").getAttribute("data-depth-interactive")).toBe("desktop-only");
+    expect(screen.getByTestId("hero-3d-scene").getAttribute("aria-hidden")).toBe("true");
     expect(screen.getByTestId("laptop-screen-reflection")).toBeTruthy();
     expect(screen.getByTestId("cinematic-hero")).toBeTruthy();
     expect(screen.getByTestId("hero-workflow-strip")).toBeTruthy();
@@ -119,6 +122,52 @@ describe("Expanded Trade Fusion landing page", () => {
     expect(screen.getByTestId("hero-workflow-step-rehearse").textContent).toContain("Rehearse");
     expect(screen.getAllByTestId("scroll-linked-spotlight")).toHaveLength(4);
     expect(screen.getByTestId("workspace-preview-tab-panel")).toBeTruthy();
+  });
+
+  it("limits hero depth movement to fine pointers and clears decorative offsets on pointer leave", () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: true }),
+    });
+    render(<Landing />);
+
+    const hero = screen.getByTestId("cinematic-hero");
+    Object.defineProperty(hero, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ left: 0, top: 0, width: 1000, height: 700 }),
+    });
+
+    fireEvent.pointerMove(hero, { clientX: 820, clientY: 180, pointerType: "touch" });
+    expect(hero.getAttribute("data-depth-active")).toBeNull();
+
+    fireEvent.pointerMove(hero, { clientX: 820, clientY: 180, pointerType: "mouse" });
+    expect(hero.getAttribute("data-depth-active")).toBe("true");
+    expect(hero.style.getPropertyValue("--tf-hero-near-x")).not.toBe("");
+
+    fireEvent.pointerLeave(hero, { pointerType: "mouse" });
+    expect(hero.getAttribute("data-depth-active")).toBeNull();
+    expect(hero.style.getPropertyValue("--tf-hero-near-x")).toBe("");
+  });
+
+  it("keeps the hero conversion content available while reduced motion disables interactive 3D depth", () => {
+    motionPreference.reduced = true;
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: true }),
+    });
+    render(<Landing />);
+
+    const hero = screen.getByTestId("cinematic-hero");
+    Object.defineProperty(hero, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ left: 0, top: 0, width: 1000, height: 700 }),
+    });
+    fireEvent.pointerMove(hero, { clientX: 820, clientY: 180, pointerType: "mouse" });
+
+    expect(hero.getAttribute("data-depth-active")).toBeNull();
+    expect(screen.getByTestId("hero-3d-scene").getAttribute("data-motion")).toBe("disabled");
+    expect(screen.getByRole("heading", { name: /turn every execution into your next edge/i })).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /get started free/i }).length).toBeGreaterThan(0);
   });
 
   it("sends primary Get Started controls to the member dashboard for the login-or-sign-up handoff", () => {

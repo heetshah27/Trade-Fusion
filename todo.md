@@ -8,6 +8,15 @@
 - [x] Remove the broad emerald-button override in favor of intentional component-level primary action styling.
 - [x] Add route-level palette coverage for Landing, Dashboard, Account, Backtest, and mobile navigation before publishing.
 
+- [x] Define a restrained 3D interaction direction that keeps Trade Fusion’s trading content legible and fast.
+- [x] Prototype 3D depth for the landing experience with mobile and reduced-motion fallbacks.
+- [x] Validate 3D performance, responsiveness, and accessibility before deciding whether to publish.
+- [x] Build an interactive layered 3D landing hero with pointer-responsive depth and no heavy WebGL dependency.
+- [x] Preserve existing workspace-preview controls while adding a readable 3D market-grid and depth composition.
+- [x] Add deterministic regression coverage for 3D motion preference, touch fallback, and pointer interaction behavior.
+- [x] Add a reduced-motion landing regression proving the decorative 3D scene is disabled while the core hero remains available.
+- [x] Expose and test a reduced-motion-specific disabled state for the decorative 3D scene while preserving hero conversion content.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.

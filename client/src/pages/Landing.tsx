@@ -363,7 +363,7 @@ function WorkspacePreview() {
   return (
     <motion.div
       ref={previewRef}
-      className="tf-laptop-reveal relative mx-auto mt-16 max-w-6xl px-1 sm:mt-20 sm:px-4"
+      className="tf-laptop-reveal relative z-10 mx-auto mt-16 max-w-6xl px-1 sm:mt-20 sm:px-4"
       initial={reducedMotion ? false : dashboardReveal.hidden}
       animate={shouldAnimate ? dashboardReveal.visible : undefined}
       transition={{ duration: 0.78, ease: [0.23, 1, 0.32, 1] }}
@@ -724,6 +724,7 @@ function SpotlightPreview({ kind }: { kind: "backtest" | "journal" | "analytics"
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "", website: "" });
+  const reducedMotion = useReducedMotion();
   const { data: tickerData } = trpc.ticker.quotes.useQuery(undefined, {
     refetchInterval: 6_000,
     refetchIntervalInBackground: true,
@@ -736,6 +737,32 @@ export default function Landing() {
   const submitContact = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     contactSubmit.mutate(contactForm);
+  };
+
+  const updateHeroDepth = (event: React.PointerEvent<HTMLElement>) => {
+    const supportsFinePointer = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (reducedMotion || event.pointerType === "touch" || !supportsFinePointer) return;
+
+    const hero = event.currentTarget;
+    const bounds = hero.getBoundingClientRect();
+    const horizontal = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+    const vertical = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+    const nearX = Math.round(Math.max(-14, Math.min(14, horizontal * 14)));
+    const nearY = Math.round(Math.max(-10, Math.min(10, vertical * 10)));
+
+    hero.style.setProperty("--tf-hero-near-x", `${nearX}px`);
+    hero.style.setProperty("--tf-hero-near-y", `${nearY}px`);
+    hero.style.setProperty("--tf-hero-far-x", `${Math.round(nearX * 0.42)}px`);
+    hero.style.setProperty("--tf-hero-far-y", `${Math.round(nearY * 0.42)}px`);
+    hero.style.setProperty("--tf-hero-tilt-x", `${Math.max(-2.3, Math.min(2.3, -vertical * 2.3)).toFixed(2)}deg`);
+    hero.style.setProperty("--tf-hero-tilt-y", `${Math.max(-3, Math.min(3, horizontal * 3)).toFixed(2)}deg`);
+    hero.dataset.depthActive = "true";
+  };
+
+  const resetHeroDepth = (event: React.PointerEvent<HTMLElement>) => {
+    const hero = event.currentTarget;
+    ["--tf-hero-near-x", "--tf-hero-near-y", "--tf-hero-far-x", "--tf-hero-far-y", "--tf-hero-tilt-x", "--tf-hero-tilt-y"].forEach(property => hero.style.removeProperty(property));
+    delete hero.dataset.depthActive;
   };
 
   return (
@@ -794,8 +821,15 @@ export default function Landing() {
         </div>
       )}
 
-      <section id="start" data-testid="cinematic-hero" className="tf-cinematic-hero relative z-10 mx-auto max-w-7xl px-5 pb-24 pt-20 text-center sm:pb-32 sm:pt-28 lg:px-8 lg:pt-32">
-        <div className="tf-cinematic-copy relative mx-auto">
+      <section id="start" data-testid="cinematic-hero" data-depth-interactive="desktop-only" onPointerMove={updateHeroDepth} onPointerLeave={resetHeroDepth} className="tf-cinematic-hero relative z-10 mx-auto max-w-7xl px-5 pb-24 pt-20 text-center sm:pb-32 sm:pt-28 lg:px-8 lg:pt-32">
+        <div aria-hidden="true" data-testid="hero-3d-scene" data-motion={reducedMotion ? "disabled" : "enabled"} className="tf-3d-hero-scene pointer-events-none absolute inset-0 overflow-hidden">
+          <span className="tf-3d-hero-grid-plane" />
+          <span className="tf-3d-hero-orbit tf-3d-hero-orbit-primary" />
+          <span className="tf-3d-hero-orbit tf-3d-hero-orbit-secondary" />
+          <span className="tf-3d-hero-beacon tf-3d-hero-beacon-left"><span>PRIVATE</span></span>
+          <span className="tf-3d-hero-beacon tf-3d-hero-beacon-right"><span>REVIEW</span></span>
+        </div>
+        <div className="tf-cinematic-copy relative z-10 mx-auto">
         <p className="tf-rise font-mono text-[9px] uppercase tracking-[0.3em] text-blue-200/80 sm:text-[10px]">Private performance workspace</p>
         <h1 className="tf-rise tf-rise-delay-1 mx-auto mt-5 max-w-5xl text-4xl font-semibold tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
           Turn every execution into <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-sky-300 bg-clip-text text-transparent">your next edge.</span>
