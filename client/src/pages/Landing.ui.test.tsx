@@ -113,6 +113,7 @@ describe("Expanded Trade Fusion landing page", () => {
     render(<Landing />);
 
     expect(screen.getByRole("main").getAttribute("data-mobile-palette")).toBe("near-black");
+    expect(screen.getByTestId("market-ticker-rail").getAttribute("data-full-bleed")).toBe("true");
     expect(screen.getByTestId("scroll-linked-workspace-preview")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop")).toBeTruthy();
     expect(screen.getByTestId("workspace-preview-laptop").getAttribute("data-tilt-interactive")).toBe("desktop-only");
@@ -173,6 +174,8 @@ describe("Expanded Trade Fusion landing page", () => {
 
     expect(hero.getAttribute("data-depth-active")).toBeNull();
     expect(screen.getByTestId("hero-3d-scene").getAttribute("data-motion")).toBe("disabled");
+    expect(screen.getByTestId("market-ticker-rail").getAttribute("data-motion")).toBe("disabled");
+    expect(screen.getByTestId("market-ticker-rail").querySelector(".animate-ticker")).toBeNull();
     expect(screen.getByRole("heading", { name: /turn every execution into your next edge/i })).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /get started free/i }).length).toBeGreaterThan(0);
   });

@@ -801,10 +801,9 @@ export default function Landing() {
       <LandingScrollCompass />
       <MobileSectionProgress />
       {/* Live Market Ticker Tape with Automatic Marquee */}
-      <div className="relative z-30 border-b border-white/[0.08] bg-[#050609] py-2.5 overflow-hidden">
-        <div className="mx-auto max-w-7xl overflow-hidden px-4 whitespace-nowrap lg:px-8">
+      <div data-testid="market-ticker-rail" data-full-bleed="true" data-motion={reducedMotion ? "disabled" : "enabled"} className="tf-ticker-rail relative z-30 w-full overflow-hidden border-b border-white/[0.08] bg-[#050609] py-2.5 whitespace-nowrap">
           <div className="relative w-full overflow-hidden">
-            <div className="animate-ticker flex items-center gap-8 text-xs font-mono">
+            <div className={`${reducedMotion ? "" : "animate-ticker"} flex items-center gap-8 text-xs font-mono`}>
               {[...tickers, ...tickers].map((t, idx) => (
                 <div key={`${t.symbol}-${idx}`} className="flex items-center gap-2 shrink-0">
                   <span className="text-slate-400">{t.symbol}{t.isLive ? <span className="ml-1 text-emerald-400/80">●</span> : <span className="ml-1 text-[8px] uppercase tracking-wide text-slate-600">Ref</span>}</span>
@@ -814,7 +813,6 @@ export default function Landing() {
               ))}
             </div>
           </div>
-        </div>
       </div>
 
       <div aria-hidden="true" className="tf-hero-deep-space pointer-events-none absolute inset-0" />
