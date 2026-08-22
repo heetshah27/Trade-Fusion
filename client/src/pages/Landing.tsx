@@ -399,7 +399,7 @@ function WorkspacePreview() {
       <motion.div style={{ y: previewY, scale: previewScale }} data-testid="scroll-linked-workspace-preview" data-mobile-safe-bottom="true">
       <MobileWorkspacePreview activeTab={activeTab} onSelect={setActiveTab} />
       <div className="hidden md:block">
-      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-mobile-preview="desktop-laptop" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
+      <div className="tf-laptop-stage relative" data-testid="workspace-preview-laptop" data-tilt-interactive="desktop-only" data-hover-glow="fine-pointer" data-hover-motion={reducedMotion ? "disabled" : "enabled"} data-mobile-preview="desktop-laptop" onPointerMove={updateLaptopTilt} onPointerLeave={resetLaptopTilt}>
       <div className="pointer-events-none absolute inset-x-16 -top-10 h-44 rounded-full bg-blue-500/25 blur-[110px]" />
       <div className="tf-laptop-lid relative">
       <div aria-hidden="true" className="tf-laptop-camera"><span /></div>

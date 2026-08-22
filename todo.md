@@ -43,6 +43,13 @@
 - [x] Disable decorative ticker marquee movement when the visitor prefers reduced motion and expose a deterministic state for regression coverage.
 - [x] Re-run focused and full validation after adding reduced-motion ticker support.
 
+- [x] Audit the restored desktop workspace preview and native mobile fallback for safe hover-depth enhancement points.
+- [x] Add a fine-pointer-only subtle zoom and blue glow border to the desktop workspace preview.
+- [x] Verify the mobile workspace preview remains distinct, responsive, and free of desktop hover effects.
+- [x] Add regression coverage and validate desktop/mobile plus reduced-motion behavior before publishing.
+- [x] Assert that reduced-motion mode does not activate the desktop workspace hover zoom or glow behavior.
+- [x] Re-run focused and full validation after adding reduced-motion hover-glow coverage.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.
