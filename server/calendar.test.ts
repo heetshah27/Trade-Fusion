@@ -23,6 +23,7 @@ const SAMPLE_FOREX_FACTORY_JSON = JSON.stringify([
 
 describe("ForexFactory calendar parser", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     resetCalendarCacheForTest();
   });
@@ -52,6 +53,8 @@ describe("ForexFactory calendar parser", () => {
   });
 
   it("uses the source JSON export and preserves its upcoming ET records", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-21T16:00:00.000Z"));
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(

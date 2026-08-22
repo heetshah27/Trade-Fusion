@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -18,6 +18,9 @@ import { appRoutes } from "@/lib/appRoutes";
 import { buildTradePerformanceBars, type TradePerformanceBarInput } from "@/lib/tradePerformanceBars";
 import { InstrumentBadge } from "@/components/InstrumentBadge";
 import { DirectionBadge } from "@/components/DirectionBadge";
+import { CalendarRiskRibbon } from "@/components/CalendarRiskRibbon";
+import { TradeDetailDrawer } from "@/components/TradeDetailDrawer";
+import type { Trade } from "@/lib/tradeTypes";
 
 function money(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -118,6 +121,8 @@ function PerformanceBars({
 export default function Home() {
   const [, setLocation] = useLocation();
   const { data: trades = [] } = trpc.trades.list.useQuery();
+  const { data: calendar, isLoading: calendarLoading, isError: calendarError, error: calendarQueryError, refetch: refetchCalendar } = trpc.calendar.getEvents.useQuery(undefined, { staleTime: 4 * 60 * 1000, refetchOnWindowFocus: false });
+  const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
   const overview = useMemo(() => {
     const totalPnl = trades.reduce((sum, trade) => sum + trade.pnl, 0);
     const wins = trades.filter(trade => trade.pnl > 0);
@@ -162,6 +167,8 @@ export default function Home() {
           </div>
         </section>
 
+        <CalendarRiskRibbon calendar={calendar} isLoading={calendarLoading} isError={calendarError} error={calendarQueryError} onRetry={() => void refetchCalendar()} onOpenCalendar={() => setLocation(appRoutes.calendar)} />
+
         <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Metric label="Recorded P&L" value={money(overview.totalPnl)} detail={`${trades.length} closed live trade${trades.length === 1 ? "" : "s"}`} tone="blue" icon={ChartNoAxesCombined} />
           <Metric label="This month" value={money(overview.monthPnl)} detail={new Date().toLocaleString("en-US", { month: "long", year: "numeric" })} tone={overview.monthPnl >= 0 ? "emerald" : "amber"} icon={TrendingUp} />
@@ -194,7 +201,7 @@ export default function Home() {
             <div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[.18em] text-slate-500">Recent activity</p><p className="mt-1 text-sm font-medium text-white">Latest live executions</p></div><Activity className="h-4 w-4 text-blue-300" /></div>
             <div className="mt-4 space-y-2.5">
               {overview.recent.length ? overview.recent.map(trade => (
-                <button type="button" key={trade.id} onClick={() => setLocation(appRoutes.journal)} className="group flex w-full items-center justify-between rounded-lg border border-white/[.055] bg-white/[.018] px-3 py-2.5 text-left hover:border-blue-300/20 hover:bg-blue-500/[.04]">
+                <button type="button" key={trade.id} data-testid={`dashboard-trade-${trade.id}`} onClick={() => setDetailTrade(trade as Trade)} className="tf-press group flex w-full items-center justify-between rounded-lg border border-white/[.055] bg-white/[.018] px-3 py-2.5 text-left hover:border-blue-300/20 hover:bg-blue-500/[.04]">
                   <div><p className="font-mono text-[10px] font-semibold text-slate-200">{trade.symbol} <span className="font-normal text-slate-600">· {trade.direction}</span></p><p className="mt-0.5 text-[10px] text-slate-600">{trade.date}</p></div>
                   <span className={`font-mono text-xs ${trade.pnl > 0 ? "text-emerald-300" : trade.pnl < 0 ? "text-rose-300" : "text-slate-400"}`}>{money(trade.pnl)}</span>
                 </button>
@@ -212,6 +219,7 @@ export default function Home() {
           <section className="rounded-2xl border border-white/[.07] bg-[#0a111f] p-4 sm:p-5"><div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase tracking-[.18em] text-slate-500">Quick statistics</p><p className="mt-1 text-sm font-medium text-white">Live trade ledger only</p></div><ShieldCheck className="h-4 w-4 text-emerald-300" /></div><div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4"><div><p className="font-mono text-[8px] uppercase tracking-[.13em] text-slate-600">Profit factor</p><p className="mt-1.5 font-mono text-lg font-semibold text-white">{Number.isFinite(overview.factor) ? overview.factor.toFixed(2) : "∞"}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[.13em] text-slate-600">Avg win</p><p className="mt-1.5 font-mono text-lg font-semibold text-emerald-300">{money(overview.averageWin)}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[.13em] text-slate-600">Avg loss</p><p className="mt-1.5 font-mono text-lg font-semibold text-rose-300">{money(overview.averageLoss)}</p></div><div><p className="font-mono text-[8px] uppercase tracking-[.13em] text-slate-600">Trades</p><p className="mt-1.5 font-mono text-lg font-semibold text-white">{trades.length}</p></div></div><button type="button" onClick={() => setLocation(appRoutes.analytics)} className="tf-press mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-blue-200 hover:text-white">Open setup analytics <ArrowRight className="h-3.5 w-3.5" /></button></section>
         </section>
       </main>
+      {detailTrade && <TradeDetailDrawer trade={detailTrade} open onOpenChange={(open) => { if (!open) setDetailTrade(null); }} />}
     </div>
   );
 }

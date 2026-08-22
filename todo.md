@@ -1,5 +1,18 @@
 # Project TODO
 
+- [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
+- [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
+- [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.
+- [x] Test countdown behavior, private attachment access, keyboard controls, and desktop/mobile layouts before publishing.
+
+- [x] Add an explicit retry state for Dashboard calendar-risk query failures.
+- [x] Add an explicit private-Journal retrieval error state in the trade-detail drawer.
+- [x] Test ribbon error/no-event states, keyboard detail opening, and private screenshot rendering in the drawer.
+- [x] Verify the drawer open state on desktop and mobile before publishing.
+
+- [x] Add an explicit no-high-impact-events-today regression for the Dashboard calendar-risk ribbon.
+- [x] Add responsive component-level assertions proving the open trade-detail drawer exposes core execution and private review content.
+
 - [x] Inspect the live Market Calendar request, server logs, source response, and UI error state for the reported malfunction.
 - [x] Repair the confirmed calendar data or presentation defect without introducing fabricated events.
 - [x] Validate current source-backed events, Eastern Time formatting, and desktop/mobile calendar states before publishing.

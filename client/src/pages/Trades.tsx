@@ -10,6 +10,7 @@ import type { Trade } from "@/lib/tradeTypes";
 import { trpc } from "@/lib/trpc";
 import { appRoutes } from "@/lib/appRoutes";
 import { getInstrumentProfile } from "@/lib/tradeInstruments";
+import { TradeDetailDrawer } from "@/components/TradeDetailDrawer";
 
 function money(value: number) {
   const formatted = Math.abs(value).toLocaleString("en-US", {
@@ -39,7 +40,7 @@ function EditActions({ trade, onEdit, onDelete }: { trade: Trade; onEdit: (trade
       <button
         type="button"
         aria-label={`Edit ${trade.symbol} trade`}
-        onClick={() => onEdit(trade)}
+        onClick={(event) => { event.stopPropagation(); onEdit(trade); }}
         className="tf-press rounded-md p-1.5 text-slate-500 hover:bg-blue-500/[.1] hover:text-blue-200"
       >
         <Pencil className="h-3.5 w-3.5" />
@@ -47,7 +48,7 @@ function EditActions({ trade, onEdit, onDelete }: { trade: Trade; onEdit: (trade
       <button
         type="button"
         aria-label={`Delete ${trade.symbol} trade`}
-        onClick={() => onDelete(trade)}
+        onClick={(event) => { event.stopPropagation(); onDelete(trade); }}
         className="tf-press rounded-md p-1.5 text-slate-500 hover:bg-rose-500/[.1] hover:text-rose-200"
       >
         <Trash2 className="h-3.5 w-3.5" />
@@ -60,6 +61,7 @@ export default function Trades() {
   const [, setLocation] = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
+  const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
   const [filterSymbol, setFilterSymbol] = useState("");
   const [sortAsc, setSortAsc] = useState(false);
   const { data: cloudTrades = [] } = trpc.trades.list.useQuery();
@@ -159,14 +161,14 @@ export default function Trades() {
                   <thead className="border-b border-white/[.055] bg-white/[.012] font-mono text-[9px] uppercase tracking-[.13em] text-slate-600"><tr><th className="px-5 py-3 font-medium">Date</th><th className="px-5 py-3 font-medium">Instrument</th><th className="px-5 py-3 font-medium">Type</th><th className="px-5 py-3 text-right font-medium">Entry</th><th className="px-5 py-3 text-right font-medium">Exit</th><th className="px-5 py-3 text-right font-medium">Size</th><th className="px-5 py-3 text-right font-medium">P&amp;L</th><th className="px-5 py-3 font-medium">Source</th><th className="px-5 py-3" /></tr></thead>
                   <tbody>{filtered.map((trade) => {
                     const profile = getInstrumentProfile(trade.symbol, trade.instrumentCategory);
-                    return <tr key={trade.id} className="border-b border-white/[.045] transition-colors hover:bg-white/[.025]"><td className="px-5 py-3.5 font-mono text-[11px] text-slate-500">{trade.date}</td><td className="px-5 py-3.5"><div className="flex items-center gap-2.5"><InstrumentMark symbol={trade.symbol} category={trade.instrumentCategory} /><div><p className="font-mono text-xs font-semibold text-white">{trade.symbol}</p><p className="mt-0.5 text-[10px] text-slate-600">{profile.label}</p></div></div></td><td className="px-5 py-3.5"><DirectionBadge direction={trade.direction} size="sm" /></td><td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-300">{Number(trade.entryPrice).toLocaleString()}</td><td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-300">{Number(trade.exitPrice).toLocaleString()}</td><td className="px-5 py-3.5 text-right"><p className="font-mono text-[11px] text-slate-200">{Number(trade.quantity).toLocaleString()}</p><p className="mt-0.5 text-[9px] text-slate-600">{profile.quantityLabel}</p></td><td className="px-5 py-3.5 text-right"><PnlValue value={Number(trade.pnl)} /></td><td className="px-5 py-3.5"><span className="rounded-md bg-white/[.04] px-2 py-1 font-mono text-[9px] uppercase text-slate-500">Manual</span></td><td className="px-5 py-3.5"><EditActions trade={trade as Trade} onEdit={openEdit} onDelete={deleteTrade} /></td></tr>;
+                    return <tr key={trade.id} tabIndex={0} role="button" aria-label={`Open ${trade.symbol} trade details`} onClick={() => setDetailTrade(trade as Trade)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setDetailTrade(trade as Trade); } }} className="cursor-pointer border-b border-white/[.045] transition-colors hover:bg-white/[.025] focus-visible:bg-blue-500/[.06] focus-visible:outline-none"><td className="px-5 py-3.5 font-mono text-[11px] text-slate-500">{trade.date}</td><td className="px-5 py-3.5"><div className="flex items-center gap-2.5"><InstrumentMark symbol={trade.symbol} category={trade.instrumentCategory} /><div><p className="font-mono text-xs font-semibold text-white">{trade.symbol}</p><p className="mt-0.5 text-[10px] text-slate-600">{profile.label}</p></div></div></td><td className="px-5 py-3.5"><DirectionBadge direction={trade.direction} size="sm" /></td><td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-300">{Number(trade.entryPrice).toLocaleString()}</td><td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-300">{Number(trade.exitPrice).toLocaleString()}</td><td className="px-5 py-3.5 text-right"><p className="font-mono text-[11px] text-slate-200">{Number(trade.quantity).toLocaleString()}</p><p className="mt-0.5 text-[9px] text-slate-600">{profile.quantityLabel}</p></td><td className="px-5 py-3.5 text-right"><PnlValue value={Number(trade.pnl)} /></td><td className="px-5 py-3.5"><span className="rounded-md bg-white/[.04] px-2 py-1 font-mono text-[9px] uppercase text-slate-500">Manual</span></td><td className="px-5 py-3.5"><EditActions trade={trade as Trade} onEdit={openEdit} onDelete={deleteTrade} /></td></tr>;
                   })}</tbody>
                 </table>
               </div>
               <div className="divide-y divide-white/[.05] md:hidden">
                 {filtered.map((trade) => {
                   const profile = getInstrumentProfile(trade.symbol, trade.instrumentCategory);
-                  return <article key={trade.id} className="p-4"><div className="flex items-start justify-between gap-3"><div className="flex min-w-0 items-center gap-2.5"><InstrumentMark symbol={trade.symbol} category={trade.instrumentCategory} /><div className="min-w-0"><p className="font-mono text-xs font-semibold text-white">{trade.symbol} <span className="text-[10px] font-normal text-slate-500">· {profile.label}</span></p><div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-[10px] text-slate-600"><span>{trade.date}</span><span aria-hidden="true">·</span><DirectionBadge direction={trade.direction} size="sm" className="!px-1.5 !py-0.5" /><span aria-hidden="true">·</span><span>{trade.quantity} {profile.quantityLabel.toLowerCase()}</span></div></div></div><PnlValue value={Number(trade.pnl)} /></div><div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-white/[.02] p-2.5 font-mono text-[10px]"><div><p className="text-slate-600">ENTRY</p><p className="mt-1 text-slate-300">{Number(trade.entryPrice).toLocaleString()}</p></div><div><p className="text-slate-600">EXIT</p><p className="mt-1 text-slate-300">{Number(trade.exitPrice).toLocaleString()}</p></div><div><p className="text-slate-600">SOURCE</p><p className="mt-1 text-slate-300">Manual</p></div></div><div className="mt-3 flex justify-end gap-1"><button type="button" onClick={() => openEdit(trade as Trade)} className="tf-press inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-blue-200 hover:bg-blue-500/[.1]"><Pencil className="h-3 w-3" />Edit</button><button type="button" onClick={() => deleteTrade(trade as Trade)} className="tf-press inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-rose-200 hover:bg-rose-500/[.1]"><Trash2 className="h-3 w-3" />Delete</button></div></article>;
+                  return <article key={trade.id} className="p-4"><button type="button" aria-label={`Open ${trade.symbol} trade details`} onClick={() => setDetailTrade(trade as Trade)} className="tf-press w-full rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"><div className="flex items-start justify-between gap-3"><div className="flex min-w-0 items-center gap-2.5"><InstrumentMark symbol={trade.symbol} category={trade.instrumentCategory} /><div className="min-w-0"><p className="font-mono text-xs font-semibold text-white">{trade.symbol} <span className="text-[10px] font-normal text-slate-500">· {profile.label}</span></p><div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-[10px] text-slate-600"><span>{trade.date}</span><span aria-hidden="true">·</span><DirectionBadge direction={trade.direction} size="sm" className="!px-1.5 !py-0.5" /><span aria-hidden="true">·</span><span>{trade.quantity} {profile.quantityLabel.toLowerCase()}</span></div></div></div><PnlValue value={Number(trade.pnl)} /></div><div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-white/[.02] p-2.5 font-mono text-[10px]"><div><p className="text-slate-600">ENTRY</p><p className="mt-1 text-slate-300">{Number(trade.entryPrice).toLocaleString()}</p></div><div><p className="text-slate-600">EXIT</p><p className="mt-1 text-slate-300">{Number(trade.exitPrice).toLocaleString()}</p></div><div><p className="text-slate-600">SOURCE</p><p className="mt-1 text-slate-300">Manual</p></div></div></button><div className="mt-3 flex justify-end gap-1"><button type="button" onClick={() => openEdit(trade as Trade)} className="tf-press inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-blue-200 hover:bg-blue-500/[.1]"><Pencil className="h-3 w-3" />Edit</button><button type="button" onClick={() => deleteTrade(trade as Trade)} className="tf-press inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-rose-200 hover:bg-rose-500/[.1]"><Trash2 className="h-3 w-3" />Delete</button></div></article>;
                 })}
               </div>
             </>
@@ -176,6 +178,7 @@ export default function Trades() {
         </section>
         <p className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-slate-600"><ListFilter className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-300" />Assisted P&amp;L uses the selected or inferred instrument rule and excludes broker-specific swaps, conversion, and non-standard contract sizing. Use the manual override when your broker result differs.</p>
         <AddTradeModal open={modalOpen} onClose={() => { setModalOpen(false); setEditTrade(null); }} onSave={handleSave} editTrade={editTrade} />
+        {detailTrade && <TradeDetailDrawer trade={detailTrade} open onOpenChange={(open) => { if (!open) setDetailTrade(null); }} />}
       </main>
     </div>
   );

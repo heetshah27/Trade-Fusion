@@ -10,10 +10,16 @@ vi.mock("@/lib/trpc", () => ({
   trpc: {
     useUtils: () => ({ trades: { list: { invalidate: mocks.invalidate } } }),
     trades: {
-      list: { useQuery: () => ({ data: [{ id: 7, date: "2026-08-16", symbol: "XAUUSD", direction: "LONG", entryPrice: 2400, exitPrice: 2405, quantity: 1, pnl: 5, fees: 0, notes: "", setupTag: "London Breakout" }], isLoading: false }) },
+      list: { useQuery: () => ({ data: [{ id: 7, date: "2026-08-16", symbol: "XAUUSD", direction: "LONG", entryPrice: 2400, exitPrice: 2405, quantity: 1, pnl: 5, fees: 0, notes: "Held to plan", setupTag: "London Breakout" }], isLoading: false }) },
       create: { useMutation: () => ({ mutate: mocks.create }) },
       update: { useMutation: () => ({ mutate: mocks.update }) },
       delete: { useMutation: () => ({ mutate: mocks.remove }) },
+    },
+    calendar: {
+      getEvents: { useQuery: () => ({ data: { sourceStatus: "live", events: [{ id: "usd-pmi", date: "2026-08-21", time: "9:45am", country: "USD", event: "Flash Manufacturing PMI", impact: "high" }] }, isLoading: false }) },
+    },
+    tradeJournal: {
+      byTrade: { useQuery: () => ({ data: { tradeIdea: "Break above Asia range", marketContext: "USD catalyst", executionReview: "Held to plan", reflection: "Keep risk fixed", attachments: [] }, isLoading: false }) },
     },
   },
 }));
@@ -21,7 +27,7 @@ vi.mock("wouter", () => ({ useLocation: () => ["/app", mocks.setLocation] }));
 import Home from "./Home";
 
 describe("Dashboard command center", () => {
-  afterEach(() => { cleanup(); Object.values(mocks).forEach(mock => mock.mockReset()); });
+  afterEach(() => { cleanup(); vi.useRealTimers(); Object.values(mocks).forEach(mock => mock.mockReset()); });
 
   it("renders the private Dashboard modules and routes to the manual Trade flow", () => {
     render(<Home />);
@@ -37,5 +43,18 @@ describe("Dashboard command center", () => {
     render(<Home />);
     fireEvent.click(screen.getByRole("button", { name: /open journal/i }));
     expect(mocks.setLocation).toHaveBeenCalled();
+  });
+
+  it("shows the next high-impact risk window and opens a member-private trade review drawer", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-21T13:00:00.000Z"));
+    render(<Home />);
+
+    expect(screen.getByTestId("dashboard-calendar-risk").textContent).toContain("Flash Manufacturing PMI");
+    expect(screen.getByTestId("dashboard-calendar-risk").textContent).toContain("In 45m");
+    fireEvent.click(screen.getByTestId("dashboard-trade-7"));
+    expect(screen.getByText("Private execution review")).toBeTruthy();
+    expect(screen.getByText("Break above Asia range")).toBeTruthy();
+    expect(screen.getAllByText("Held to plan").length).toBeGreaterThan(1);
   });
 });
