@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { trpc } from '@/lib/trpc';
 import type { Trade, TradeDirection } from '@/lib/tradeTypes';
 import { generateId } from '@/lib/tradeTypes';
 import { calculateTradePnl } from '@/lib/tradeInstruments';
@@ -43,18 +42,6 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
   const [form, setForm] = useState(empty());
   const [manualPnl, setManualPnl] = useState('');
   const [useManual, setUseManual] = useState(false);
-  const [newSetupName, setNewSetupName] = useState('');
-  const utils = trpc.useUtils();
-  const { data: setups = [] } = trpc.setups.list.useQuery(undefined, { enabled: open });
-  const createSetup = trpc.setups.create.useMutation({
-    onSuccess: setup => {
-      set('setupId', setup.id);
-      set('setupTag', setup.name);
-      setNewSetupName('');
-      utils.setups.list.invalidate();
-    },
-  });
-  const activeSetups = setups.filter(setup => !setup.isArchived);
 
   useEffect(() => {
     if (editTrade) {
@@ -62,12 +49,10 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
       setForm(rest);
       setManualPnl(pnl.toString());
       setUseManual(false);
-      setNewSetupName('');
     } else {
       setForm(empty());
       setManualPnl('');
       setUseManual(false);
-      setNewSetupName('');
     }
   }, [editTrade, open]);
 
@@ -97,7 +82,7 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
           <DialogTitle className="font-display text-lg">
             {editTrade ? 'Edit Trade' : 'Log New Trade'}
           </DialogTitle>
-          <DialogDescription className="sr-only">Record a private live journal trade with optional setup and execution context.</DialogDescription>
+          <DialogDescription className="sr-only">Record a private live trade with its core execution details and notes.</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4 py-2">
@@ -115,7 +100,7 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
           {/* Instrument */}
           <div className="col-span-2 flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-3"><Label className="text-xs text-muted-foreground uppercase tracking-wider">Instrument</Label><span className="text-[10px] text-slate-500">Search a listed market or enter a custom symbol</span></div>
-            <InstrumentPicker symbol={form.symbol} category={form.instrumentCategory} onSelect={(instrument) => { set('symbol', instrument.symbol); set('instrumentCategory', instrument.category); }} />
+            <InstrumentPicker symbol={form.symbol} onSelect={(instrument) => set('symbol', instrument.symbol)} />
             <Input aria-label="Custom instrument symbol" placeholder="Or type custom symbol, e.g. AAPL, BTC" value={form.symbol} onChange={(event) => set('symbol', event.target.value.toUpperCase())} className="h-9 bg-input border-border font-mono text-sm uppercase" />
           </div>
 
@@ -186,35 +171,6 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
               onChange={(e) => set('fees', parseFloat(e.target.value) || 0)}
               className="bg-input border-border font-mono text-sm"
             />
-          </div>
-
-          <div className="col-span-2 rounded-xl border border-primary/15 bg-primary/[0.04] p-3">
-            <div className="flex items-center justify-between gap-3"><Label className="text-xs text-muted-foreground uppercase tracking-wider">Setup <span className="normal-case tracking-normal text-slate-500">optional · private to you</span></Label>{form.setupTag && <span className="rounded-full bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary">{form.setupTag}</span>}</div>
-            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-              <select aria-label="Saved setup" value={form.setupId ?? 'none'} onChange={(event) => { const selected = activeSetups.find(setup => setup.id === Number(event.target.value)); set('setupId', selected?.id ?? null); set('setupTag', selected?.name ?? ''); }} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Select a saved setup</option>{activeSetups.map(setup => <option key={setup.id} value={setup.id}>{setup.name}</option>)}</select>
-              <div className="flex gap-2"><Input aria-label="New setup name" placeholder="New setup" value={newSetupName} maxLength={80} onChange={event => setNewSetupName(event.target.value)} className="h-9 min-w-0 bg-input border-border font-mono text-sm" /><Button type="button" size="sm" disabled={!newSetupName.trim() || createSetup.isPending} onClick={() => createSetup.mutate({ name: newSetupName })}>{createSetup.isPending ? 'Saving…' : '+ Add'}</Button></div>
-            </div>
-            {createSetup.error && <p role="status" className="mt-2 text-xs text-destructive">{createSetup.error.message}</p>}
-          </div>
-
-          <div className="col-span-2 flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Market session <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
-            <select value={form.marketSession || 'none'} onChange={(e) => set('marketSession', (e.target.value === 'none' ? '' : e.target.value) as typeof form.marketSession)} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Not specified</option><option value="Asia">Asia</option><option value="London">London</option><option value="New York">New York</option><option value="Other">Other</option></select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Instrument category <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
-            <select aria-label="Instrument category" value={form.instrumentCategory || 'none'} onChange={event => set('instrumentCategory', (event.target.value === 'none' ? '' : event.target.value) as typeof form.instrumentCategory)} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Not specified</option><option value="forex">Forex</option><option value="metals">Metals</option><option value="crypto">Crypto</option><option value="indices">Indices</option><option value="equities">Equities</option><option value="options">Options</option><option value="other">Other</option></select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Trade quality <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
-            <select aria-label="Trade quality" value={form.tradeQuality || 'none'} onChange={event => set('tradeQuality', (event.target.value === 'none' ? '' : event.target.value) as typeof form.tradeQuality)} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Not specified</option><option value="A_PLUS">A+ setup</option><option value="VALID">Valid setup</option><option value="FORCED">Forced trade</option><option value="RULE_BREAK">Rule break</option></select>
-          </div>
-
-          <div className="col-span-2 flex flex-col gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Followed trading plan? <span className="normal-case tracking-normal text-slate-500">optional</span></Label>
-            <select aria-label="Rule followed" value={form.ruleFollowed === null || form.ruleFollowed === undefined ? 'none' : form.ruleFollowed ? 'yes' : 'no'} onChange={event => set('ruleFollowed', event.target.value === 'none' ? null : event.target.value === 'yes')} className="h-9 rounded-md border border-border bg-input px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"><option value="none">Not reviewed</option><option value="yes">Yes · followed plan</option><option value="no">No · deviation from plan</option></select>
           </div>
 
           {/* P&L display / override */}

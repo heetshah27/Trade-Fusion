@@ -1,19 +1,29 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { INTRO_DURATION_MS } from "@/lib/launchState";
 
-vi.mock("@/_core/hooks/useAuth", () => ({ useAuth: () => ({ loading: false, isAuthenticated: false }) }));
+const state = vi.hoisted(() => ({ loading: false, isAuthenticated: false, reducedMotion: true }));
+
+vi.mock("@/_core/hooks/useAuth", () => ({ useAuth: () => ({ loading: state.loading, isAuthenticated: state.isAuthenticated }) }));
 vi.mock("@/const", () => ({ startLogin: vi.fn() }));
 vi.mock("framer-motion", () => {
   const Motion = ({ children, initial: _initial, animate: _animate, exit: _exit, transition: _transition, ...props }: React.PropsWithChildren<Record<string, unknown>>) => <div {...props}>{children}</div>;
-  return { AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>, motion: { main: Motion, div: Motion }, useReducedMotion: () => true };
+  return { AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>, motion: { main: Motion, div: Motion }, useReducedMotion: () => state.reducedMotion };
 });
 
 import LaunchGate from "./LaunchGate";
 
 describe("LaunchGate branding", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    state.loading = false;
+    state.isAuthenticated = false;
+    state.reducedMotion = true;
+    window.sessionStorage.clear();
+    vi.useRealTimers();
+  });
 
   it("keeps Trade Fusion branding visible after the loading intro transitions to sign-in", async () => {
     render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
@@ -41,5 +51,29 @@ describe("LaunchGate branding", () => {
     render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
 
     expect(screen.getByText("Preparing secure sign-in")).toBeTruthy();
+  });
+
+  it("opens the workspace directly for an existing authenticated session", async () => {
+    state.isAuthenticated = true;
+    render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
+
+    await waitFor(() => expect(screen.getByText("Protected workspace")).toBeTruthy());
+    expect(screen.queryByTestId("dashboard-opening-transition")).toBeNull();
+  });
+
+  it("shows a brief secure dashboard-opening transition before rendering the authenticated workspace", async () => {
+    state.isAuthenticated = true;
+    state.reducedMotion = false;
+    window.sessionStorage.setItem("trade-fusion:login-return", "true");
+    vi.useFakeTimers();
+    render(<LaunchGate><div>Protected workspace</div></LaunchGate>);
+
+    await act(async () => { vi.advanceTimersByTime(INTRO_DURATION_MS); });
+    expect(screen.getByTestId("dashboard-opening-transition")).toBeTruthy();
+    expect(screen.getByText("Opening your dashboard")).toBeTruthy();
+    expect(screen.queryByText("Protected workspace")).toBeNull();
+
+    await act(async () => { vi.advanceTimersByTime(520); });
+    expect(screen.getByText("Protected workspace")).toBeTruthy();
   });
 });

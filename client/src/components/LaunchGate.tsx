@@ -104,8 +104,40 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
   );
 }
 
+function DashboardLoadingScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
+  return (
+    <motion.main
+      key="dashboard-loading"
+      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+      transition={{ duration: 0.34, ease: [0.23, 1, 0.32, 1] }}
+      className="relative w-full overflow-hidden bg-[#050912] text-white"
+      style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}
+      aria-label="Opening Trade Fusion dashboard"
+      data-testid="dashboard-opening-transition"
+    >
+      <LaunchBackground />
+      <div className="relative flex flex-col items-center px-6 text-center">
+        <TradeFusionBrand mode="launch" markSize="launch" />
+        <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.28em] text-blue-200">Secure session confirmed</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">Opening your dashboard</h1>
+        <div className="mt-6 h-px w-40 overflow-hidden bg-white/[0.10]">
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={reduceMotion ? { x: "0%" } : { x: "100%" }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.9, repeat: Infinity, ease: "easeInOut" }}
+            className="h-full w-1/2 bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-300"
+          />
+        </div>
+      </div>
+    </motion.main>
+  );
+}
+
 export default function LaunchGate({ children, mode = "workspace" }: LaunchGateProps) {
   const [introComplete, setIntroComplete] = useState(false);
+  const [dashboardReady, setDashboardReady] = useState(false);
   const { loading, isAuthenticated } = useAuth();
   const reduceMotion = useReducedMotion();
   const [isOnboardingEntry] = useState(() => {
@@ -116,6 +148,23 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
       return false;
     }
   });
+  const [isLoginReturn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.sessionStorage.getItem("trade-fusion:login-return") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const beginLogin = () => {
+    try {
+      window.sessionStorage.setItem("trade-fusion:login-return", "true");
+    } catch {
+      // The OAuth flow remains functional where browser storage is unavailable.
+    }
+    startLogin();
+  };
 
   useEffect(() => {
     if (!isOnboardingEntry) return;
@@ -127,9 +176,27 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
   }, [isOnboardingEntry]);
 
   useEffect(() => {
+    if (!isLoginReturn) return;
+    try {
+      window.sessionStorage.removeItem("trade-fusion:login-return");
+    } catch {
+      // The in-memory login-return state safely remains available for this load.
+    }
+  }, [isLoginReturn]);
+
+  useEffect(() => {
     const timeout = window.setTimeout(() => setIntroComplete(true), reduceMotion ? 0 : INTRO_DURATION_MS);
     return () => window.clearTimeout(timeout);
   }, [reduceMotion]);
+
+  useEffect(() => {
+    if (mode !== "workspace" || !isLoginReturn || !introComplete || loading || !isAuthenticated) {
+      setDashboardReady(false);
+      return;
+    }
+    const timeout = window.setTimeout(() => setDashboardReady(true), reduceMotion ? 0 : 520);
+    return () => window.clearTimeout(timeout);
+  }, [introComplete, isAuthenticated, loading, mode, reduceMotion]);
 
   const state = mode === "public"
     ? (introComplete ? "app" : "intro")
@@ -138,9 +205,10 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
   return (
     <AnimatePresence mode="wait">
       {state === "intro" && <IntroScreen reduceMotion={reduceMotion} status={isOnboardingEntry && mode === "workspace" ? "Preparing secure sign-in" : "Launching private workspace"} />}
-      {state === "checking-auth" && <SignInScreen checkingAuth onSignIn={startLogin} />}
-      {state === "sign-in" && <SignInScreen checkingAuth={false} onSignIn={startLogin} />}
-      {state === "app" && <motion.div key="app" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>{children}</motion.div>}
+      {state === "checking-auth" && <SignInScreen checkingAuth onSignIn={beginLogin} />}
+      {state === "sign-in" && <SignInScreen checkingAuth={false} onSignIn={beginLogin} />}
+      {state === "app" && mode === "workspace" && isLoginReturn && !dashboardReady && <DashboardLoadingScreen reduceMotion={reduceMotion} />}
+      {state === "app" && (mode === "public" || !isLoginReturn || dashboardReady) && <motion.div key="app" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>{children}</motion.div>}
     </AnimatePresence>
   );
 }

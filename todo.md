@@ -1,5 +1,16 @@
 # Project TODO
 
+- [x] Audit the protected dashboard launch transition and Add Trade form tag fields shown in the screenshot.
+- [x] Add a smooth, reduced-motion-safe post-login dashboard loading handoff.
+- [x] Remove the optional saved setup, session, category, trade-quality, and trading-plan inputs from manual Add Trade.
+- [x] Test authentication handoff, core manual trade submission, and responsive form layout before publishing.
+
+- [x] Open the streamlined Add Trade modal at desktop and mobile sizes and verify the simplified layout.
+- [x] Record explicit responsive modal validation before publishing the trade-form simplification.
+
+- [x] Add component-level desktop and mobile viewport coverage proving the simplified Add Trade modal renders without optional tag controls.
+- [x] Capture and record authenticated-independent modal layout evidence before publishing.
+
 - [x] Trace why a Get Started sign-in can return to the public landing page instead of the private dashboard.
 - [x] Persist the intended protected dashboard return path across secure authentication.
 - [x] Add direct-return regression coverage and validate the repaired flow before publishing.
