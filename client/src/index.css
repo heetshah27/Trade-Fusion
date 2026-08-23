@@ -349,6 +349,7 @@
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .tf-laptop-stage[data-hover-glow="fine-pointer"]:hover { --tf-preview-lift: -0.35rem; --tf-preview-scale: 1.014; filter: drop-shadow(0 38px 58px rgb(2 6 23 / 0.50)); }
     .tf-laptop-stage[data-hover-glow="fine-pointer"]:hover .tf-laptop-lid { border-color: rgb(96 165 250 / 0.72); box-shadow: 0 50px 108px rgb(0 0 0 / 0.60), 0 0 2.25rem rgb(59 130 246 / 0.26), 0 0 0.45rem rgb(147 197 253 / 0.24), inset 0 1px 0 rgb(219 234 254 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.75); }
+    .tf-laptop-stage[data-hover-pulse="fine-pointer"]:hover .tf-laptop-lid { animation: tf-laptop-edge-pulse 2.8s var(--tf-ease-in-out) infinite; }
   }
   .tf-laptop-screen { border-color: rgb(148 163 184 / 0.25); }
   .tf-laptop-reflection { position: absolute; z-index: 10; pointer-events: none; inset: -28% -44%; width: 58%; transform: translate3d(-24%, 0, 0) rotate(14deg); opacity: 0.16; background: linear-gradient(90deg, transparent 14%, rgb(191 219 254 / 0.15) 44%, rgb(255 255 255 / 0.26) 50%, rgb(147 197 253 / 0.12) 58%, transparent 86%); mix-blend-mode: screen; animation: tf-laptop-reflection-sweep 9s var(--tf-ease-in-out) infinite alternate; }
@@ -410,10 +411,11 @@
   @keyframes tf-checkout-notice-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes tf-mobile-shortcuts-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes tf-laptop-reflection-sweep { from { transform: translate3d(-24%, 0, 0) rotate(14deg); opacity: 0.10; } to { transform: translate3d(38%, 0, 0) rotate(14deg); opacity: 0.18; } }
+  @keyframes tf-laptop-edge-pulse { 0%, 100% { box-shadow: 0 50px 108px rgb(0 0 0 / 0.60), 0 0 2.25rem rgb(59 130 246 / 0.22), 0 0 0.45rem rgb(147 197 253 / 0.20), inset 0 1px 0 rgb(219 234 254 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.75); } 50% { box-shadow: 0 50px 108px rgb(0 0 0 / 0.60), 0 0 3.2rem rgb(59 130 246 / 0.34), 0 0 0.75rem rgb(147 197 253 / 0.32), inset 0 1px 0 rgb(219 234 254 / 0.28), inset 0 -1px 0 rgb(0 0 0 / 0.75); } }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .tf-signal-chip, .tf-rise, .tf-checkout-cta[data-checkout-state="opening"]::after, .tf-checkout-spinner, .tf-checkout-notice, .tf-mobile-section-shortcuts, .tf-laptop-reflection { animation: none; }
+    .tf-signal-chip, .tf-rise, .tf-checkout-cta[data-checkout-state="opening"]::after, .tf-checkout-spinner, .tf-checkout-notice, .tf-mobile-section-shortcuts, .tf-laptop-reflection, .tf-laptop-lid { animation: none; }
     .tf-monogram, .tf-cta-primary, .tf-cta-secondary, .tf-preview-shell, .tf-feature-card, .tf-feature-icon, .tf-step-card, .tf-press, .tf-hover-lift, .tf-ledger-row, .tf-interactive-card, .tf-action-glow, .tf-icon-action, .tf-pro-plan { transition: none; }
     .group:hover .tf-monogram, .tf-cta-primary:hover, .tf-cta-secondary:hover, .tf-preview-shell:hover, .tf-feature-card:hover, .tf-step-card:hover, .tf-press:hover, .tf-hover-lift:hover, .tf-ledger-row:hover, .tf-interactive-card:hover, .tf-action-glow:hover, .tf-pro-plan:hover { transform: none; }
     .tf-laptop-stage, .tf-laptop-lid { transform: none !important; transition: none; }

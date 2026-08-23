@@ -8,9 +8,9 @@ The restored desktop workspace preview now responds only to fine-pointer hover. 
 
 | Context | Behavior |
 | --- | --- |
-| Desktop fine pointer | Subtle zoom, lift, and luminous blue border are enabled. |
+| Desktop fine pointer | Subtle zoom, lift, and luminous blue border are enabled; the edge glow breathes gently only while hovered. |
 | Touch/mobile | The desktop laptop stays hidden; the purpose-built native workspace card remains visible. |
-| Reduced motion | Hover zoom and glow transitions are not applied; the preview exposes a deterministic disabled motion state for regression coverage. |
+| Reduced motion | Hover zoom, glow transitions, and the border pulse are not applied; the preview exposes deterministic disabled motion states for regression coverage. |
 
 ## Visual review
 

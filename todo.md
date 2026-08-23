@@ -50,6 +50,11 @@
 - [x] Assert that reduced-motion mode does not activate the desktop workspace hover zoom or glow behavior.
 - [x] Re-run focused and full validation after adding reduced-motion hover-glow coverage.
 
+- [x] Audit the current shared workspace-preview hover-glow styles after the latest project sync.
+- [x] Add a gentle blue border pulse that runs only while a fine pointer hovers the desktop workspace preview.
+- [x] Verify mobile remains static and reduced-motion users do not receive the border pulse.
+- [x] Add regression coverage and validate the border-pulse refinement before publishing.
+
 - [x] Audit Dashboard data sources, high-impact calendar events, and trade-row interaction points.
 - [x] Add a Dashboard calendar-risk ribbon with the next source-backed high-impact event and Eastern Time countdown.
 - [x] Add a private trade-detail drawer with execution details, notes, setup information, and linked chart screenshots.
