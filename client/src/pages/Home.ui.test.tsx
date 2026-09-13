@@ -31,10 +31,10 @@ describe("Dashboard command center", () => {
 
   it("renders the private Dashboard modules and routes to the manual Trade flow", () => {
     render(<Home />);
-    expect(screen.getByText("Live-trade command center")).toBeTruthy();
+    expect(screen.getByText("Private performance workspace")).toBeTruthy();
     expect(screen.getByText("Recorded performance")).toBeTruthy();
     expect(screen.getByRole("img", { name: "Live-trade profit and loss bars" })).toBeTruthy();
-    expect(screen.getByText("Recent activity")).toBeTruthy();
+    expect(screen.getByText("Recent trades")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /log trade/i }));
     expect(mocks.setLocation).toHaveBeenCalled();
   });
@@ -56,5 +56,18 @@ describe("Dashboard command center", () => {
     expect(screen.getByText("Private execution review")).toBeTruthy();
     expect(screen.getByText("Break above Asia range")).toBeTruthy();
     expect(screen.getAllByText("Held to plan").length).toBeGreaterThan(1);
+  });
+
+  it("renders the clean analytics hierarchy and lets members change the performance window", () => {
+    render(<Home />);
+
+    expect(screen.getByRole("region", { name: "Weekly performance" })).toBeTruthy();
+    expect(screen.getByText("Most traded assets")).toBeTruthy();
+    expect(screen.getByText("Journal follow-through")).toBeTruthy();
+    expect(screen.getAllByText("XAUUSD").length).toBeGreaterThan(0);
+    expect(screen.getByText("Last 30 days")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "7D" }));
+    expect(screen.getByText("Last 7 days")).toBeTruthy();
   });
 });

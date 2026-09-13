@@ -512,3 +512,10 @@
 - [x] Audit the hero-to-platform transition and define accurate three-step Capture, Review, and Rehearse workflow content.
 - [x] Add an original animated three-step workflow strip below the laptop preview with clear feature journey copy.
 - [x] Test workflow content, animation, reduced-motion behavior, and responsive layout before publishing.
+
+
+- [x] Defer Claude sentiment integration because Anthropic API access requires paid billing; revisit only with explicit user approval and a configured API credential.
+- [x] Audit the current authenticated Dashboard, layout shell, and existing data contracts against the supplied clean dashboard reference.
+- [x] Redesign the Dashboard information architecture with a compact week strip, equity/performance panel, KPI cards, recent trades, calendar-risk/news panel, and quick-log action while keeping Trade Fusion branding original.
+- [x] Add interactive hover/focus states and responsive mobile stacking without changing private data ownership or trading semantics.
+- [x] Add dashboard regression coverage for data states, accessibility, mobile layout, and interactive panels; run full validation before publishing.
