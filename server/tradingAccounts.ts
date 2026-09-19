@@ -1,7 +1,7 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { tradingAccounts } from "../drizzle/schema";
+import { trades, tradingAccounts } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
 
@@ -37,12 +37,60 @@ function toClientAccount(account: typeof tradingAccounts.$inferSelect) {
   };
 }
 
+export type AccountPerformance = {
+  tradeCount: number;
+  wins: number;
+  losses: number;
+  netPnl: number;
+  winRate: number;
+  profitFactor: number | null;
+  maxDrawdown: number;
+  maxDrawdownPercent: number;
+};
+
+export function buildAccountPerformance(initialBalance: number, records: Array<{ pnl: string | number }>): AccountPerformance {
+  const wins = records.filter(record => Number(record.pnl) > 0);
+  const losses = records.filter(record => Number(record.pnl) < 0);
+  const grossProfit = wins.reduce((total, record) => total + Number(record.pnl), 0);
+  const grossLoss = Math.abs(losses.reduce((total, record) => total + Number(record.pnl), 0));
+  const netPnl = records.reduce((total, record) => total + Number(record.pnl), 0);
+  let equity = initialBalance;
+  let peak = initialBalance;
+  let maxDrawdown = 0;
+  let maxDrawdownPercent = 0;
+  for (const record of records) {
+    equity += Number(record.pnl);
+    peak = Math.max(peak, equity);
+    const drawdown = Math.max(0, peak - equity);
+    maxDrawdown = Math.max(maxDrawdown, drawdown);
+    maxDrawdownPercent = Math.max(maxDrawdownPercent, peak > 0 ? (drawdown / peak) * 100 : 0);
+  }
+  return {
+    tradeCount: records.length,
+    wins: wins.length,
+    losses: losses.length,
+    netPnl,
+    winRate: records.length ? (wins.length / records.length) * 100 : 0,
+    profitFactor: grossLoss > 0 ? grossProfit / grossLoss : null,
+    maxDrawdown,
+    maxDrawdownPercent,
+  };
+}
+
 export const tradingAccountsRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw unavailable();
-    const rows = await db.select().from(tradingAccounts).where(eq(tradingAccounts.userId, ctx.user.id)).orderBy(desc(tradingAccounts.updatedAt));
-    return rows.map(toClientAccount);
+    const [rows, accountTrades] = await Promise.all([
+      db.select().from(tradingAccounts).where(eq(tradingAccounts.userId, ctx.user.id)).orderBy(desc(tradingAccounts.updatedAt)),
+      db.select({ accountId: trades.accountId, pnl: trades.pnl, date: trades.date, createdAt: trades.createdAt }).from(trades).where(eq(trades.userId, ctx.user.id)).orderBy(asc(trades.date), asc(trades.createdAt)),
+    ]);
+    const tradesByAccount = new Map<number, Array<{ pnl: string | number }>>();
+    for (const trade of accountTrades) {
+      if (trade.accountId === null) continue;
+      tradesByAccount.set(trade.accountId, [...(tradesByAccount.get(trade.accountId) ?? []), trade]);
+    }
+    return rows.map(account => ({ ...toClientAccount(account), performance: buildAccountPerformance(Number(account.initialBalance), tradesByAccount.get(account.id) ?? []) }));
   }),
 
   create: protectedProcedure.input(accountFields).mutation(async ({ ctx, input }) => {
