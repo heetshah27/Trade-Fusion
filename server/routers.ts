@@ -15,6 +15,7 @@ import { setupsRouter } from "./setups";
 import { tradeJournalRouter } from "./tradeJournal";
 import { contactRouter } from "./contact";
 import { billingRouter } from "./billing";
+import { tradingAccountsRouter } from "./tradingAccounts";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -44,6 +45,7 @@ export const appRouter = router({
   tradeJournal: tradeJournalRouter,
   contact: contactRouter,
   billing: billingRouter,
+  tradingAccounts: tradingAccountsRouter,
 
   // TODO: add more feature routers here, e.g.
   // todo: router({

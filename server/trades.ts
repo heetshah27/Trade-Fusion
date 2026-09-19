@@ -3,11 +3,12 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { tradeSetups, trades as tradesTable } from "../drizzle/schema";
+import { tradeSetups, trades as tradesTable, tradingAccounts } from "../drizzle/schema";
 import { enforceFreeTradeLimit } from "./membership";
 
 const TradeSchema = z.object({
   id: z.number(),
+  accountId: z.number().int().positive().nullable().optional().default(null),
   date: z.string(),
   symbol: z.string(),
   direction: z.enum(["LONG", "SHORT"]),
@@ -34,6 +35,7 @@ export function isTradeOwnedByUser(tradeUserId: number, authenticatedUserId: num
 function toClientTrade(trade: typeof tradesTable.$inferSelect) {
   return {
     id: trade.id,
+    accountId: trade.accountId,
     date: trade.date,
     symbol: trade.symbol,
     direction: trade.direction,
@@ -63,6 +65,13 @@ async function setupNameForOwner(db: NonNullable<Awaited<ReturnType<typeof getDb
   return setup[0].name;
 }
 
+async function accountForOwner(db: NonNullable<Awaited<ReturnType<typeof getDb>>>, userId: number, accountId: number | null) {
+  if (!accountId) return null;
+  const account = await db.select({ id: tradingAccounts.id }).from(tradingAccounts).where(and(eq(tradingAccounts.id, accountId), eq(tradingAccounts.userId, userId)));
+  if (!account.length) throw new TRPCError({ code: "FORBIDDEN", message: "Selected trading account is unavailable" });
+  return account[0].id;
+}
+
 export const tradesRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
@@ -76,8 +85,10 @@ export const tradesRouter = router({
     const db = await getDb();
     if (!db) throw databaseUnavailable();
     const setupName = await setupNameForOwner(db, ctx.user.id, input.setupId);
+    const accountId = await accountForOwner(db, ctx.user.id, input.accountId ?? null);
     const result = await db.insert(tradesTable).values({
       userId: ctx.user.id,
+      accountId,
       date: input.date,
       symbol: input.symbol,
       direction: input.direction,
@@ -105,7 +116,9 @@ export const tradesRouter = router({
       throw new TRPCError({ code: "NOT_FOUND", message: "Trade not found" });
     }
     const setupName = await setupNameForOwner(db, ctx.user.id, input.setupId);
+    const accountId = await accountForOwner(db, ctx.user.id, input.accountId ?? null);
     const result = await db.update(tradesTable).set({
+      accountId,
       date: input.date,
       symbol: input.symbol,
       direction: input.direction,

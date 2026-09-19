@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({ invalidate: vi.fn(), setupsInvalidate: vi.fn()
 vi.mock("@/_core/hooks/useAuth", () => ({ useAuth: () => ({ user: { name: "Avery Trader" } }) }));
 vi.mock("@/lib/trpc", () => ({
   trpc: {
-    useUtils: () => ({ account: { profile: { invalidate: mocks.invalidate } }, setups: { list: { invalidate: mocks.setupsInvalidate } } }),
+    useUtils: () => ({ account: { profile: { invalidate: mocks.invalidate } }, setups: { list: { invalidate: mocks.setupsInvalidate } }, tradingAccounts: { list: { invalidate: vi.fn() } } }),
     account: {
       profile: { useQuery: () => ({ data: { name: "Avery Trader", email: "avery@example.com", role: "user", avatarUrl: "/manus-storage/account-avatars/7/photo.webp", customAvatarUrl: "/manus-storage/account-avatars/7/photo.webp" } }) },
       uploadProfilePhoto: { useMutation: () => ({ mutate: mocks.upload, isPending: false }) },
@@ -21,6 +21,12 @@ vi.mock("@/lib/trpc", () => ({
       create: { useMutation: () => ({ mutate: mocks.createSetup, isPending: false, error: null }) },
       update: { useMutation: () => ({ mutate: mocks.updateSetup, isPending: false, error: null }) },
       archive: { useMutation: () => ({ mutate: mocks.archiveSetup, isPending: false, error: null }) },
+    },
+    tradingAccounts: {
+      list: { useQuery: () => ({ data: [], isLoading: false }) },
+      create: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      update: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      delete: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
     },
     billing: {
       status: { useQuery: () => ({ data: { tier: "free", backtestAccess: "locked", billingReady: true, usage: { trades: { used: 2, limit: 15, remaining: 13 }, threads: { used: 1, limit: 10, remaining: 9 } } }, isLoading: false }) },

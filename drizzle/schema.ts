@@ -30,6 +30,14 @@ export const tradingStyleEnum = pgEnum("trading_style", [
 ]);
 export const backtestSessionStatusEnum = pgEnum("backtest_session_status", ["active", "archived"]);
 export const contactInquiryStatusEnum = pgEnum("contact_inquiry_status", ["new", "read", "resolved"]);
+export const tradingAccountTypeEnum = pgEnum("trading_account_type", [
+  "none",
+  "personal_funds",
+  "live_funded",
+  "challenge_phase_1",
+  "challenge_phase_2",
+  "demo",
+]);
 
 export const users = pgTable("users", {
   /**
@@ -107,6 +115,25 @@ export const tradeSetups = pgTable(
 
 export type TradeSetup = typeof tradeSetups.$inferSelect;
 
+/** Private, manually maintained trading accounts owned by one member. */
+export const tradingAccounts = pgTable(
+  "trading_accounts",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 80 }).notNull(),
+    initialBalance: decimal("initialBalance", { precision: 14, scale: 2 }).notNull(),
+    currentBalance: decimal("currentBalance", { precision: 14, scale: 2 }).notNull(),
+    accountType: tradingAccountTypeEnum("accountType").default("none").notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [index("trading_accounts_user_updated_idx").on(table.userId, table.updatedAt)]
+);
+
+export type TradingAccount = typeof tradingAccounts.$inferSelect;
+export type InsertTradingAccount = typeof tradingAccounts.$inferInsert;
+
 /**
  * Trade journal entries — one row per trade logged by a user
  */
@@ -115,6 +142,7 @@ export const trades = pgTable(
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    accountId: integer("accountId").references(() => tradingAccounts.id, { onDelete: "set null" }),
     date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
     symbol: varchar("symbol", { length: 20 }).notNull(),
     direction: directionEnum("direction").notNull(),
@@ -133,7 +161,7 @@ export const trades = pgTable(
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   },
-  table => [index("trades_user_setup_tag_idx").on(table.userId, table.setupTag), index("trades_user_setup_id_idx").on(table.userId, table.setupId), index("trades_user_market_session_idx").on(table.userId, table.marketSession)]
+  table => [index("trades_user_account_idx").on(table.userId, table.accountId), index("trades_user_setup_tag_idx").on(table.userId, table.setupTag), index("trades_user_setup_id_idx").on(table.userId, table.setupId), index("trades_user_market_session_idx").on(table.userId, table.marketSession)]
 );
 
 export type Trade = typeof trades.$inferSelect;

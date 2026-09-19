@@ -8,6 +8,7 @@ export type TradeStatus = 'WIN' | 'LOSS' | 'BREAKEVEN';
 
 export interface Trade {
   id: number | string;
+  accountId?: number | null;
   date: string;          // ISO date string YYYY-MM-DD
   symbol: string;
   direction: TradeDirection;

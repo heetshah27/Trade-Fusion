@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Archive, ArchiveRestore, BadgeCheck, Check, CircleHelp, CircleUserRound, CreditCard, ImagePlus, Layers3, LoaderCircle, LockKeyhole, Mail, Pencil, Plus, ReceiptText, Save, ShieldCheck, Sparkles, Trash2, UserRound, X } from "lucide-react";
+import TradingAccountsSection from "@/components/TradingAccountsSection";
 
 const MAX_PROFILE_PHOTO_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -202,6 +203,8 @@ export default function Account() {
 
           {billingHistory.length > 0 && <div className="mt-6 border-t border-white/[0.08] pt-5"><div className="flex items-center gap-2"><ReceiptText className="h-4 w-4 text-violet-200" /><h3 className="text-sm font-medium text-white">Payment history</h3></div><div className="mt-3 overflow-hidden rounded-xl border border-white/[0.08]"><div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 border-b border-white/[0.08] bg-white/[0.025] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500"><span>Item</span><span>Date</span><span>Paid</span></div>{billingHistory.map(invoice => <div key={invoice.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 px-4 py-3 text-xs text-slate-300"><span className="truncate">{invoice.item}</span><span className="text-slate-500">{new Date(invoice.date).toLocaleDateString()}</span><span className={invoice.status === "paid" ? "text-emerald-300" : "text-amber-200"}>{formatInvoiceAmount(invoice.amountPaid, invoice.currency)}</span></div>)}</div></div>}
         </Card>
+
+        <TradingAccountsSection />
 
         <Card className="mt-5 border-blue-200/[0.10] bg-[#101c33] p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

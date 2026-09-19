@@ -17,12 +17,14 @@ interface Props {
   onClose: () => void;
   onSave: (trade: Trade) => void;
   editTrade?: Trade | null;
+  accounts?: Array<{ id: number; name: string; currentBalance: number; accountType: string }>;
 }
 
 const today = new Date().toISOString().slice(0, 10);
 
 const empty = (): Omit<Trade, 'id' | 'pnl'> => ({
   date: today,
+  accountId: null,
   symbol: '',
   direction: 'LONG',
   entryPrice: 0,
@@ -38,7 +40,7 @@ const empty = (): Omit<Trade, 'id' | 'pnl'> => ({
   notes: '',
 });
 
-export default function AddTradeModal({ open, onClose, onSave, editTrade }: Props) {
+export default function AddTradeModal({ open, onClose, onSave, editTrade, accounts = [] }: Props) {
   const [form, setForm] = useState(empty());
   const [manualPnl, setManualPnl] = useState('');
   const [useManual, setUseManual] = useState(false);
@@ -133,6 +135,15 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade }: Prop
               className="bg-input border-border font-mono text-sm"
             />
           </div>
+
+          {accounts.length > 0 && <div className="col-span-2 flex flex-col gap-1.5">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Trading account</Label>
+            <Select value={form.accountId ? String(form.accountId) : "unassigned"} onValueChange={(value) => set("accountId", value === "unassigned" ? null : Number(value))}>
+              <SelectTrigger className="bg-input border-border font-mono text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-card border-border"><SelectItem value="unassigned">Unassigned</SelectItem>{accounts.map(account => <SelectItem key={account.id} value={String(account.id)}>{account.name}</SelectItem>)}</SelectContent>
+            </Select>
+            <p className="text-[10px] text-slate-500">Link this execution to a private account for portfolio review.</p>
+          </div>}
 
           {/* Entry Price */}
           <div className="flex flex-col gap-1.5">
