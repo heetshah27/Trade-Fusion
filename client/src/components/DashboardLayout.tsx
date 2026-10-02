@@ -70,7 +70,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 function DashboardShell({ children, profile, user, logout, location, setLocation }: { children: React.ReactNode; profile?: { name?: string | null; avatarUrl?: string | null }; user: { name?: string | null }; logout: () => Promise<void>; location: string; setLocation: (path: string) => void }) {
   const { accounts, selectAccount, selectedAccount: activeAccount } = useTradingAccount();
   const [showChooser, setShowChooser] = useState(() => shouldShowWorkspaceEntry() && location === appRoutes.dashboard);
+  const [switchingAccountId, setSwitchingAccountId] = useState<number | null>(null);
   useEffect(() => { if (location === appRoutes.dashboard && shouldShowWorkspaceEntry()) setShowChooser(true); }, [location]);
+  useEffect(() => {
+    if (switchingAccountId === null) return;
+    const timer = window.setTimeout(() => setSwitchingAccountId(null), 420);
+    return () => window.clearTimeout(timer);
+  }, [switchingAccountId]);
+  const switchAccount = (id: number) => {
+    if (id === activeAccount?.id) return;
+    selectAccount(id);
+    setSwitchingAccountId(id);
+    if (location !== appRoutes.dashboard) setLocation(appRoutes.dashboard);
+  };
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "258px" } as CSSProperties}>
@@ -141,9 +153,9 @@ function DashboardShell({ children, profile, user, logout, location, setLocation
               <p className="mt-0.5 text-xs text-slate-400">Private live-trade workspace</p>
             </div>
           </div>
-          <div className="flex items-center gap-2"><NotificationMenu />{accounts.length > 0 && <select aria-label="Active trading account" value={activeAccount?.id ?? ""} onChange={event => { const account = accounts.find(item => item.id === Number(event.target.value)); if (account) { selectAccount(account.id); setLocation(appRoutes.dashboard); } }} className="hidden max-w-[150px] rounded-full border border-blue-300/[0.18] bg-blue-400/[0.09] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.10em] text-blue-100 outline-none sm:block"><option value="" disabled>Select account</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select>}<div className="flex items-center gap-2 rounded-full border border-blue-300/[0.18] bg-blue-400/[0.09] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-blue-200"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.19_255)]" /> {activeAccount ? activeAccount.name : "Secure sync"}</div></div>
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2"><NotificationMenu />{accounts.length > 0 && <select aria-label="Active trading account" aria-busy={switchingAccountId !== null} disabled={switchingAccountId !== null} value={activeAccount?.id ?? ""} onChange={event => { const account = accounts.find(item => item.id === Number(event.target.value)); if (account) switchAccount(account.id); }} className="block max-w-[108px] rounded-full border border-blue-300/[0.18] bg-blue-400/[0.09] px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.08em] text-blue-100 outline-none transition-opacity disabled:cursor-wait disabled:opacity-60 sm:max-w-[150px] sm:px-3 sm:tracking-[0.10em]"><option value="" disabled>Select account</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select>}<div className={`hidden items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors sm:flex ${switchingAccountId !== null ? "border-blue-200/[0.30] bg-blue-400/[0.15] text-blue-100" : "border-blue-300/[0.18] bg-blue-400/[0.09] text-blue-200"}`}><span className={`h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_oklch(0.66_0.19_255)] ${switchingAccountId !== null ? "animate-pulse" : ""}`} /> {switchingAccountId !== null ? "Switching…" : activeAccount ? activeAccount.name : "Secure sync"}</div></div>
         </header>
-        <main className="min-w-0 tf-mobile-safe-bottom">{children}</main>
+        <main className="relative min-w-0 tf-mobile-safe-bottom" aria-busy={switchingAccountId !== null}><div key={`${location}:${activeAccount?.id ?? "none"}`} className={location === appRoutes.dashboard ? "tf-account-dashboard-enter" : undefined}>{children}</div></main>
         <nav aria-label="Mobile workspace navigation" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 rounded-2xl border border-white/[0.12] bg-[#0b162a]/95 p-1.5 shadow-[0_18px_50px_rgba(0,0,0,.42)] backdrop-blur-xl md:hidden">
           {mobileMenuItems.map((item) => {
             const isActive = location === item.path;
@@ -152,6 +164,7 @@ function DashboardShell({ children, profile, user, logout, location, setLocation
           <button type="button" onClick={() => { setLocation(appRoutes.trades); window.setTimeout(() => window.dispatchEvent(new Event("trade-fusion:open-log-trade")), 120); }} className="tf-press flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 px-1 py-1.5 text-[9px] font-bold text-white shadow-[0_8px_20px_oklch(0.40_0.18_255_/_0.38)]"><Plus className="h-4 w-4" /><span>Log</span></button>
         </nav>
       </SidebarInset>
+      {switchingAccountId !== null && <div className="tf-account-switch-overlay" role="status" aria-live="polite"><div className="tf-account-switch-card"><span className="tf-account-switch-spinner" /><div><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-blue-200">Account workspace</p><p className="mt-1 text-sm font-medium text-white">Loading {accounts.find(account => account.id === switchingAccountId)?.name ?? "account"} dashboard</p></div></div></div>}
       {showChooser && <WorkspaceEntryChooser onComplete={() => setShowChooser(false)} />}
     </SidebarProvider>
   );

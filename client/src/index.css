@@ -131,6 +131,20 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes tf-account-dashboard-enter {
+  0% { opacity: 0; transform: translateY(5px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tf-account-switch-card-in {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes tf-account-switch-spin {
+  to { transform: rotate(360deg); }
+}
+
 .animate-ticker {
   display: flex;
   width: max-content;
@@ -163,6 +177,10 @@
   .tf-backtest-page [data-slot="button"][class*="bg-emerald-"]:hover { background-color: oklch(0.66 0.19 255) !important; }
   .tf-press { will-change: transform; transition: transform 160ms var(--tf-ease-out), background 160ms var(--tf-ease-out), border-color 160ms var(--tf-ease-out), box-shadow 160ms var(--tf-ease-out), color 160ms var(--tf-ease-out); }
   .tf-press:active { transform: scale(0.97); }
+  .tf-account-dashboard-enter { animation: tf-account-dashboard-enter 360ms var(--tf-ease-out) both; }
+  .tf-account-switch-overlay { position: fixed; inset: 68px 0 0 0; z-index: 30; display: grid; place-items: start center; pointer-events: none; padding-top: 1rem; background: linear-gradient(180deg, rgb(6 9 15 / 0.28), transparent 40%); }
+  .tf-account-switch-card { display: flex; align-items: center; gap: 0.75rem; border: 1px solid oklch(0.78 0.13 250 / 0.22); border-radius: 0.9rem; background: oklch(0.11 0.025 258 / 0.94); padding: 0.7rem 0.9rem; box-shadow: 0 16px 36px rgb(0 0 0 / 0.32), 0 0 0 1px oklch(0.66 0.19 255 / 0.06); backdrop-filter: blur(18px); animation: tf-account-switch-card-in 220ms var(--tf-ease-out) both; }
+  .tf-account-switch-spinner { display: block; height: 1rem; width: 1rem; border: 2px solid oklch(0.70 0.16 250 / 0.25); border-top-color: oklch(0.78 0.16 250); border-radius: 999px; animation: tf-account-switch-spin 700ms linear infinite; }
 
   .tf-checkout-cta { position: relative; isolation: isolate; overflow: hidden; }
   .tf-checkout-cta::after { position: absolute; inset: 0 auto 0 -52%; z-index: 0; width: 42%; content: ""; pointer-events: none; opacity: 0; transform: skewX(-18deg); background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.34), transparent); }
@@ -613,5 +631,13 @@
   .tf-faq-trigger > svg,
   .tf-contact-surface {
     transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-account-dashboard-enter,
+  .tf-account-switch-card,
+  .tf-account-switch-spinner {
+    animation: none !important;
   }
 }
