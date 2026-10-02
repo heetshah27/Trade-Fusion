@@ -22,7 +22,7 @@ function LaunchBackground() {
   );
 }
 
-function IntroScreen({ reduceMotion, status }: { reduceMotion: boolean | null; status: string }) {
+function IntroScreen({ reduceMotion, status, welcomeName }: { reduceMotion: boolean | null; status: string; welcomeName?: string | null }) {
   return (
     <motion.main
       key="intro"
@@ -57,7 +57,7 @@ function IntroScreen({ reduceMotion, status }: { reduceMotion: boolean | null; s
               className="h-full w-1/3 bg-[oklch(0.68_0.18_250)]"
             />
           </div>
-          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-600">{status}</p>
+          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.28em] text-slate-600">{welcomeName ? `Welcome ${welcomeName}` : status}</p>
         </motion.div>
       </div>
     </motion.main>
@@ -104,7 +104,7 @@ function SignInScreen({ checkingAuth, onSignIn }: { checkingAuth: boolean; onSig
   );
 }
 
-function DashboardLoadingScreen({ reduceMotion }: { reduceMotion: boolean | null }) {
+function DashboardLoadingScreen({ reduceMotion, welcomeName }: { reduceMotion: boolean | null; welcomeName?: string | null }) {
   return (
     <motion.main
       key="dashboard-loading"
@@ -120,8 +120,8 @@ function DashboardLoadingScreen({ reduceMotion }: { reduceMotion: boolean | null
       <LaunchBackground />
       <div className="relative flex flex-col items-center px-6 text-center">
         <TradeFusionBrand mode="launch" markSize="launch" />
-        <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.28em] text-blue-200">Secure session confirmed</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">Opening your dashboard</h1>
+        <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.28em] text-blue-200">{welcomeName ? `Welcome ${welcomeName}` : "Secure session confirmed"}</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">{welcomeName ? "Your private workspace is ready" : "Opening your dashboard"}</h1>
         <div className="mt-6 h-px w-40 overflow-hidden bg-white/[0.10]">
           <motion.div
             initial={{ x: "-100%" }}
@@ -138,7 +138,8 @@ function DashboardLoadingScreen({ reduceMotion }: { reduceMotion: boolean | null
 export default function LaunchGate({ children, mode = "workspace" }: LaunchGateProps) {
   const [introComplete, setIntroComplete] = useState(false);
   const [dashboardReady, setDashboardReady] = useState(false);
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
+  const welcomeName = user?.name?.trim() || user?.email?.split("@")[0] || null;
   const reduceMotion = useReducedMotion();
   const [isOnboardingEntry] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -204,10 +205,10 @@ export default function LaunchGate({ children, mode = "workspace" }: LaunchGateP
 
   return (
     <AnimatePresence mode="wait">
-      {state === "intro" && <IntroScreen reduceMotion={reduceMotion} status={isOnboardingEntry && mode === "workspace" ? "Preparing secure sign-in" : "Launching private workspace"} />}
+      {state === "intro" && <IntroScreen reduceMotion={reduceMotion} status={isOnboardingEntry && mode === "workspace" ? "Preparing secure sign-in" : "Launching private workspace"} welcomeName={mode === "workspace" && isAuthenticated ? welcomeName : null} />}
       {state === "checking-auth" && <SignInScreen checkingAuth onSignIn={beginLogin} />}
       {state === "sign-in" && <SignInScreen checkingAuth={false} onSignIn={beginLogin} />}
-      {state === "app" && mode === "workspace" && isLoginReturn && !dashboardReady && <DashboardLoadingScreen reduceMotion={reduceMotion} />}
+      {state === "app" && mode === "workspace" && isLoginReturn && !dashboardReady && <DashboardLoadingScreen reduceMotion={reduceMotion} welcomeName={welcomeName} />}
       {state === "app" && (mode === "public" || !isLoginReturn || dashboardReady) && <motion.div key="app" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>{children}</motion.div>}
     </AnimatePresence>
   );

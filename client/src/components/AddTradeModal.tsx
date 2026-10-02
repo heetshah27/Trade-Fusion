@@ -18,6 +18,7 @@ interface Props {
   onSave: (trade: Trade) => void;
   editTrade?: Trade | null;
   accounts?: Array<{ id: number; name: string; currentBalance: number; accountType: string }>;
+  defaultAccountId?: number | null;
 }
 
 const today = new Date().toISOString().slice(0, 10);
@@ -40,7 +41,7 @@ const empty = (): Omit<Trade, 'id' | 'pnl'> => ({
   notes: '',
 });
 
-export default function AddTradeModal({ open, onClose, onSave, editTrade, accounts = [] }: Props) {
+export default function AddTradeModal({ open, onClose, onSave, editTrade, accounts = [], defaultAccountId = null }: Props) {
   const [form, setForm] = useState(empty());
   const [manualPnl, setManualPnl] = useState('');
   const [useManual, setUseManual] = useState(false);
@@ -52,11 +53,11 @@ export default function AddTradeModal({ open, onClose, onSave, editTrade, accoun
       setManualPnl(pnl.toString());
       setUseManual(false);
     } else {
-      setForm(empty());
+      setForm({ ...empty(), accountId: defaultAccountId });
       setManualPnl('');
       setUseManual(false);
     }
-  }, [editTrade, open]);
+  }, [defaultAccountId, editTrade, open]);
 
   const pnlDetails = calculateTradePnl(form);
   const computed = pnlDetails.net;

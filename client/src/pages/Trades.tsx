@@ -8,6 +8,7 @@ import { DirectionBadge } from "@/components/DirectionBadge";
 import { InstrumentBadge } from "@/components/InstrumentBadge";
 import type { Trade } from "@/lib/tradeTypes";
 import { trpc } from "@/lib/trpc";
+import { useOptionalTradingAccount } from "@/contexts/TradingAccountContext";
 import { appRoutes } from "@/lib/appRoutes";
 import { getInstrumentProfile } from "@/lib/tradeInstruments";
 import { TradeDetailDrawer } from "@/components/TradeDetailDrawer";
@@ -66,6 +67,7 @@ export default function Trades() {
   const [sortAsc, setSortAsc] = useState(false);
   const { data: cloudTrades = [] } = trpc.trades.list.useQuery();
   const { data: accounts = [] } = trpc.tradingAccounts.list.useQuery();
+  const selectedAccountId = useOptionalTradingAccount()?.selectedAccountId ?? null;
   const utils = trpc.useUtils();
   const create = trpc.trades.create.useMutation({ onSuccess: () => void utils.trades.list.invalidate() });
   const update = trpc.trades.update.useMutation({ onSuccess: () => void utils.trades.list.invalidate() });
@@ -180,7 +182,7 @@ export default function Trades() {
           )}
         </section>
         <p className="mt-3 flex items-start gap-2 text-[10px] leading-4 text-slate-600"><ListFilter className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-300" />Assisted P&amp;L uses the selected or inferred instrument rule and excludes broker-specific swaps, conversion, and non-standard contract sizing. Use the manual override when your broker result differs.</p>
-      <AddTradeModal open={modalOpen} onClose={() => { setModalOpen(false); setEditTrade(null); }} onSave={handleSave} editTrade={editTrade} accounts={accounts} />
+      <AddTradeModal open={modalOpen} onClose={() => { setModalOpen(false); setEditTrade(null); }} onSave={handleSave} editTrade={editTrade} accounts={accounts} defaultAccountId={selectedAccountId} />
         {detailTrade && <TradeDetailDrawer trade={detailTrade} open onOpenChange={(open) => { if (!open) setDetailTrade(null); }} />}
       </main>
     </div>
