@@ -24,6 +24,7 @@ import { appRoutes } from "@/lib/appRoutes";
 import { trpc } from "@/lib/trpc";
 import { NotificationMenu } from "./NotificationMenu";
 import WorkspaceEntryChooser from "./WorkspaceEntryChooser";
+import { HighImpactNewsAlert } from "./HighImpactNewsAlert";
 import { TradingAccountProvider, shouldShowWorkspaceEntry, useTradingAccount } from "@/contexts/TradingAccountContext";
 
 const menuItems = [
@@ -86,6 +87,7 @@ function DashboardShell({ children, profile, user, logout, location, setLocation
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "258px" } as CSSProperties}>
+      <HighImpactNewsAlert enabled={!showChooser} userKey={user.name ?? "authenticated-user"} onOpenCalendar={() => setLocation(appRoutes.calendar)} />
       <Sidebar collapsible="icon" className="border-r border-white/[0.07] bg-[#070a10] text-slate-300">
         <SidebarHeader className="h-[68px] border-b border-white/[0.07] px-3 py-0">
           <div className="flex h-full items-center gap-3 px-2">
