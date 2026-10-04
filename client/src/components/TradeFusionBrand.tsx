@@ -9,14 +9,12 @@ const sizeClasses: Record<MarkSize, string> = {
   large: "tf-monogram-large",
   launch: "tf-monogram-launch",
 };
+const NEW_MARK_SRC = "/manus-storage/trade-fusion-new-mark_e24848eb.png";
 
 export function TradeFusionMark({ size = "regular", className = "" }: { size?: MarkSize; className?: string }) {
   return (
-    <div className={`tf-monogram ${sizeClasses[size]} ${className}`.trim()} aria-label="Trade Fusion TF monogram" role="img" data-testid="trade-fusion-mark">
-      <span className="tf-monogram-t">T</span>
-      <span className="tf-monogram-f">F</span>
-      <span className="tf-monogram-up" />
-      <span className="tf-monogram-down" />
+    <div className={`tf-monogram ${sizeClasses[size]} ${className}`.trim()} aria-label="Trade Fusion new trading emblem" role="img" data-testid="trade-fusion-mark">
+      <img src={NEW_MARK_SRC} alt="" className="tf-new-logo-mark" />
     </div>
   );
 }
