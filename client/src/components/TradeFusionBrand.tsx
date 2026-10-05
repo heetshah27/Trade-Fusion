@@ -22,15 +22,14 @@ export function TradeFusionMark({ size = "regular", className = "" }: { size?: M
 export function TradeFusionBrand({ mode = "full", markSize = "regular", className = "" }: { mode?: BrandMode; markSize?: MarkSize; className?: string }) {
   const isLaunch = mode === "launch";
   const isCompact = mode === "compact";
-
   return (
-    <div className={`flex items-center gap-2.5 ${isLaunch ? "flex-col gap-3" : ""} ${className}`.trim()} aria-label="Trade Fusion" data-testid="trade-fusion-brand">
+    <div className={`tf-brand-lockup ${isLaunch ? "tf-brand-lockup-launch" : ""} ${className}`.trim()} aria-label="Trade Fusion" data-testid="trade-fusion-brand">
       <TradeFusionMark size={markSize} />
-      <div className={`leading-none ${isLaunch ? "text-center" : ""}`}>
-        <p className={`${isLaunch ? "text-xl sm:text-2xl" : isCompact ? "text-sm" : "text-base"} font-bold tracking-[-0.045em] text-white`}>
-          TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span>
+      <div className={`tf-brand-copy ${isLaunch ? "tf-brand-copy-launch" : ""}`}>
+        <p className={`tf-brand-name ${isLaunch ? "tf-brand-name-launch" : isCompact ? "tf-brand-name-compact" : ""}`}>
+          TRADE<span>FUSION</span>
         </p>
-        <p className={`mt-1 font-mono ${isLaunch ? "text-[9px] tracking-[0.32em]" : "text-[8px] tracking-[0.27em]"} uppercase text-slate-400`}>Trading Workspace</p>
+        <p className={`tf-brand-subtitle ${isLaunch ? "tf-brand-subtitle-launch" : ""}`}>Trading Workspace</p>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import { BarChart3, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ChevronRig
 import { type CSSProperties, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
-import { TradeFusionBrand, TradeFusionMark } from "./TradeFusionBrand";
+import { TradeFusionBrand } from "./TradeFusionBrand";
 import { BacktestBetaBadge } from "./BacktestBetaBadge";
 import { appRoutes } from "@/lib/appRoutes";
 import { trpc } from "@/lib/trpc";
@@ -91,11 +91,8 @@ function DashboardShell({ children, profile, user, logout, location, setLocation
       <Sidebar collapsible="icon" className="border-r border-white/[0.07] bg-[#070a10] text-slate-300">
         <SidebarHeader className="h-[68px] border-b border-white/[0.07] px-3 py-0">
           <div className="flex h-full items-center gap-3 px-2">
-            <TradeFusionMark className="shrink-0" />
-            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <div className="text-sm font-bold tracking-[-0.04em] text-white">TRADE<span className="text-[oklch(0.70_0.16_250)]">FUSION</span></div>
-              <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.26em] text-slate-500">Trading workspace</div>
-            </div>
+            <div className="min-w-0 group-data-[collapsible=icon]:hidden"><TradeFusionBrand mode="compact" markSize="small" /></div>
+            <div className="hidden group-data-[collapsible=icon]:block"><TradeFusionBrand mode="compact" markSize="small" /></div>
           </div>
         </SidebarHeader>
 

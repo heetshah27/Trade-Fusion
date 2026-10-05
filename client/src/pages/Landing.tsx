@@ -449,10 +449,7 @@ function WorkspacePreview() {
           <div className="min-h-0 md:grid md:grid-cols-[210px_minmax(0,1fr)] md:min-h-[460px]">
             {/* Sidebar */}
             <aside className="hidden border-r border-white/[0.08] bg-[#071326] p-5 md:block">
-              <div className="flex items-center gap-2.5 text-xs font-semibold text-white">
-                <TradeFusionMark size="small" />
-                <span className="hidden sm:inline tracking-tight">TRADEFUSION</span>
-              </div>
+              <TradeFusionBrand mode="compact" markSize="small" />
               <div className="mt-8 space-y-2">
                 <button
                   onClick={() => setActiveTab("journal")}
