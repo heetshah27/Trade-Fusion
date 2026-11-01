@@ -9,7 +9,7 @@ const sizeClasses: Record<MarkSize, string> = {
   large: "tf-monogram-large",
   launch: "tf-monogram-launch",
 };
-const NEW_MARK_SRC = "/manus-storage/trade-fusion-new-mark_e24848eb.png";
+const NEW_MARK_SRC = "/manus-storage/trade-fusion-emblem-clean_f38e3ea0.png";
 
 export function TradeFusionMark({ size = "regular", className = "" }: { size?: MarkSize; className?: string }) {
   return (
