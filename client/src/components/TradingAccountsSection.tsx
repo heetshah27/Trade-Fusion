@@ -35,7 +35,7 @@ export default function TradingAccountsSection() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const create = trpc.tradingAccounts.create.useMutation({ onSuccess: async () => { reset(); await utils.tradingAccounts.list.invalidate(); } });
+  const create = trpc.tradingAccounts.create.useMutation({ onSuccess: async (created) => { selectAccount(created.id); markWorkspaceEntrySeen(); reset(); await utils.tradingAccounts.list.invalidate(); } });
   const update = trpc.tradingAccounts.update.useMutation({ onSuccess: async () => { reset(); await utils.tradingAccounts.list.invalidate(); } });
   const remove = trpc.tradingAccounts.delete.useMutation({ onSuccess: async () => { await utils.tradingAccounts.list.invalidate(); } });
   const working = create.isPending || update.isPending || remove.isPending;

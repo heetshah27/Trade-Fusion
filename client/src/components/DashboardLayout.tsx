@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { loading, user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { data: profile } = trpc.account.profile.useQuery(undefined, { enabled: Boolean(user) });
-  const { data: accounts = [] } = trpc.tradingAccounts.list.useQuery(undefined, { enabled: Boolean(user) });
+  const { data: accounts = [], isLoading: accountsLoading } = trpc.tradingAccounts.list.useQuery(undefined, { enabled: Boolean(user) });
 
   if (loading) return <DashboardLayoutSkeleton />;
 
@@ -63,16 +63,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <TradingAccountProvider accounts={accounts}>
-      <DashboardShell profile={profile} user={user} logout={logout} location={location} setLocation={setLocation}>{children}</DashboardShell>
+      <DashboardShell profile={profile} user={user} logout={logout} location={location} setLocation={setLocation} accountsLoading={accountsLoading}>{children}</DashboardShell>
     </TradingAccountProvider>
   );
 }
 
-function DashboardShell({ children, profile, user, logout, location, setLocation }: { children: React.ReactNode; profile?: { name?: string | null; avatarUrl?: string | null }; user: { name?: string | null }; logout: () => Promise<void>; location: string; setLocation: (path: string) => void }) {
+function DashboardShell({ children, profile, user, logout, location, setLocation, accountsLoading }: { children: React.ReactNode; profile?: { name?: string | null; avatarUrl?: string | null }; user: { name?: string | null }; logout: () => Promise<void>; location: string; setLocation: (path: string) => void; accountsLoading: boolean }) {
   const { accounts, selectAccount, selectedAccount: activeAccount } = useTradingAccount();
-  const [showChooser, setShowChooser] = useState(() => shouldShowWorkspaceEntry() && location === appRoutes.dashboard);
+  const [showChooser, setShowChooser] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<number | null>(null);
-  useEffect(() => { if (location === appRoutes.dashboard && shouldShowWorkspaceEntry()) setShowChooser(true); }, [location]);
+  useEffect(() => {
+    if (accountsLoading || location !== appRoutes.dashboard) return;
+    // Returning members with a saved account should go straight to that account's dashboard.
+    // Only show onboarding after the private account query confirms there are no accounts.
+    setShowChooser(accounts.length === 0 && shouldShowWorkspaceEntry());
+  }, [accounts, accountsLoading, location]);
   useEffect(() => {
     if (switchingAccountId === null) return;
     const timer = window.setTimeout(() => setSwitchingAccountId(null), 420);

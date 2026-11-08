@@ -37,7 +37,9 @@ export function TradingAccountProvider({ accounts, children }: { accounts: Tradi
 
   useEffect(() => {
     if (selectedAccountId !== null && accounts.some(account => account.id === selectedAccountId)) return;
-    if (accounts.length === 1) setSelectedAccountId(accounts[0].id);
+    // The API orders accounts by updatedAt, so this also gives returning users
+    // a useful cross-device fallback when localStorage is unavailable or cleared.
+    if (accounts.length > 0) setSelectedAccountId(accounts[0].id);
     else if (selectedAccountId !== null) setSelectedAccountId(null);
   }, [accounts, selectedAccountId]);
 
