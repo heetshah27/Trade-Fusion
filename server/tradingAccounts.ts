@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { trades, tradingAccounts } from "../drizzle/schema";
+import { trades, tradingAccounts, tradingAccountPreferences } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
 
@@ -78,6 +78,24 @@ export function buildAccountPerformance(initialBalance: number, records: Array<{
 }
 
 export const tradingAccountsRouter = router({
+  preference: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw unavailable();
+    const [preference] = await db.select({ lastActiveAccountId: tradingAccountPreferences.lastActiveAccountId }).from(tradingAccountPreferences).where(eq(tradingAccountPreferences.userId, ctx.user.id)).limit(1);
+    if (!preference?.lastActiveAccountId) return { lastActiveAccountId: null } as const;
+    const [account] = await db.select({ id: tradingAccounts.id }).from(tradingAccounts).where(and(eq(tradingAccounts.id, preference.lastActiveAccountId), eq(tradingAccounts.userId, ctx.user.id))).limit(1);
+    return { lastActiveAccountId: account?.id ?? null } as const;
+  }),
+
+  setActive: protectedProcedure.input(z.object({ accountId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw unavailable();
+    const [account] = await db.select({ id: tradingAccounts.id }).from(tradingAccounts).where(and(eq(tradingAccounts.id, input.accountId), eq(tradingAccounts.userId, ctx.user.id))).limit(1);
+    if (!account) throw new TRPCError({ code: "NOT_FOUND", message: "Trading account not found" });
+    await db.insert(tradingAccountPreferences).values({ userId: ctx.user.id, lastActiveAccountId: account.id, updatedAt: new Date() }).onConflictDoUpdate({ target: tradingAccountPreferences.userId, set: { lastActiveAccountId: account.id, updatedAt: new Date() } });
+    return { lastActiveAccountId: account.id } as const;
+  }),
+
   list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw unavailable();

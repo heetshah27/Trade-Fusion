@@ -25,10 +25,18 @@ type TradingAccountContextValue = {
   selectAccount: (id: number) => void;
 };
 
+type TradingAccountProviderProps = {
+  accounts: TradingAccount[];
+  preferredAccountId?: number | null;
+  preferenceLoaded?: boolean;
+  persistSelection?: (id: number) => void;
+  children: React.ReactNode;
+};
+
 const STORAGE_KEY = "trade-fusion:selected-account-id";
 const TradingAccountContext = createContext<TradingAccountContextValue | null>(null);
 
-export function TradingAccountProvider({ accounts, children }: { accounts: TradingAccount[]; children: React.ReactNode }) {
+export function TradingAccountProvider({ accounts, preferredAccountId = null, preferenceLoaded = false, persistSelection, children }: TradingAccountProviderProps) {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     const value = Number(window.localStorage.getItem(STORAGE_KEY));
@@ -36,12 +44,16 @@ export function TradingAccountProvider({ accounts, children }: { accounts: Tradi
   });
 
   useEffect(() => {
+    if (preferenceLoaded && preferredAccountId !== null && accounts.some(account => account.id === preferredAccountId)) {
+      if (selectedAccountId !== preferredAccountId) setSelectedAccountId(preferredAccountId);
+      return;
+    }
     if (selectedAccountId !== null && accounts.some(account => account.id === selectedAccountId)) return;
     // The API orders accounts by updatedAt, so this also gives returning users
     // a useful cross-device fallback when localStorage is unavailable or cleared.
     if (accounts.length > 0) setSelectedAccountId(accounts[0].id);
     else if (selectedAccountId !== null) setSelectedAccountId(null);
-  }, [accounts, selectedAccountId]);
+  }, [accounts, preferenceLoaded, preferredAccountId, selectedAccountId]);
 
   useEffect(() => {
     if (selectedAccountId === null) window.localStorage.removeItem(STORAGE_KEY);
@@ -52,8 +64,8 @@ export function TradingAccountProvider({ accounts, children }: { accounts: Tradi
     accounts,
     selectedAccountId,
     selectedAccount: accounts.find(account => account.id === selectedAccountId) ?? null,
-    selectAccount: (id: number) => setSelectedAccountId(id),
-  }), [accounts, selectedAccountId]);
+    selectAccount: (id: number) => { setSelectedAccountId(id); persistSelection?.(id); },
+  }), [accounts, persistSelection, selectedAccountId]);
 
   return <TradingAccountContext.Provider value={value}>{children}</TradingAccountContext.Provider>;
 }

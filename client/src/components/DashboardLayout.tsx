@@ -45,6 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [location, setLocation] = useLocation();
   const { data: profile } = trpc.account.profile.useQuery(undefined, { enabled: Boolean(user) });
   const { data: accounts = [], isLoading: accountsLoading } = trpc.tradingAccounts.list.useQuery(undefined, { enabled: Boolean(user) });
+  const { data: accountPreference, isLoading: preferenceLoading } = trpc.tradingAccounts.preference.useQuery(undefined, { enabled: Boolean(user) });
+  const setActiveAccount = trpc.tradingAccounts.setActive.useMutation();
 
   if (loading) return <DashboardLayoutSkeleton />;
 
@@ -62,7 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <TradingAccountProvider accounts={accounts}>
+    <TradingAccountProvider accounts={accounts} preferredAccountId={accountPreference?.lastActiveAccountId} preferenceLoaded={!preferenceLoading} persistSelection={id => { setActiveAccount.mutate({ accountId: id }); }}>
       <DashboardShell profile={profile} user={user} logout={logout} location={location} setLocation={setLocation} accountsLoading={accountsLoading}>{children}</DashboardShell>
     </TradingAccountProvider>
   );

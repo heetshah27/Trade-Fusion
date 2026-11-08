@@ -134,6 +134,15 @@ export const tradingAccounts = pgTable(
 export type TradingAccount = typeof tradingAccounts.$inferSelect;
 export type InsertTradingAccount = typeof tradingAccounts.$inferInsert;
 
+/** Private per-member workspace preference used to restore the last account across devices. */
+export const tradingAccountPreferences = pgTable("trading_account_preferences", {
+  userId: integer("userId").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  lastActiveAccountId: integer("lastActiveAccountId").references(() => tradingAccounts.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type TradingAccountPreference = typeof tradingAccountPreferences.$inferSelect;
+
 /**
  * Trade journal entries — one row per trade logged by a user
  */
