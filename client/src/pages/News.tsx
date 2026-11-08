@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
+import { Calendar, CalendarPlus, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { getCalendarCountry } from '@/lib/calendarFlags';
 import { toEasternCalendarDisplay } from '@/lib/calendarTime';
 import { trpc } from '@/lib/trpc';
+import { buildEconomicEventIcs, buildEconomicWeekIcs, downloadIcs } from '@/lib/calendarIcs';
 
 interface EconomicEvent {
   id: string;
@@ -76,6 +77,7 @@ export default function News() {
   const filteredEvents = filter === 'all' 
     ? events 
     : events.filter(e => e.impact === filter);
+  const highImpactEvents = events.filter(event => event.impact === 'high');
 
   const handleRefresh = () => {
     void refetch();
@@ -89,6 +91,15 @@ export default function News() {
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     return `${Math.floor(diff / 3600)}h ago`;
+  };
+
+  const addEventToCalendar = (event: EconomicEvent) => {
+    downloadIcs(`trade-fusion-${event.date}-${event.country.toLowerCase()}-high-impact.ics`, buildEconomicEventIcs(event));
+  };
+
+  const exportHighImpactWeek = () => {
+    if (!highImpactEvents.length) return;
+    downloadIcs('trade-fusion-high-impact-week.ics', buildEconomicWeekIcs(highImpactEvents));
   };
 
   return (
@@ -154,6 +165,14 @@ export default function News() {
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               {isFetching ? 'Refreshing...' : 'Refresh Now'}
+            </Button>
+            <Button
+              onClick={exportHighImpactWeek}
+              disabled={!highImpactEvents.length}
+              className="gap-2 rounded-xl border border-red-300/[0.18] bg-red-500/[0.10] text-red-100 hover:bg-red-500/[0.18] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Add red-folder week
             </Button>
           </div>
         </div>
@@ -275,6 +294,17 @@ export default function News() {
                         </div>
                       )}
                     </div>
+                    {event.impact === 'high' && (
+                      <Button
+                        type="button"
+                        onClick={() => addEventToCalendar(event)}
+                        variant="outline"
+                        className="mt-3 h-8 gap-1.5 rounded-lg border-red-300/[0.20] bg-red-500/[0.06] px-2.5 text-xs text-red-100 hover:bg-red-500/[0.14] hover:text-white"
+                      >
+                        <CalendarPlus className="h-3.5 w-3.5" />
+                        Add to phone calendar
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
